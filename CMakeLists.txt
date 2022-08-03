@@ -5,7 +5,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 project(GMDH VERSION 0.1)
 
-add_executable(GMDH src/main.cpp)
+
+add_executable(GMDH src/main.cpp
+                    src/gmdh.h
+                    src/gmdh.cpp)
 
 add_subdirectory(external/armadillo-11.2.3)
 target_link_libraries(${PROJECT_NAME} PUBLIC armadillo) 

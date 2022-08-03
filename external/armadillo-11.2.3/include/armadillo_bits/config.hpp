@@ -28,14 +28,14 @@
 //// 3 = as per level 2, and warnings about failed decompositions, failed saving/loading, etc
 
 #if !defined(ARMA_USE_LAPACK)
-#define ARMA_USE_LAPACK
+//#define ARMA_USE_LAPACK
 //// Comment out the above line if you don't have LAPACK or a high-speed replacement for LAPACK,
 //// such as OpenBLAS, Intel MKL, or the Accelerate framework.
 //// LAPACK is required for matrix decompositions (eg. SVD) and matrix inverse.
 #endif
 
 #if !defined(ARMA_USE_BLAS)
-#define ARMA_USE_BLAS
+//#define ARMA_USE_BLAS
 //// Comment out the above line if you don't have BLAS or a high-speed replacement for BLAS,
 //// such as OpenBLAS, Intel MKL, or the Accelerate framework.
 //// BLAS is used for matrix multiplication.
