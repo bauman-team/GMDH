@@ -11,10 +11,9 @@ int main() {
 
 
     GMDH::COMBI combi;
-    combi.fit(x, y, &GMDH::RegularityCriterion(0.5));
+    combi.fit(x, y, GMDH::RegularityCriterion(0.5));
 
-    int n;
-    std::cin >> n;
+    (std::cin).get();
 
     return 0;
 }

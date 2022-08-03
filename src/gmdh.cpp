@@ -36,11 +36,11 @@ namespace GMDH {
         return 0;
     }
 
-    COMBI& COMBI::fit(mat x, vec y, Criterion* criterion)
+    COMBI& COMBI::fit(mat x, vec y, const Criterion& criterion)
     {
         while (level <= x.n_cols)
         {
-            std::vector<std::vector<bool>> combinations = get_combinations(x.n_cols, level);
+            std::vector<std::vector<bool>> combinations = getCombinations(x.n_cols, level);
             for (int i = 0; i < combinations.size(); ++i)
             {
                 std::vector<u64> cols_index;
@@ -49,7 +49,7 @@ namespace GMDH {
                         cols_index.push_back(j);
                 mat comb_x = x.cols(uvec(cols_index));
                 //comb_x.print();
-                double ex_criterion = criterion->calculate(comb_x, y);
+                double ex_criterion = criterion.calculate(comb_x, y);
                 // TODO: save and sort ex_criterions values
             }
             // TODO: choose and save best polinomials, then go to the next level if needed
@@ -58,7 +58,7 @@ namespace GMDH {
         return *this;
     }
 
-    std::vector<std::vector<bool>> COMBI::get_combinations(int n, int k) const
+    std::vector<std::vector<bool>> COMBI::getCombinations(int n, int k) const
     {
         std::vector<std::vector<bool>> combinations;
         std::vector<bool> combination(n);
@@ -69,12 +69,12 @@ namespace GMDH {
         return combinations;
     }
 
-    RegularityCriterion::RegularityCriterion(double test_size)
+    RegularityCriterion::RegularityCriterion(double _test_size)
     {
-        if (test_size > 0 && test_size < 1)
-            this->test_size = test_size;
+        if (_test_size > 0 && _test_size < 1)
+            test_size = _test_size;
         else
-            throw;
+            throw; // TODO: exception???
     }
 
     vec Criterion::internalCriterion(mat x_train, vec y_train) const
@@ -84,27 +84,27 @@ namespace GMDH {
         return coeffs;
     }
 
-    double RegularityCriterion::calculate(mat x, vec y)
+    double RegularityCriterion::calculate(mat x, vec y) const
     {
         x.insert_cols(x.n_cols, vec(x.n_rows, fill::ones));
 
-        mat x_train = x.head_rows(x.n_rows - round(x.n_rows * this->test_size));
-        mat x_test = x.tail_rows(round(x.n_rows * this->test_size));
-        vec y_train = y.head(y.n_elem - round(y.n_elem * this->test_size));
-        vec y_test = y.tail(round(y.n_elem * this->test_size));
+        mat x_train = x.head_rows(x.n_rows - round(x.n_rows * test_size));
+        mat x_test = x.tail_rows(round(x.n_rows * test_size));
+        vec y_train = y.head(y.n_elem - round(y.n_elem * test_size));
+        vec y_test = y.tail(round(y.n_elem * test_size));
 
-        //vec coeffs = internalCriterion(x_train, y_train);
-        vec coeffs(x_test.n_cols, fill::randu);
+        vec coeffs = internalCriterion(x_train, y_train);
+        //vec coeffs(x_test.n_cols, fill::randu);
 
         vec y_pred = x_test * coeffs;
         return sum(square(y_test - y_pred)) / sum(square(y_test));
     }
 
-    mat polynomail_features(const mat X, int max_degree) {
+    mat polynomailFeatures(const mat X, int max_degree) {
         int n = X.n_cols;
         std::vector <int> d(n);
         std::iota(d.begin(), d.end(), 0);
-        mat polyX;
+        mat poly_X;
         std::vector<std::vector<int>> monoms;
 
         for (int degree = 1; degree <= max_degree; ++degree)
@@ -127,11 +127,11 @@ namespace GMDH {
                     monom.push_back(d[v[i]]);
                 }
                 //column.print();
-                polyX.insert_cols(polyX.n_cols, column);
+                poly_X.insert_cols(poly_X.n_cols, column);
                 monoms.push_back(monom);
                 v[0]++;
             }
         }
-        return polyX;
+        return poly_X;
     } 
 }
