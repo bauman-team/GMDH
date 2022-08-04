@@ -38,8 +38,13 @@ namespace GMDH {
 
     COMBI& COMBI::fit(mat x, vec y, const Criterion& criterion)
     {
+        //std::unordered_multimap<double, std::vector<bool>>
+        // TODO: add using (as typedef)
+        std::vector<std::pair<std::pair<double, vec>, std::vector<bool> >> evaluation_coeffs_vec; // TODO: add reserve
+        double last_level_evaluation = std::numeric_limits<double>::min();
         while (level <= x.n_cols)
         {
+            std::vector<std::pair<std::pair<double, vec>, std::vector<bool> >>::const_iterator curr_level_evaluation;
             std::vector<std::vector<bool>> combinations = getCombinations(x.n_cols, level);
             for (int i = 0; i < combinations.size(); ++i)
             {
@@ -49,10 +54,23 @@ namespace GMDH {
                         cols_index.push_back(j);
                 mat comb_x = x.cols(uvec(cols_index));
                 //comb_x.print();
-                double ex_criterion = criterion.calculate(comb_x, y);
-                // TODO: save and sort ex_criterions values
+                evaluation_coeffs_vec.push_back(std::pair<std::pair<double, vec>, std::vector<bool> >(criterion.calculate(comb_x, y), combinations[i]));
             }
-            // TODO: choose and save best polinomials, then go to the next level if needed
+            if (last_level_evaluation < 
+            (curr_level_evaluation = std::max_element(
+            std::cbegin(evaluation_coeffs_vec), // TODO: maybe begin() for move value
+            std::cend(evaluation_coeffs_vec), 
+            [](std::pair<std::pair<double, vec>, std::vector<bool> > first, 
+            std::pair<std::pair<double, vec>, std::vector<bool> > second) { 
+                return first.first.first < second.first.first;
+            }))->first.first) {
+                last_level_evaluation = curr_level_evaluation->first.first;
+                best_polinom = curr_level_evaluation->second;
+                best_coeffs = curr_level_evaluation->first.second;
+            }
+            else {
+                break; // TODO: fix bad code style
+            }
             ++level;
         }
         return *this;
@@ -79,12 +97,12 @@ namespace GMDH {
 
     vec Criterion::internalCriterion(mat x_train, vec y_train) const
     {
-        mat x_train_T = x_train.t();
-        vec coeffs = inv(x_train_T * x_train) * x_train_T * y_train;
-        return coeffs;
+        //mat x_train_T = x_train.t();
+        //vec coeffs = inv(x_train_T * x_train) * x_train_T * y_train;
+        return solve(x_train, y_train);
     }
 
-    double RegularityCriterion::calculate(mat x, vec y) const
+    std::pair<double, vec> RegularityCriterion::calculate(mat x, vec y) const
     {
         x.insert_cols(x.n_cols, vec(x.n_rows, fill::ones));
 
@@ -93,11 +111,11 @@ namespace GMDH {
         vec y_train = y.head(y.n_elem - round(y.n_elem * test_size));
         vec y_test = y.tail(round(y.n_elem * test_size));
 
-        vec coeffs = internalCriterion(x_train, y_train);
-        //vec coeffs(x_test.n_cols, fill::randu);
+        //vec coeffs = internalCriterion(x_train, y_train);
+        vec coeffs(x_test.n_cols, fill::randu);
 
         vec y_pred = x_test * coeffs;
-        return sum(square(y_test - y_pred)) / sum(square(y_test));
+        return std::pair<double, vec>(sum(square(y_test - y_pred)) / sum(square(y_test)), coeffs);
     }
 
     mat polynomailFeatures(const mat X, int max_degree) {

@@ -3,6 +3,8 @@
 #include <cmath>
 #include <numeric>
 #include <cstdint>
+#include <utility>
+//#include <unordered_map>
 
 
 namespace GMDH {
@@ -15,7 +17,7 @@ protected:
     vec internalCriterion(mat x_train, vec y_train) const;
 
 public:
-    virtual double calculate(mat x, vec y_real) const = 0;
+    virtual std::pair<double, vec> calculate(mat x, vec y_real) const = 0;
 };
 
 class RegularityCriterion : public Criterion {
@@ -24,7 +26,7 @@ class RegularityCriterion : public Criterion {
 
 public:
     RegularityCriterion(double _test_size = 0.33);
-    double calculate(mat x, vec y_real) const override;
+    std::pair<double, vec> calculate(mat x, vec y_real) const override;
 };
 
 
@@ -41,7 +43,7 @@ public:
     virtual double predict() const = 0;
 };
 
-class COMBI : public GMDH {
+class COMBI : public GMDH { // TODO: split into separate files
 
     std::vector<bool> best_polinom;
     vec best_coeffs;
