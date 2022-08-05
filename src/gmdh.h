@@ -4,6 +4,9 @@
 #include <numeric>
 #include <cstdint>
 #include <utility>
+#include <string>
+#include <fstream>
+#include <sstream>
 //#include <unordered_map>
 
 
@@ -46,11 +49,12 @@ class GMDH {
 
 protected:
     int level;
+    std::string model_name;
 
 public:
     GMDH();
-    virtual void save() const = 0;
-    virtual int load() = 0;
+    virtual int save(std::string path) const = 0;
+    virtual int load(std::string path) = 0;
     virtual GMDH& fit(mat x, vec y, const Criterion& criterion) = 0;
     virtual double predict(rowvec x) const = 0;
     virtual vec predict(mat x) const = 0;
@@ -58,16 +62,18 @@ public:
 
 class COMBI : public GMDH { // TODO: split into separate files
 
-    std::vector<bool> best_polinom;
     uvec best_cols_index;
     vec best_coeffs;
+    int input_cols_number;
 
     std::vector<std::vector<bool>> getCombinations(int n, int k) const;
+    uvec polinomToIndexes(std::vector<bool> polinom) const;
     //unsigned long nChoosek(unsigned long n, unsigned long k);
         
 public:
-    void save() const override;
-    int load() override;
+    COMBI();
+    int save(std::string path) const override;
+    int load(std::string path) override;
     double predict(rowvec x) const override;
     vec predict(mat x) const override;
     COMBI& fit(mat x, vec y, const Criterion& criterion) override;

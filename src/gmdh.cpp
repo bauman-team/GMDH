@@ -21,14 +21,72 @@ namespace GMDH {
         level = 1;
     }
 
-    void COMBI::save() const
+    COMBI::COMBI()
     {
-        return;
+        model_name = "COMBI";
     }
 
-    int COMBI::load()
+    int COMBI::save(std::string path) const
     {
-        return 0;
+        int status = 0;
+        std::ofstream model_file;
+        model_file.open(path);
+        if (!model_file.is_open())
+            status = -1;
+        else
+        {
+            model_file << model_name << "\n";
+            model_file << input_cols_number << "\n";
+            best_cols_index.t().raw_print(model_file);
+            best_coeffs.t().raw_print(model_file);
+            model_file.close();
+        }
+        return status;
+    }
+
+    int COMBI::load(std::string path)
+    {
+        int status = 0;
+
+        input_cols_number = 0;
+        best_cols_index.clear();
+        best_coeffs.clear();
+
+        std::ifstream model_file;
+        model_file.open(path);
+        if (!model_file.is_open())
+            status = -1;
+        else
+        {
+            std::string model_name;
+            model_file >> model_name;
+            if (model_name != model_name)
+                status = -1;
+            else
+            {
+                model_file >> input_cols_number;
+                model_file.ignore();
+
+                std::string cols_index_line;
+                std::vector<u64> cols_index;
+                std::getline(model_file, cols_index_line);
+                std::stringstream index_stream(cols_index_line);
+                int index;
+                while (index_stream >> index)
+                    cols_index.push_back(index);
+                best_cols_index = cols_index;
+
+                std::string coeffs_line;
+                std::vector<double> coeffs;
+                std::getline(model_file, coeffs_line);
+                std::stringstream coeffs_stream(coeffs_line);
+                double coeff;
+                while (coeffs_stream >> coeff)
+                    coeffs.push_back(coeff);
+                best_coeffs = coeffs;
+            }
+        }
+        return status;
     }
 
     double COMBI::predict(rowvec x) const
@@ -47,7 +105,8 @@ namespace GMDH {
         //std::unordered_multimap<double, std::vector<bool>>
         // TODO: add using (as typedef)
         double last_level_evaluation = std::numeric_limits<double>::max();
-
+        std::vector<bool> best_polinom;
+        input_cols_number = x.n_cols;
         x.insert_cols(x.n_cols, vec(x.n_rows, fill::ones));
 
         while (level < x.n_cols)
@@ -83,12 +142,7 @@ namespace GMDH {
             ++level;
         }
 
-        std::vector<u64> cols_index;
-        for (int i = 0; i < best_polinom.size(); ++i)
-            if (best_polinom[i])
-                cols_index.push_back(i);
-        cols_index.push_back(best_polinom.size());
-        best_cols_index = cols_index;
+        best_cols_index = polinomToIndexes(best_polinom);
 
         return *this;
     }
@@ -102,6 +156,16 @@ namespace GMDH {
             combinations.push_back(combination);
         } while (std::prev_permutation(combination.begin(), combination.end()));
         return combinations;
+    }
+
+    uvec COMBI::polinomToIndexes(std::vector<bool> polinom) const
+    {
+        std::vector<u64> cols_index;
+        for (int i = 0; i < polinom.size(); ++i)
+            if (polinom[i])
+                cols_index.push_back(i);
+        cols_index.push_back(polinom.size());
+        return uvec(cols_index);
     }
 
     RegularityCriterion::RegularityCriterion(double _test_size, bool _shuffle, int _random_seed) : RegularityCriterionTS(_test_size)

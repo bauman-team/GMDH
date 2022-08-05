@@ -11,9 +11,12 @@ int main() {
 
 
     GMDH::COMBI combi;
-    combi.fit(x, y, GMDH::RegularityCriterion(0.5, true, 1));
-    double res = combi.predict(arma::rowvec(x.n_cols, arma::fill::randu));
+    combi.fit(x, y, GMDH::RegularityCriterion(0.5, true, 2));
+    double res1 = combi.predict(arma::rowvec(x.n_cols, arma::fill::randu));
     arma::vec res2 = combi.predict(arma::mat(2, x.n_cols, arma::fill::randu));
+    combi.save("model1.txt");
+    combi.load("model1.txt");
+    arma::vec res3 = combi.predict(arma::mat(2, x.n_cols, arma::fill::randu));
 
     (std::cin).get();
 
