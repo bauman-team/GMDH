@@ -40,10 +40,10 @@ namespace GMDH {
     {
         //std::unordered_multimap<double, std::vector<bool>>
         // TODO: add using (as typedef)
-        std::vector<std::pair<std::pair<double, vec>, std::vector<bool> >> evaluation_coeffs_vec; // TODO: add reserve
-        double last_level_evaluation = std::numeric_limits<double>::min();
+        double last_level_evaluation = std::numeric_limits<double>::max();
         while (level <= x.n_cols)
         {
+            std::vector<std::pair<std::pair<double, vec>, std::vector<bool> >> evaluation_coeffs_vec; // TODO: add reserve
             std::vector<std::pair<std::pair<double, vec>, std::vector<bool> >>::const_iterator curr_level_evaluation;
             std::vector<std::vector<bool>> combinations = getCombinations(x.n_cols, level);
             for (int i = 0; i < combinations.size(); ++i)
@@ -56,8 +56,8 @@ namespace GMDH {
                 //comb_x.print();
                 evaluation_coeffs_vec.push_back(std::pair<std::pair<double, vec>, std::vector<bool> >(criterion.calculate(comb_x, y), combinations[i]));
             }
-            if (last_level_evaluation < 
-            (curr_level_evaluation = std::max_element(
+            if (last_level_evaluation > 
+            (curr_level_evaluation = std::min_element(
             std::cbegin(evaluation_coeffs_vec), // TODO: maybe begin() for move value
             std::cend(evaluation_coeffs_vec), 
             [](std::pair<std::pair<double, vec>, std::vector<bool> > first, 
@@ -104,7 +104,7 @@ namespace GMDH {
 
     std::pair<double, vec> RegularityCriterion::calculate(mat x, vec y) const
     {
-        x.insert_cols(x.n_cols, vec(x.n_rows, fill::ones));
+        x.insert_cols(x.n_cols, vec(x.n_rows, fill::ones)); // maybe insert column outside the calculation method?
 
         mat x_train = x.head_rows(x.n_rows - round(x.n_rows * test_size));
         mat x_test = x.tail_rows(round(x.n_rows * test_size));
