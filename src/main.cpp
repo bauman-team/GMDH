@@ -11,7 +11,9 @@ int main() {
 
 
     GMDH::COMBI combi;
-    combi.fit(x, y, GMDH::RegularityCriterion(0.5));
+    combi.fit(x, y, GMDH::RegularityCriterion(0.5, true, 1));
+    double res = combi.predict(arma::rowvec(x.n_cols, arma::fill::randu));
+    arma::vec res2 = combi.predict(arma::mat(2, x.n_cols, arma::fill::randu));
 
     (std::cin).get();
 

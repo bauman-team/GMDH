@@ -52,12 +52,14 @@ public:
     virtual void save() const = 0;
     virtual int load() = 0;
     virtual GMDH& fit(mat x, vec y, const Criterion& criterion) = 0;
-    virtual double predict() const = 0;
+    virtual double predict(rowvec x) const = 0;
+    virtual vec predict(mat x) const = 0;
 };
 
 class COMBI : public GMDH { // TODO: split into separate files
 
     std::vector<bool> best_polinom;
+    uvec best_cols_index;
     vec best_coeffs;
 
     std::vector<std::vector<bool>> getCombinations(int n, int k) const;
@@ -66,7 +68,8 @@ class COMBI : public GMDH { // TODO: split into separate files
 public:
     void save() const override;
     int load() override;
-    double predict() const override;
+    double predict(rowvec x) const override;
+    vec predict(mat x) const override;
     COMBI& fit(mat x, vec y, const Criterion& criterion) override;
 };
 

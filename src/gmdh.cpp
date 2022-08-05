@@ -31,9 +31,15 @@ namespace GMDH {
         return 0;
     }
 
-    double COMBI::predict() const
+    double COMBI::predict(rowvec x) const
     {
-        return 0;
+        return predict(mat(x))(0);
+    }
+
+    vec COMBI::predict(mat x) const
+    {
+        x.insert_cols(x.n_cols, vec(x.n_rows, fill::ones));
+        return x.cols(best_cols_index) * best_coeffs;
     }
 
     COMBI& COMBI::fit(mat x, vec y, const Criterion& criterion)
@@ -76,6 +82,14 @@ namespace GMDH {
             }
             ++level;
         }
+
+        std::vector<u64> cols_index;
+        for (int i = 0; i < best_polinom.size(); ++i)
+            if (best_polinom[i])
+                cols_index.push_back(i);
+        cols_index.push_back(best_polinom.size());
+        best_cols_index = cols_index;
+
         return *this;
     }
 
