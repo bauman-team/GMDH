@@ -41,19 +41,22 @@ namespace GMDH {
         //std::unordered_multimap<double, std::vector<bool>>
         // TODO: add using (as typedef)
         double last_level_evaluation = std::numeric_limits<double>::max();
-        while (level <= x.n_cols)
+
+        x.insert_cols(x.n_cols, vec(x.n_rows, fill::ones));
+
+        while (level < x.n_cols)
         {
             std::vector<std::pair<std::pair<double, vec>, std::vector<bool> >> evaluation_coeffs_vec; // TODO: add reserve
             std::vector<std::pair<std::pair<double, vec>, std::vector<bool> >>::const_iterator curr_level_evaluation;
-            std::vector<std::vector<bool>> combinations = getCombinations(x.n_cols, level);
+            std::vector<std::vector<bool>> combinations = getCombinations(x.n_cols - 1, level);
             for (int i = 0; i < combinations.size(); ++i)
             {
                 std::vector<u64> cols_index;
                 for (int j = 0; j < combinations[i].size(); ++j)
                     if (combinations[i][j])
                         cols_index.push_back(j);
+                cols_index.push_back(x.n_cols - 1);
                 mat comb_x = x.cols(uvec(cols_index));
-                //comb_x.print();
                 evaluation_coeffs_vec.push_back(std::pair<std::pair<double, vec>, std::vector<bool> >(criterion.calculate(comb_x, y), combinations[i]));
             }
             if (last_level_evaluation > 
@@ -87,35 +90,37 @@ namespace GMDH {
         return combinations;
     }
 
-    RegularityCriterion::RegularityCriterion(double _test_size)
+    RegularityCriterion::RegularityCriterion(double _test_size, bool _shuffle, int _random_seed) : RegularityCriterionTS(_test_size)
     {
-        if (_test_size > 0 && _test_size < 1)
-            test_size = _test_size;
-        else
-            throw; // TODO: exception???
+        shuffle = _shuffle;
+        random_seed = _random_seed;
     }
 
     vec Criterion::internalCriterion(mat x_train, vec y_train) const
     {
-        //mat x_train_T = x_train.t();
-        //vec coeffs = inv(x_train_T * x_train) * x_train_T * y_train;
         return solve(x_train, y_train);
     }
 
     std::pair<double, vec> RegularityCriterion::calculate(mat x, vec y) const
     {
-        x.insert_cols(x.n_cols, vec(x.n_rows, fill::ones)); // maybe insert column outside the calculation method?
+        if (!shuffle)
+            return RegularityCriterionTS::calculate(x, y);
 
-        mat x_train = x.head_rows(x.n_rows - round(x.n_rows * test_size));
-        mat x_test = x.tail_rows(round(x.n_rows * test_size));
-        vec y_train = y.head(y.n_elem - round(y.n_elem * test_size));
-        vec y_test = y.tail(round(y.n_elem * test_size));
+        if (random_seed != 0)
+            arma::arma_rng::set_seed(random_seed);
+        else
+            arma::arma_rng::set_seed_random();
 
-        //vec coeffs = internalCriterion(x_train, y_train);
-        vec coeffs(x_test.n_cols, fill::randu);
+        uvec shuffled_rows_indexes = randperm(x.n_rows);
+        uvec train_indexes = shuffled_rows_indexes.head(x.n_rows - round(x.n_rows * test_size));
+        uvec test_indexes = shuffled_rows_indexes.tail(round(x.n_rows * test_size));
 
-        vec y_pred = x_test * coeffs;
-        return std::pair<double, vec>(sum(square(y_test - y_pred)) / sum(square(y_test)), coeffs);
+        mat x_train = x.rows(train_indexes);
+        mat x_test = x.rows(test_indexes);
+        vec y_train = y.elem(train_indexes);
+        vec y_test = y.elem(test_indexes);
+
+        return getCriterionValue(x_train, y_train, x_test, y_test);
     }
 
     mat polynomailFeatures(const mat X, int max_degree) {
@@ -152,4 +157,30 @@ namespace GMDH {
         }
         return poly_X;
     } 
+
+    std::pair<double, vec> RegularityCriterionTS::getCriterionValue(mat x_train, vec y_train, mat x_test, vec y_test) const
+    {
+        //vec coeffs = internalCriterion(x_train, y_train);
+        vec coeffs(x_test.n_cols, fill::randu);
+        vec y_pred = x_test * coeffs;
+        return std::pair<double, vec>(sum(square(y_test - y_pred)) / sum(square(y_test)), coeffs);
+    }
+
+    RegularityCriterionTS::RegularityCriterionTS(double _test_size)
+    {
+        if (_test_size > 0 && _test_size < 1)
+            test_size = _test_size;
+        else
+            throw; // TODO: exception???
+    }
+
+    std::pair<double, vec> RegularityCriterionTS::calculate(mat x, vec y) const
+    {
+        mat x_train = x.head_rows(x.n_rows - round(x.n_rows * test_size));
+        mat x_test = x.tail_rows(round(x.n_rows * test_size));
+        vec y_train = y.head(y.n_elem - round(y.n_elem * test_size));
+        vec y_test = y.tail(round(y.n_elem * test_size));
+
+        return getCriterionValue(x_train, y_train, x_test, y_test);
+    }
 }

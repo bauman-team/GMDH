@@ -17,16 +17,28 @@ protected:
     vec internalCriterion(mat x_train, vec y_train) const;
 
 public:
-    virtual std::pair<double, vec> calculate(mat x, vec y_real) const = 0;
+    virtual std::pair<double, vec> calculate(mat x, vec y) const = 0;
 };
 
-class RegularityCriterion : public Criterion {
-
+class RegularityCriterionTS : public Criterion
+{
+protected:
     double test_size;
 
+    std::pair<double, vec> getCriterionValue(mat x_train, vec y_train, mat x_test, vec y_test) const;
 public:
-    RegularityCriterion(double _test_size = 0.33);
-    std::pair<double, vec> calculate(mat x, vec y_real) const override;
+    RegularityCriterionTS(double _test_size = 0.33);
+    std::pair<double, vec> calculate(mat x, vec y) const override;
+};
+
+class RegularityCriterion : public RegularityCriterionTS {
+
+    bool shuffle;
+    int random_seed;
+
+public:
+    RegularityCriterion(double _test_size = 0.33, bool _shuffle = true, int _random_seed = 0);
+    std::pair<double, vec> calculate(mat x, vec y) const override;
 };
 
 
