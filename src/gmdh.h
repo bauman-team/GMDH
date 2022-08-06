@@ -14,6 +14,13 @@ namespace GMDH {
 
 using namespace arma;
 
+struct splitted_data {
+    mat x_train;
+    mat x_test;
+    vec y_train;
+    vec y_test;
+};
+
 class Criterion {
 
 protected:
@@ -28,7 +35,7 @@ class RegularityCriterionTS : public Criterion
 protected:
     double test_size;
 
-    std::pair<double, vec> getCriterionValue(mat x_train, vec y_train, mat x_test, vec y_test) const;
+    std::pair<double, vec> getCriterionValue(splitted_data data) const;
 public:
     RegularityCriterionTS(double _test_size = 0.33);
     std::pair<double, vec> calculate(mat x, vec y) const override;
@@ -58,6 +65,7 @@ public:
     virtual GMDH& fit(mat x, vec y, const Criterion& criterion) = 0;
     virtual double predict(rowvec x) const = 0;
     virtual vec predict(mat x) const = 0;
+    virtual std::string getBestPolymon() const = 0;
 };
 
 class COMBI : public GMDH { // TODO: split into separate files
@@ -77,9 +85,13 @@ public:
     double predict(rowvec x) const override;
     vec predict(mat x) const override;
     COMBI& fit(mat x, vec y, const Criterion& criterion) override;
+    std::string getBestPolymon() const override;
 };
 
 
 mat polynomailFeatures(const mat X, int max_degree);
+std::pair<mat, vec> convertToTimeSeries(vec x, int lags);
+splitted_data splitTsData(mat x, vec y, double validate_size = 0.2);
+splitted_data splitData(mat x, vec y, double validate_size = 0.2, bool shuffle = true, int _random_seed = 0);
 
 }

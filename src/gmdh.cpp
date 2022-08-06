@@ -64,8 +64,7 @@ namespace GMDH {
                 status = -1;
             else
             {
-                model_file >> input_cols_number;
-                model_file.ignore();
+                (model_file >> input_cols_number).get();
 
                 std::string cols_index_line;
                 std::vector<u64> cols_index;
@@ -147,6 +146,27 @@ namespace GMDH {
         return *this;
     }
 
+    std::string COMBI::getBestPolymon() const
+    {
+        std::string polynom_str = "y =";
+        for (int i = 0; i < best_cols_index.size(); ++i)
+        {
+            if (best_coeffs[i] > 0)
+            {
+                if (i > 0)
+                    polynom_str += " + ";
+                else
+                    polynom_str += " ";
+            }
+            else
+                polynom_str += " - ";
+            polynom_str += std::to_string(abs(best_coeffs[i]));
+            if (i != best_cols_index.size() - 1)
+                polynom_str += "*x" + std::to_string(best_cols_index[i] + 1);
+        }
+        return polynom_str;
+    }
+
     std::vector<std::vector<bool>> COMBI::getCombinations(int n, int k) const
     {
         std::vector<std::vector<bool>> combinations;
@@ -181,24 +201,7 @@ namespace GMDH {
 
     std::pair<double, vec> RegularityCriterion::calculate(mat x, vec y) const
     {
-        if (!shuffle)
-            return RegularityCriterionTS::calculate(x, y);
-
-        if (random_seed != 0)
-            arma::arma_rng::set_seed(random_seed);
-        else
-            arma::arma_rng::set_seed_random();
-
-        uvec shuffled_rows_indexes = randperm(x.n_rows);
-        uvec train_indexes = shuffled_rows_indexes.head(x.n_rows - round(x.n_rows * test_size));
-        uvec test_indexes = shuffled_rows_indexes.tail(round(x.n_rows * test_size));
-
-        mat x_train = x.rows(train_indexes);
-        mat x_test = x.rows(test_indexes);
-        vec y_train = y.elem(train_indexes);
-        vec y_test = y.elem(test_indexes);
-
-        return getCriterionValue(x_train, y_train, x_test, y_test);
+        return getCriterionValue(splitData(x, y, test_size, shuffle, random_seed));
     }
 
     mat polynomailFeatures(const mat X, int max_degree) {
@@ -234,14 +237,56 @@ namespace GMDH {
             }
         }
         return poly_X;
-    } 
+    }
 
-    std::pair<double, vec> RegularityCriterionTS::getCriterionValue(mat x_train, vec y_train, mat x_test, vec y_test) const
+    std::pair<mat, vec> convertToTimeSeries(vec x, int lags)
     {
-        //vec coeffs = internalCriterion(x_train, y_train);
-        vec coeffs(x_test.n_cols, fill::randu);
-        vec y_pred = x_test * coeffs;
-        return std::pair<double, vec>(sum(square(y_test - y_pred)) / sum(square(y_test)), coeffs);
+        vec y_ts = x.tail(x.n_elem - lags);
+        mat x_ts;
+        for (int i = 0; i < lags; ++i)
+            x_ts.insert_cols(i, x(span(i, i + x.n_elem - lags - 1)));
+        return std::pair<mat, vec>(x_ts, y_ts);
+    }
+
+    splitted_data splitTsData(mat x, vec y, double test_size)
+    {
+        splitted_data data;
+        data.x_train = x.head_rows(x.n_rows - round(x.n_rows * test_size));
+        data.x_test = x.tail_rows(round(x.n_rows * test_size));
+        data.y_train = y.head(y.n_elem - round(y.n_elem * test_size));
+        data.y_test = y.tail(round(y.n_elem * test_size));
+        return data;
+    }
+
+    splitted_data splitData(mat x, vec y, double test_size, bool shuffle, int _random_seed)
+    {
+        if (!shuffle)
+            return splitTsData(x, y, test_size);
+
+        if (_random_seed != 0)
+            arma::arma_rng::set_seed(_random_seed);
+        else
+            arma::arma_rng::set_seed_random();
+
+        uvec shuffled_rows_indexes = randperm(x.n_rows);
+        uvec train_indexes = shuffled_rows_indexes.head(x.n_rows - round(x.n_rows * test_size));
+        uvec test_indexes = shuffled_rows_indexes.tail(round(x.n_rows * test_size));
+
+        splitted_data data;
+        data.x_train = x.rows(train_indexes);
+        data.x_test = x.rows(test_indexes);
+        data.y_train = y.elem(train_indexes);
+        data.y_test = y.elem(test_indexes);
+
+        return data;
+    }
+
+    std::pair<double, vec> RegularityCriterionTS::getCriterionValue(splitted_data data) const
+    {
+        //vec coeffs = internalCriterion(data.x_train, data.y_train);
+        vec coeffs(data.x_test.n_cols, fill::randn);
+        vec y_pred = data.x_test * coeffs;
+        return std::pair<double, vec>(sum(square(data.y_test - y_pred)) / sum(square(data.y_test)), coeffs);
     }
 
     RegularityCriterionTS::RegularityCriterionTS(double _test_size)
@@ -254,11 +299,6 @@ namespace GMDH {
 
     std::pair<double, vec> RegularityCriterionTS::calculate(mat x, vec y) const
     {
-        mat x_train = x.head_rows(x.n_rows - round(x.n_rows * test_size));
-        mat x_test = x.tail_rows(round(x.n_rows * test_size));
-        vec y_train = y.head(y.n_elem - round(y.n_elem * test_size));
-        vec y_test = y.tail(round(y.n_elem * test_size));
-
-        return getCriterionValue(x_train, y_train, x_test, y_test);
+        return getCriterionValue(splitTsData(x, y, test_size));
     }
 }
