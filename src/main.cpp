@@ -4,17 +4,16 @@
 
 
 int main() {
-    /*arma::mat x = { {1, 2, 3},
-                    {4, 5, 6} };
-
-    arma::vec y = { 0, 2 };*/
 
     arma::vec x = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+    int lags = 5;
+    double validate_size = 0.33;
+    double test_size = 0.5;
+
     x.print("Original time series: ");
 
-    int lags = 5;
     std::pair<arma::mat, arma::vec> ts = GMDH::convertToTimeSeries(x, lags);
-    GMDH::splitted_data data = GMDH::splitTsData(ts.first, ts.second, 0.33);
+    GMDH::splitted_data data = GMDH::splitTsData(ts.first, ts.second, validate_size);
 
     data.x_train.print("x_train: ");
     data.y_train.print("y_train: ");
@@ -22,7 +21,7 @@ int main() {
     data.y_test.print("y_test: ");
 
     GMDH::COMBI combi;
-    combi.fit(data.x_train, data.y_train, GMDH::RegularityCriterion(0.5, true, 4));
+    combi.fit(data.x_train, data.y_train, GMDH::RegularityCriterionTS(test_size));
 
     std::cout << "The best polynom:\n\  " << combi.getBestPolymon() << std::endl;
 
