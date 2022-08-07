@@ -5,6 +5,7 @@
 
 int main() {
 
+
     arma::vec x = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
     int lags = 5;
     double validate_size = 0.33;
@@ -20,10 +21,11 @@ int main() {
     data.x_test.print("x_test: ");
     data.y_test.print("y_test: ");
 
+
     GMDH::COMBI combi;
     combi.fit(data.x_train, data.y_train, GMDH::RegularityCriterionTS(test_size));
 
-    std::cout << "The best polynom:\n\  " << combi.getBestPolymon() << std::endl;
+    std::cout << "The best polynom:\n  " << combi.getBestPolymon() << std::endl;
 
     arma::vec res = combi.predict(data.x_test);
     combi.save("model1.txt");
