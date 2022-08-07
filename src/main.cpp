@@ -9,7 +9,6 @@ int main() {
 
     arma::vec y = { 0, 2 };
 
-
     GMDH::COMBI combi;
     combi.fit(x, y, GMDH::RegularityCriterion(0.5, true, 2));
     double res1 = combi.predict(arma::rowvec(x.n_cols, arma::fill::randu));

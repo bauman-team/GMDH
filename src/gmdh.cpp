@@ -1,4 +1,6 @@
 #include "gmdh.h"
+#define THREADS_USING
+#define THREADS_COUNT 8
 
 namespace GMDH {
 
@@ -44,10 +46,8 @@ namespace GMDH {
         return status;
     }
 
-    int COMBI::load(std::string path)
+    int COMBI::load(const std::string& path)
     {
-        int status = 0;
-
         input_cols_number = 0;
         best_cols_index.clear();
         best_coeffs.clear();
@@ -55,13 +55,13 @@ namespace GMDH {
         std::ifstream model_file;
         model_file.open(path);
         if (!model_file.is_open())
-            status = -1;
+            return -1;
         else
         {
             std::string model_name;
             model_file >> model_name;
             if (model_name != model_name)
-                status = -1;
+                return -1;
             else
             {
                 model_file >> input_cols_number;
@@ -86,7 +86,7 @@ namespace GMDH {
                 best_coeffs = coeffs;
             }
         }
-        return status;
+        return 0;
     }
 
     double COMBI::predict(rowvec x) const
@@ -101,19 +101,53 @@ namespace GMDH {
     }
 
     COMBI& COMBI::fit(mat x, vec y, const Criterion& criterion)
-    {
-        //std::unordered_multimap<double, std::vector<bool>>
-        // TODO: add using (as typedef)
+    {        
+        boost::asio::thread_pool pool(THREADS_COUNT); // TODO: variable for count of threads
+        boost::function<void(const mat&, const vec&, const Criterion&, std::vector<std::vector<bool> >::const_iterator, 
+        std::vector<std::vector<bool> >::const_iterator, std::vector<std::pair<std::pair<double, vec>, 
+        std::vector<bool> >>::iterator)> calc_evaluation_coeffs = 
+            [] (const mat& x, const vec& y, const Criterion& criterion, std::vector<std::vector<bool> >::const_iterator begin_comb, 
+            std::vector<std::vector<bool> >::const_iterator end_comb, std::vector<std::pair<std::pair<double, vec>, 
+            std::vector<bool> >>::iterator begin_coeff_vec) {
+                for (; begin_comb < end_comb; ++begin_comb, ++begin_coeff_vec) {
+                    std::vector<u64> cols_index;
+                    for (int j = 0; j < begin_comb->size(); ++j)
+                        if ((*begin_comb)[j])
+                            cols_index.push_back(j);
+                    cols_index.push_back(x.n_cols - 1);
+                    mat comb_x = x.cols(uvec(cols_index));
+
+                    begin_coeff_vec->first = criterion.calculate(comb_x, y);
+                    begin_coeff_vec->second = *begin_comb;
+                }      
+            };
+
         double last_level_evaluation = std::numeric_limits<double>::max();
         std::vector<bool> best_polinom;
         input_cols_number = x.n_cols;
         x.insert_cols(x.n_cols, vec(x.n_rows, fill::ones));
 
-        while (level < x.n_cols)
-        {
-            std::vector<std::pair<std::pair<double, vec>, std::vector<bool> >> evaluation_coeffs_vec; // TODO: add reserve
-            std::vector<std::pair<std::pair<double, vec>, std::vector<bool> >>::const_iterator curr_level_evaluation;
-            std::vector<std::vector<bool>> combinations = getCombinations(x.n_cols - 1, level);
+        while (level < x.n_cols) {
+            std::vector<std::pair<std::pair<double, vec>, std::vector<bool> >> evaluation_coeffs_vec; 
+            std::vector<std::pair<std::pair<double, vec>, std::vector<bool> >>::const_iterator curr_level_evaluation; // TODO: add using (as typedef)
+            std::vector<std::vector<bool> > combinations = getCombinations(x.n_cols - 1, level);
+#ifdef THREADS_USING
+            using T = boost::packaged_task<void>;
+            std::vector<boost::unique_future<T::result_type> > futures; // TODO: reserve??? or array
+            
+            evaluation_coeffs_vec.resize(combinations.size());
+            auto count_thread_comb = static_cast<int>(std::ceil(combinations.size() / static_cast<double>(THREADS_COUNT))); 
+            for (auto i = 0; i < THREADS_COUNT && i < combinations.size(); ++i) {
+                boost::packaged_task<void> pt(boost::bind(calc_evaluation_coeffs, x, y, boost::ref(criterion),
+                combinations.cbegin() + count_thread_comb * i, 
+                combinations.cbegin() + std::min(static_cast<size_t>(count_thread_comb * (i + 1)), combinations.size()),
+                evaluation_coeffs_vec.begin() + count_thread_comb * i));
+                futures.push_back(pt.get_future());
+                post(pool, std::move(pt));
+            }
+            boost::when_all(futures.begin(), futures.end()).get();
+#else
+            evaluation_coeffs_vec.reserve(combinations.size());
             for (int i = 0; i < combinations.size(); ++i)
             {
                 std::vector<u64> cols_index;
@@ -124,9 +158,11 @@ namespace GMDH {
                 mat comb_x = x.cols(uvec(cols_index));
                 evaluation_coeffs_vec.push_back(std::pair<std::pair<double, vec>, std::vector<bool> >(criterion.calculate(comb_x, y), combinations[i]));
             }
+#endif
+
             if (last_level_evaluation > 
             (curr_level_evaluation = std::min_element(
-            std::cbegin(evaluation_coeffs_vec), // TODO: maybe begin() for move value
+            std::cbegin(evaluation_coeffs_vec), 
             std::cend(evaluation_coeffs_vec), 
             [](std::pair<std::pair<double, vec>, std::vector<bool> > first, 
             std::pair<std::pair<double, vec>, std::vector<bool> > second) { 
@@ -179,7 +215,7 @@ namespace GMDH {
         return solve(x_train, y_train);
     }
 
-    std::pair<double, vec> RegularityCriterion::calculate(mat x, vec y) const
+    std::pair<double, vec> RegularityCriterion::calculate(const mat& x, const vec& y) const
     {
         if (!shuffle)
             return RegularityCriterionTS::calculate(x, y);
@@ -252,7 +288,7 @@ namespace GMDH {
             throw; // TODO: exception???
     }
 
-    std::pair<double, vec> RegularityCriterionTS::calculate(mat x, vec y) const
+    std::pair<double, vec> RegularityCriterionTS::calculate(const mat& x, const vec& y) const
     {
         mat x_train = x.head_rows(x.n_rows - round(x.n_rows * test_size));
         mat x_test = x.tail_rows(round(x.n_rows * test_size));
