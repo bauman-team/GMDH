@@ -1,4 +1,6 @@
 #include "gmdh.h"
+#include <iostream>
+
 #define THREADS_USING
 #define THREADS_COUNT 8
 
@@ -39,8 +41,10 @@ namespace GMDH {
         {
             model_file << model_name << "\n";
             model_file << input_cols_number << "\n";
-            best_cols_index.t().raw_print(model_file);
-            best_coeffs.t().raw_print(model_file);
+            for (auto i : best_cols_index) model_file << i << ' ';
+            model_file << "\n";
+            for (auto i : best_coeffs) model_file << i << ' ';
+            model_file << "\n";
             model_file.close();
         }
         return status;
@@ -50,7 +54,6 @@ namespace GMDH {
     {
         input_cols_number = 0;
         best_cols_index.clear();
-        best_coeffs.clear();
 
         std::ifstream model_file;
         model_file.open(path);
@@ -67,13 +70,11 @@ namespace GMDH {
                 (model_file >> input_cols_number).get();
 
                 std::string cols_index_line;
-                std::vector<u64> cols_index;
                 std::getline(model_file, cols_index_line);
                 std::stringstream index_stream(cols_index_line);
                 int index;
                 while (index_stream >> index)
-                    cols_index.push_back(index);
-                best_cols_index = cols_index;
+                    best_cols_index.push_back(index);
 
                 std::string coeffs_line;
                 std::vector<double> coeffs;
@@ -82,39 +83,41 @@ namespace GMDH {
                 double coeff;
                 while (coeffs_stream >> coeff)
                     coeffs.push_back(coeff);
-                best_coeffs = coeffs;
+                best_coeffs(coeffs);
             }
         }
         return 0;
     }
 
-    double COMBI::predict(rowvec x) const
+    double COMBI::predict(RowVectorXd x) const
     {
-        return predict(mat(x))(0);
+        return predict(MatrixXd(x))[0];
     }
 
-    vec COMBI::predict(mat x) const
+    VectorXd COMBI::predict(MatrixXd x) const
     {
-        x.insert_cols(x.n_cols, vec(x.n_rows, fill::ones));
-        return x.cols(best_cols_index) * best_coeffs;
+        MatrixXd xx(x.rows(), x.cols() + 1);
+        xx.col(x.cols()).setOnes();
+        xx.leftCols(x.cols()) = x;
+        return xx(Eigen::all, best_cols_index) * best_coeffs;
     }
 
-    COMBI& COMBI::fit(mat x, vec y, const Criterion& criterion)
+    COMBI& COMBI::fit(MatrixXd x, VectorXd y, const Criterion& criterion)
     {        
         boost::asio::thread_pool pool(THREADS_COUNT); // TODO: variable for count of threads
-        boost::function<void(const mat&, const vec&, const Criterion&, std::vector<std::vector<bool> >::const_iterator, 
-        std::vector<std::vector<bool> >::const_iterator, std::vector<std::pair<std::pair<double, vec>, 
+        boost::function<void(const MatrixXd&, const VectorXd&, const Criterion&, std::vector<std::vector<bool> >::const_iterator, 
+        std::vector<std::vector<bool> >::const_iterator, std::vector<std::pair<std::pair<double, VectorXd>, 
         std::vector<bool> >>::iterator)> calc_evaluation_coeffs = 
-            [] (const mat& x, const vec& y, const Criterion& criterion, std::vector<std::vector<bool> >::const_iterator begin_comb, 
-            std::vector<std::vector<bool> >::const_iterator end_comb, std::vector<std::pair<std::pair<double, vec>, 
+            [] (const MatrixXd& x, const VectorXd& y, const Criterion& criterion, std::vector<std::vector<bool> >::const_iterator begin_comb, 
+            std::vector<std::vector<bool> >::const_iterator end_comb, std::vector<std::pair<std::pair<double, VectorXd>, 
             std::vector<bool> >>::iterator begin_coeff_vec) {
                 for (; begin_comb < end_comb; ++begin_comb, ++begin_coeff_vec) {
-                    std::vector<u64> cols_index;
+                    std::vector<int> cols_index; // TODO: typedef (using) for all types
                     for (int j = 0; j < begin_comb->size(); ++j)
                         if ((*begin_comb)[j])
                             cols_index.push_back(j);
-                    cols_index.push_back(x.n_cols - 1);
-                    mat comb_x = x.cols(uvec(cols_index));
+                    cols_index.push_back(x.cols() - 1);
+                    MatrixXd comb_x = x(Eigen::all, cols_index);
 
                     begin_coeff_vec->first = criterion.calculate(comb_x, y);
                     begin_coeff_vec->second = *begin_comb;
@@ -123,21 +126,24 @@ namespace GMDH {
 
         double last_level_evaluation = std::numeric_limits<double>::max();
         std::vector<bool> best_polinom;
-        input_cols_number = x.n_cols;
-        x.insert_cols(x.n_cols, vec(x.n_rows, fill::ones));
+        input_cols_number = x.cols();
 
-        while (level < x.n_cols) {
-            std::vector<std::pair<std::pair<double, vec>, std::vector<bool> >> evaluation_coeffs_vec; 
-            std::vector<std::pair<std::pair<double, vec>, std::vector<bool> >>::const_iterator curr_level_evaluation; // TODO: add using (as typedef)
-            std::vector<std::vector<bool> > combinations = getCombinations(x.n_cols - 1, level);
+        MatrixXd xx(x.rows(), x.cols() + 1);
+        xx.col(x.cols()).setOnes();
+        xx.leftCols(x.cols()) = x;
+
+        while (level < xx.cols()) {
+            std::vector<std::pair<std::pair<double, VectorXd>, std::vector<bool> >> evaluation_coeffs_vec; 
+            std::vector<std::pair<std::pair<double, VectorXd>, std::vector<bool> >>::const_iterator curr_level_evaluation; // TODO: add using (as typedef)
+            std::vector<std::vector<bool> > combinations = getCombinations(x.cols(), level);
 #ifdef THREADS_USING
             using T = boost::packaged_task<void>;
             std::vector<boost::unique_future<T::result_type> > futures; // TODO: reserve??? or array
             
             evaluation_coeffs_vec.resize(combinations.size());
             auto count_thread_comb = static_cast<int>(std::ceil(combinations.size() / static_cast<double>(THREADS_COUNT))); 
-            for (auto i = 0; i < THREADS_COUNT && i < combinations.size(); ++i) {
-                boost::packaged_task<void> pt(boost::bind(calc_evaluation_coeffs, x, y, boost::ref(criterion),
+            for (auto i = 0; i * count_thread_comb < combinations.size(); ++i) {
+                boost::packaged_task<void> pt(boost::bind(calc_evaluation_coeffs, xx, y, boost::ref(criterion),
                 combinations.cbegin() + count_thread_comb * i, 
                 combinations.cbegin() + std::min(static_cast<size_t>(count_thread_comb * (i + 1)), combinations.size()),
                 evaluation_coeffs_vec.begin() + count_thread_comb * i));
@@ -149,22 +155,22 @@ namespace GMDH {
             evaluation_coeffs_vec.reserve(combinations.size());
             for (int i = 0; i < combinations.size(); ++i)
             {
-                std::vector<u64> cols_index;
+                std::vector<int> cols_index;
                 for (int j = 0; j < combinations[i].size(); ++j)
                     if (combinations[i][j])
                         cols_index.push_back(j);
-                cols_index.push_back(x.n_cols - 1);
-                mat comb_x = x.cols(uvec(cols_index));
-                evaluation_coeffs_vec.push_back(std::pair<std::pair<double, vec>, std::vector<bool> >(criterion.calculate(comb_x, y), combinations[i]));
+                cols_index.push_back(x.cols());
+                MatrixXd comb_x = xx(Eigen::all, cols_index); 
+                evaluation_coeffs_vec.push_back(std::pair<std::pair<double, VectorXd>, std::vector<bool> >(criterion.calculate(comb_x, y), combinations[i]));
             }
 #endif
-
+            // > or >= ?
             if (last_level_evaluation > 
             (curr_level_evaluation = std::min_element(
             std::cbegin(evaluation_coeffs_vec), 
             std::cend(evaluation_coeffs_vec), 
-            [](std::pair<std::pair<double, vec>, std::vector<bool> > first, 
-            std::pair<std::pair<double, vec>, std::vector<bool> > second) { 
+            [](std::pair<std::pair<double, VectorXd>, std::vector<bool> > first, 
+            std::pair<std::pair<double, VectorXd>, std::vector<bool> > second) { 
                 return first.first.first < second.first.first;
             }))->first.first) {
                 last_level_evaluation = curr_level_evaluation->first.first;
@@ -214,14 +220,14 @@ namespace GMDH {
         return combinations;
     }
 
-    uvec COMBI::polinomToIndexes(std::vector<bool> polinom) const
+    std::vector<int> COMBI::polinomToIndexes(std::vector<bool> polinom) const
     {
-        std::vector<u64> cols_index;
+        std::vector<int> cols_index;
         for (int i = 0; i < polinom.size(); ++i)
             if (polinom[i])
                 cols_index.push_back(i);
         cols_index.push_back(polinom.size());
-        return uvec(cols_index);
+        return cols_index;
     }
 
     RegularityCriterion::RegularityCriterion(double _test_size, bool _shuffle, int _random_seed) : RegularityCriterionTS(_test_size)
@@ -230,23 +236,22 @@ namespace GMDH {
         random_seed = _random_seed;
     }
 
-    vec Criterion::internalCriterion(mat x_train, vec y_train) const
-    {
-        return solve(x_train, y_train);
+    VectorXd Criterion::internalCriterion(MatrixXd x_train, VectorXd y_train) const
+    { 
+        return x_train.colPivHouseholderQr().solve(y_train); // TODO: add parameter to choose solve algorithm
     }
 
-    std::pair<double, vec> RegularityCriterion::calculate(const mat& x, const vec& y) const
+    std::pair<double, VectorXd> RegularityCriterion::calculate(const MatrixXd& x, const VectorXd& y) const
     {
         return getCriterionValue(splitData(x, y, test_size, shuffle, random_seed));
     }
 
-    mat polynomailFeatures(const mat X, int max_degree) {
+    /*mat polynomailFeatures(const mat X, int max_degree) {
         int n = X.n_cols;
         std::vector <int> d(n);
         std::iota(d.begin(), d.end(), 0);
         mat poly_X;
         std::vector<std::vector<int>> monoms;
-
         for (int degree = 1; degree <= max_degree; ++degree)
         {
             std::vector <int> v(degree + 1, 0);
@@ -273,56 +278,61 @@ namespace GMDH {
             }
         }
         return poly_X;
-    }
+    }*/
 
-    std::pair<mat, vec> convertToTimeSeries(vec x, int lags)
+    std::pair<MatrixXd, VectorXd> convertToTimeSeries(VectorXd x, int lags)
     {
-        vec y_ts = x.tail(x.n_elem - lags);
-        mat x_ts;
-        for (int i = 0; i < lags; ++i)
-            x_ts.insert_cols(i, x(span(i, i + x.n_elem - lags - 1)));
-        return std::pair<mat, vec>(x_ts, y_ts);
+        VectorXd y_ts = x.tail(x.size() - lags);
+        MatrixXd x_ts(x.size() - lags, lags);
+        for (int i = 0; i < x.size() - lags; ++i) {
+            x_ts.row(i) = x.segment(i, lags);
+        }
+        return std::pair<MatrixXd, VectorXd>(x_ts, y_ts);
     }
 
-    splitted_data splitTsData(mat x, vec y, double test_size)
+    splitted_data splitTsData(MatrixXd x, VectorXd y, double test_size)
     {
         splitted_data data;
-        data.x_train = x.head_rows(x.n_rows - round(x.n_rows * test_size));
-        data.x_test = x.tail_rows(round(x.n_rows * test_size));
-        data.y_train = y.head(y.n_elem - round(y.n_elem * test_size));
-        data.y_test = y.tail(round(y.n_elem * test_size));
+        data.x_train = x.topRows(x.rows() - round(x.rows() * test_size));
+        data.x_test = x.bottomRows(round(x.rows() * test_size));
+        data.y_train = y.head(y.size() - round(y.size() * test_size));
+        data.y_test = y.tail(round(y.size() * test_size));
         return data;
     }
 
-    splitted_data splitData(mat x, vec y, double test_size, bool shuffle, int _random_seed)
+    splitted_data splitData(MatrixXd x, VectorXd y, double test_size, bool shuffle, int _random_seed)
     {
         if (!shuffle)
             return splitTsData(x, y, test_size);
 
         if (_random_seed != 0)
-            arma::arma_rng::set_seed(_random_seed);
+            std::srand(_random_seed);
         else
-            arma::arma_rng::set_seed_random();
+            std::srand(std::time(NULL));
 
-        uvec shuffled_rows_indexes = randperm(x.n_rows);
-        uvec train_indexes = shuffled_rows_indexes.head(x.n_rows - round(x.n_rows * test_size));
-        uvec test_indexes = shuffled_rows_indexes.tail(round(x.n_rows * test_size));
+        
+        std::vector<int> shuffled_rows_indexes(x.rows());
+        std::iota(shuffled_rows_indexes.begin(), shuffled_rows_indexes.end(), 0);
+        std::random_shuffle(shuffled_rows_indexes.begin(), shuffled_rows_indexes.end());
 
+        std::vector<int> train_indexes(shuffled_rows_indexes.begin(), shuffled_rows_indexes.end() - round(x.rows() * test_size));
+        std::vector<int> test_indexes(shuffled_rows_indexes.end() - round(x.rows() * test_size), shuffled_rows_indexes.end());
+        
         splitted_data data;
-        data.x_train = x.rows(train_indexes);
-        data.x_test = x.rows(test_indexes);
-        data.y_train = y.elem(train_indexes);
-        data.y_test = y.elem(test_indexes);
+        data.x_train = x(train_indexes, Eigen::all);
+        data.x_test = x(test_indexes, Eigen::all);
+        data.y_train = y(train_indexes);
+        data.y_test = y(test_indexes);
 
         return data;
     }
 
-    std::pair<double, vec> RegularityCriterionTS::getCriterionValue(splitted_data data) const
+    std::pair<double, VectorXd> RegularityCriterionTS::getCriterionValue(splitted_data data) const
     {
-        //vec coeffs = internalCriterion(data.x_train, data.y_train);
-        vec coeffs(data.x_test.n_cols, fill::randn);
-        vec y_pred = data.x_test * coeffs;
-        return std::pair<double, vec>(sum(square(data.y_test - y_pred)) / sum(square(data.y_test)), coeffs);
+        VectorXd coeffs = internalCriterion(data.x_train, data.y_train);
+        //vec coeffs(data.x_test.n_cols, fill::randn);
+        VectorXd y_pred = data.x_test * coeffs;
+        return std::pair<double, VectorXd>(((data.y_test - y_pred).array().square().sum() / data.y_test.array().square().sum()), coeffs);
     }
 
     RegularityCriterionTS::RegularityCriterionTS(double _test_size)
@@ -333,7 +343,7 @@ namespace GMDH {
             throw; // TODO: exception???
     }
 
-    std::pair<double, vec> RegularityCriterionTS::calculate(const mat& x, const vec& y) const
+    std::pair<double, VectorXd> RegularityCriterionTS::calculate(const MatrixXd& x, const VectorXd& y) const
     {
         return getCriterionValue(splitTsData(x, y, test_size));
     }

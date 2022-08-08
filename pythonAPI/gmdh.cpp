@@ -1,5 +1,6 @@
 #include "../src/gmdh.h"
 #include <pybind11/pybind11.h>
+#include <pybind11/eigen.h>
 // to convert C++ STL containers to python list
 #include <pybind11/stl.h>
 
@@ -36,13 +37,13 @@ PYBIND11_MODULE(gmdhpy, m)
         .def(py::init<>())
         .def("save", &COMBI::save)
         .def("load", &COMBI::load)
-        .def("predict", static_cast<double (COMBI::*) (arma::rowvec) const>(&COMBI::predict))
-        .def("predict", static_cast<arma::vec (COMBI::*) (arma::mat) const>(&COMBI::predict))
+        .def("predict", static_cast<double (COMBI::*) (Eigen::RowVectorXd) const>(&COMBI::predict))
+        .def("predict", static_cast<Eigen::VectorXd (COMBI::*) (Eigen::MatrixXd) const>(&COMBI::predict))
         .def("fit", &COMBI::fit)
         .def("getBestPolymon", &COMBI::getBestPolymon);
 
 
-    m.def("polynomailFeatures", &polynomailFeatures);
+    //m.def("polynomailFeatures", &polynomailFeatures);
     m.def("convertToTimeSeries", &convertToTimeSeries);
     m.def("splitTsData", &splitTsData);
     m.def("splitData", &splitData);
