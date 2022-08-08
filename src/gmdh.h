@@ -16,6 +16,7 @@
 #include <boost/bind/bind.hpp>
 #include <boost/thread/thread.hpp>
 #include <boost/thread/future.hpp>
+#include <boost/type_index.hpp>
 
 namespace GMDH {
 
@@ -38,11 +39,11 @@ protected:
 
 public:
     GMDH();
-    virtual int save(std::string path) const = 0;
+    virtual int save(const std::string& path) const = 0;
     virtual int load(const std::string& path) = 0;
     virtual GMDH& fit(MatrixXd x, VectorXd y, const Criterion& criterion) = 0;
-    virtual double predict(RowVectorXd x) const = 0;
-    virtual VectorXd predict(MatrixXd x) const = 0;
+    virtual double predict(const RowVectorXd& x) const = 0;
+    virtual VectorXd predict(const MatrixXd& x) const = 0;
     virtual std::string getBestPolymon() const = 0;
 };
 

@@ -37,8 +37,8 @@ PYBIND11_MODULE(gmdhpy, m)
         .def(py::init<>())
         .def("save", &GMDH::COMBI::save)
         .def("load", &GMDH::COMBI::load)
-        .def("predict", static_cast<double (GMDH::COMBI::*) (Eigen::RowVectorXd) const>(&GMDH::COMBI::predict))
-        .def("predict", static_cast<Eigen::VectorXd (GMDH::COMBI::*) (Eigen::MatrixXd) const>(&GMDH::COMBI::predict))
+        .def("predict", static_cast<double (GMDH::COMBI::*) (const Eigen::RowVectorXd&) const>(&GMDH::COMBI::predict))
+        .def("predict", static_cast<Eigen::VectorXd (GMDH::COMBI::*) (const Eigen::MatrixXd&) const>(&GMDH::COMBI::predict))
         .def("fit", &GMDH::COMBI::fit)
         .def("getBestPolymon", &GMDH::COMBI::getBestPolymon);
 

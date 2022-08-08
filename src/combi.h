@@ -8,15 +8,15 @@ class COMBI : public GMDH { // TODO: split into separate files
     int input_cols_number;
 
     std::vector<std::vector<bool>> getCombinations(int n, int k) const;
-    std::vector<int> polinomToIndexes(std::vector<bool> polinom) const;
+    std::vector<int> polinomToIndexes(const std::vector<bool>& polinom) const;
     //unsigned long nChoosek(unsigned long n, unsigned long k);
         
 public:
     COMBI();
-    int save(std::string path) const override;
+    int save(const std::string& path) const override;
     int load(const std::string& path) override;
-    double predict(RowVectorXd x) const override;
-    VectorXd predict(MatrixXd x) const override;
+    double predict(const RowVectorXd& x) const override;
+    VectorXd predict(const MatrixXd& x) const override;
     COMBI& fit(MatrixXd x, VectorXd y, const Criterion& criterion) override;
     std::string getBestPolymon() const override;
 };

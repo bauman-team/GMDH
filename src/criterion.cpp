@@ -8,7 +8,7 @@ RegularityCriterion::RegularityCriterion(double _test_size, bool _shuffle, int _
     random_seed = _random_seed;
 }
 
-VectorXd Criterion::internalCriterion(MatrixXd x_train, VectorXd y_train) const
+VectorXd Criterion::internalCriterion(const MatrixXd& x_train, const VectorXd& y_train) const
 { 
     return x_train.colPivHouseholderQr().solve(y_train); // TODO: add parameter to choose solve algorithm
 }
@@ -18,7 +18,7 @@ std::pair<double, VectorXd> RegularityCriterion::calculate(const MatrixXd& x, co
     return getCriterionValue(splitData(x, y, test_size, shuffle, random_seed));
 }
 
-std::pair<double, VectorXd> RegularityCriterionTS::getCriterionValue(splitted_data data) const
+std::pair<double, VectorXd> RegularityCriterionTS::getCriterionValue(const splitted_data& data) const
 {
     VectorXd coeffs = internalCriterion(data.x_train, data.y_train);
     //vec coeffs(data.x_test.n_cols, fill::randn);

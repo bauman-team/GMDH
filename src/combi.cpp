@@ -9,7 +9,7 @@ COMBI::COMBI()
     model_name = "COMBI";
 }
 
-int COMBI::save(std::string path) const
+int COMBI::save(const std::string& path) const
 {
     int status = 0;
     std::ofstream model_file;
@@ -68,12 +68,12 @@ int COMBI::load(const std::string& path)
     return 0;
 }
 
-double COMBI::predict(RowVectorXd x) const
+double COMBI::predict(const RowVectorXd& x) const
 {
     return predict(MatrixXd(x))[0];
 }
 
-VectorXd COMBI::predict(MatrixXd x) const
+VectorXd COMBI::predict(const MatrixXd& x) const
 {
     MatrixXd xx(x.rows(), x.cols() + 1);
     xx.col(x.cols()).setOnes();
@@ -82,7 +82,8 @@ VectorXd COMBI::predict(MatrixXd x) const
 }
 
 COMBI& COMBI::fit(MatrixXd x, VectorXd y, const Criterion& criterion)
-{        
+{   
+    //TODO: reset parameters
     boost::asio::thread_pool pool(THREADS_COUNT); // TODO: variable for count of threads
     boost::function<void(const MatrixXd&, const VectorXd&, const Criterion&, std::vector<std::vector<bool> >::const_iterator, 
     std::vector<std::vector<bool> >::const_iterator, std::vector<std::pair<std::pair<double, VectorXd>, 
@@ -139,8 +140,8 @@ COMBI& COMBI::fit(MatrixXd x, VectorXd y, const Criterion& criterion)
                 if (combinations[i][j])
                     cols_index.push_back(j);
             cols_index.push_back(x.cols());
-            MatrixXd comb_x = xx(Eigen::all, cols_index); 
-            evaluation_coeffs_vec.push_back(std::pair<std::pair<double, VectorXd>, std::vector<bool> >(criterion.calculate(comb_x, y), combinations[i]));
+            //MatrixXd comb_x = xx(Eigen::all, cols_index); 
+            evaluation_coeffs_vec.push_back(std::pair<std::pair<double, VectorXd>, std::vector<bool> >(criterion.calculate(xx(Eigen::all, cols_index), y), combinations[i]));
         }
 #endif
         // > or >= ?
@@ -199,7 +200,7 @@ std::vector<std::vector<bool>> COMBI::getCombinations(int n, int k) const
     return combinations;
 }
 
-std::vector<int> COMBI::polinomToIndexes(std::vector<bool> polinom) const
+std::vector<int> COMBI::polinomToIndexes(const std::vector<bool>& polinom) const
 {
     std::vector<int> cols_index;
     for (int i = 0; i < polinom.size(); ++i)

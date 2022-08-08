@@ -4,7 +4,7 @@ namespace GMDH {
 class Criterion {
 
 protected:
-    VectorXd internalCriterion(MatrixXd x_train, VectorXd y_train) const;
+    VectorXd internalCriterion(const MatrixXd& x_train, const VectorXd& y_train) const;
 
 public:
     virtual std::pair<double, VectorXd> calculate(const MatrixXd& x, const VectorXd& y) const = 0;
@@ -15,7 +15,7 @@ class RegularityCriterionTS : public Criterion
 protected:
     double test_size;
 
-    std::pair<double, VectorXd> getCriterionValue(splitted_data data) const;
+    std::pair<double, VectorXd> getCriterionValue(const splitted_data& data) const;
 public:
     RegularityCriterionTS(double _test_size = 0.33);
     std::pair<double, VectorXd> calculate(const MatrixXd& x, const VectorXd& y) const override;
