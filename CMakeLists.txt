@@ -28,6 +28,11 @@ target_include_directories(${LIBRARY_NAME} PUBLIC external/pybind11-2.10.0/inclu
 target_include_directories(${PROJECT_NAME} PUBLIC external/eigen-3.4)
 target_include_directories(${LIBRARY_NAME} PUBLIC external/eigen-3.4)
 
+add_subdirectory(external/indicators-master)
+target_include_directories(${PROJECT_NAME} PUBLIC external/indicators-master/include)
+target_include_directories(${LIBRARY_NAME} PUBLIC external/indicators-master/include)
+
+
 if(WIN32)
     set(BOOST_ROOT "C:/boost_1_79_0")
     set(Boost_USE_STATIC_LIBS ON) 

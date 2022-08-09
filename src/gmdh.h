@@ -18,6 +18,10 @@
 #include <boost/thread/future.hpp>
 #include <boost/type_index.hpp>
 
+#include <indicators/progress_bar.hpp>
+#include <indicators/cursor_control.hpp>
+#include <indicators/block_progress_bar.hpp>
+
 namespace GMDH {
 
 using namespace Eigen;
@@ -35,13 +39,12 @@ class GMDH {
 
 protected:
     int level;
-    std::string model_name;
-
+    virtual std::string getModelName() const; // TODO: fix bug with always returning GMDH::GMDH 
 public:
     GMDH();
     virtual int save(const std::string& path) const = 0;
     virtual int load(const std::string& path) = 0;
-    virtual GMDH& fit(MatrixXd x, VectorXd y, const Criterion& criterion) = 0;
+    virtual GMDH& fit(MatrixXd x, VectorXd y, const Criterion& criterion, int threads = 1, int verbose = 0) = 0;
     virtual double predict(const RowVectorXd& x) const = 0;
     virtual VectorXd predict(const MatrixXd& x) const = 0;
     virtual std::string getBestPolymon() const = 0;

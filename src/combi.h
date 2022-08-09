@@ -1,7 +1,7 @@
 #include "criterion.h"
 
 namespace GMDH {
-class COMBI : public GMDH { // TODO: split into separate files
+class COMBI : public GMDH {
 
     std::vector<int> best_cols_index;
     VectorXd best_coeffs;
@@ -12,12 +12,11 @@ class COMBI : public GMDH { // TODO: split into separate files
     //unsigned long nChoosek(unsigned long n, unsigned long k);
         
 public:
-    COMBI();
     int save(const std::string& path) const override;
     int load(const std::string& path) override;
     double predict(const RowVectorXd& x) const override;
     VectorXd predict(const MatrixXd& x) const override;
-    COMBI& fit(MatrixXd x, VectorXd y, const Criterion& criterion) override;
+    COMBI& fit(MatrixXd x, VectorXd y, const Criterion& criterion, int threads = 1, int verbose = 0) override;
     std::string getBestPolymon() const override;
 };
 }

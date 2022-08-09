@@ -2,6 +2,7 @@
 #include <pybind11/eigen.h>
 // to convert C++ STL containers to python list
 #include <pybind11/stl.h>
+#include <pybind11/iostream.h>
 #include "../src/combi.h"
 
 namespace py = pybind11;

@@ -17,6 +17,13 @@ namespace GMDH {
         return result;
     }*/
 
+    std::string GMDH::getModelName() const
+    {
+        std::string model_name = std::string(boost::typeindex::type_id_with_cvr<decltype(this)>().name());
+        model_name = model_name.substr(6, model_name.find(' ', 6) - 6);
+        return model_name;
+    }
+
     GMDH::GMDH()
     {
         level = 1;

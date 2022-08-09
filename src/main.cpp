@@ -9,15 +9,13 @@ int main() {
     o.open("../Sber.csv");
     std::string s;
     std::vector<double> v;
-    if (o.is_open())
-    {
-        while (std::getline(o, s))
-        {
+    if (o.is_open()) {
+        while (std::getline(o, s)) {
             v.push_back(std::atof(s.c_str()));
         }
     }
 
-    VectorXd x = Map<VectorXd, Unaligned>(v.data(), v.size() - 100000);
+    VectorXd x = Map<VectorXd, Unaligned>(v.data(), v.size() - 50000);
     int lags = 10;
     double validate_size = 0.2;
     double test_size = 0.33;
@@ -32,10 +30,9 @@ int main() {
     //std::cout << "Original time series:\n" << x << "\n\n";
 
     GMDH::COMBI combi;
-    std::cout << boost::typeindex::type_id_with_cvr<decltype(combi)>();
-    combi.fit(data.x_train, data.y_train, GMDH::RegularityCriterionTS(test_size));
+    combi.fit(data.x_train, data.y_train, GMDH::RegularityCriterionTS(test_size), 1, 1);
 
-    //std::cout << "The best polynom:\n" << combi.getBestPolymon() << std::endl;
+    std::cout << "The best polynom:\n" << combi.getBestPolymon() << std::endl;
 
     auto res = combi.predict(data.x_test);
     combi.save("model1.txt");
@@ -45,7 +42,7 @@ int main() {
     //std::cout << "Predicted values before model saving:\n" << res << "\n\n";
     //std::cout << "Predicted values after model loading:\n" << res2 << "\n\n";
 
-    (std::cin).get();
+    //(std::cin).get();
 
     return 0;
 }

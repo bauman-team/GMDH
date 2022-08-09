@@ -38,5 +38,4 @@ std::pair<double, VectorXd> RegularityCriterionTS::calculate(const MatrixXd& x, 
 {
     return getCriterionValue(splitTsData(x, y, test_size));
 }
-
 }

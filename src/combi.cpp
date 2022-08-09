@@ -1,13 +1,6 @@
-#include "combi.h"
-#define THREADS_USING
-#define THREADS_COUNT 8
+﻿#include "combi.h"
 
 namespace GMDH {
-
-COMBI::COMBI()
-{
-    model_name = "COMBI";
-}
 
 int COMBI::save(const std::string& path) const
 {
@@ -16,9 +9,8 @@ int COMBI::save(const std::string& path) const
     model_file.open(path);
     if (!model_file.is_open())
         status = -1;
-    else
-    {
-        model_file << model_name << "\n";
+    else {
+        model_file << this->getModelName() << "\n";
         model_file << input_cols_number << "\n";
         for (auto i : best_cols_index) model_file << i << ' ';
         model_file << "\n";
@@ -38,14 +30,12 @@ int COMBI::load(const std::string& path)
     model_file.open(path);
     if (!model_file.is_open())
         return -1;
-    else
-    {
+    else {
         std::string model_name;
         model_file >> model_name;
-        if (model_name != model_name)
+        if (model_name != getModelName())
             return -1;
-        else
-        {
+        else {
             (model_file >> input_cols_number).get();
 
             std::string cols_index_line;
@@ -81,11 +71,12 @@ VectorXd COMBI::predict(const MatrixXd& x) const
     return xx(Eigen::all, best_cols_index) * best_coeffs;
 }
 
-COMBI& COMBI::fit(MatrixXd x, VectorXd y, const Criterion& criterion)
+COMBI& COMBI::fit(MatrixXd x, VectorXd y, const Criterion& criterion, int threads, int verbose)
 {   
     //TODO: reset parameters
-    boost::asio::thread_pool pool(THREADS_COUNT); // TODO: variable for count of threads
-    boost::function<void(const MatrixXd&, const VectorXd&, const Criterion&, std::vector<std::vector<bool> >::const_iterator, 
+
+    boost::asio::thread_pool pool(threads); // TODO: variable for count of threads
+    boost::function<void(const MatrixXd&, const VectorXd&, const Criterion&, std::vector<std::vector<bool> >::const_iterator,
     std::vector<std::vector<bool> >::const_iterator, std::vector<std::pair<std::pair<double, VectorXd>, 
     std::vector<bool> >>::iterator)> calc_evaluation_coeffs = 
         [] (const MatrixXd& x, const VectorXd& y, const Criterion& criterion, std::vector<std::vector<bool> >::const_iterator begin_comb, 
@@ -97,9 +88,9 @@ COMBI& COMBI::fit(MatrixXd x, VectorXd y, const Criterion& criterion)
                     if ((*begin_comb)[j])
                         cols_index.push_back(j);
                 cols_index.push_back(x.cols() - 1);
-                MatrixXd comb_x = x(Eigen::all, cols_index);
+                //MatrixXd comb_x = x(Eigen::all, cols_index);
 
-                begin_coeff_vec->first = criterion.calculate(comb_x, y);
+                begin_coeff_vec->first = criterion.calculate(x(Eigen::all, cols_index), y);
                 begin_coeff_vec->second = *begin_comb;
             }      
         };
@@ -116,34 +107,53 @@ COMBI& COMBI::fit(MatrixXd x, VectorXd y, const Criterion& criterion)
         std::vector<std::pair<std::pair<double, VectorXd>, std::vector<bool> >> evaluation_coeffs_vec; 
         std::vector<std::pair<std::pair<double, VectorXd>, std::vector<bool> >>::const_iterator curr_level_evaluation; // TODO: add using (as typedef)
         std::vector<std::vector<bool> > combinations = getCombinations(x.cols(), level);
-#ifdef THREADS_USING
-        using T = boost::packaged_task<void>;
-        std::vector<boost::unique_future<T::result_type> > futures; // TODO: reserve??? or array
-        
-        evaluation_coeffs_vec.resize(combinations.size());
-        auto count_thread_comb = static_cast<int>(std::ceil(combinations.size() / static_cast<double>(THREADS_COUNT))); 
-        for (auto i = 0; i * count_thread_comb < combinations.size(); ++i) {
-            boost::packaged_task<void> pt(boost::bind(calc_evaluation_coeffs, xx, y, boost::ref(criterion),
-            combinations.cbegin() + count_thread_comb * i, 
-            combinations.cbegin() + std::min(static_cast<size_t>(count_thread_comb * (i + 1)), combinations.size()),
-            evaluation_coeffs_vec.begin() + count_thread_comb * i));
-            futures.push_back(pt.get_future());
-            post(pool, std::move(pt));
+
+        using namespace indicators;
+        ProgressBar bar {
+              option::BarWidth{30},
+              option::Start{"LEVEL " + std::to_string(level) + "  ["},
+              option::End{" ]"},
+              option::ShowElapsedTime{true},
+              option::ShowPercentage{true}
+              //option::ForegroundColor{Color::white},
+              //option::FontStyles{std::vector<FontStyle>{FontStyle::bold}}
+        };
+        if (verbose) {
+            show_console_cursor(false);
+            bar.set_progress(0);
         }
-        boost::when_all(futures.begin(), futures.end()).get();
-#else
-        evaluation_coeffs_vec.reserve(combinations.size());
-        for (int i = 0; i < combinations.size(); ++i)
-        {
-            std::vector<int> cols_index;
-            for (int j = 0; j < combinations[i].size(); ++j)
-                if (combinations[i][j])
-                    cols_index.push_back(j);
-            cols_index.push_back(x.cols());
-            //MatrixXd comb_x = xx(Eigen::all, cols_index); 
-            evaluation_coeffs_vec.push_back(std::pair<std::pair<double, VectorXd>, std::vector<bool> >(criterion.calculate(xx(Eigen::all, cols_index), y), combinations[i]));
+
+        if (threads > 1) {
+            using T = boost::packaged_task<void>;
+            std::vector<boost::unique_future<T::result_type> > futures; // TODO: reserve??? or array
+
+            evaluation_coeffs_vec.resize(combinations.size());
+            auto count_thread_comb = static_cast<int>(std::ceil(combinations.size() / static_cast<double>(threads)));
+            for (auto i = 0; i * count_thread_comb < combinations.size(); ++i) {
+                boost::packaged_task<void> pt(boost::bind(calc_evaluation_coeffs, xx, y, boost::ref(criterion),
+                    combinations.cbegin() + count_thread_comb * i,
+                    combinations.cbegin() + std::min(static_cast<size_t>(count_thread_comb * (i + 1)), combinations.size()),
+                    evaluation_coeffs_vec.begin() + count_thread_comb * i));
+                futures.push_back(pt.get_future());
+                post(pool, std::move(pt));
+            }
+            boost::when_all(futures.begin(), futures.end()).get();
         }
-#endif
+        else {
+            evaluation_coeffs_vec.reserve(combinations.size());
+            for (int i = 0; i < combinations.size(); ++i) {
+                std::vector<int> cols_index;
+                for (int j = 0; j < combinations[i].size(); ++j)
+                    if (combinations[i][j])
+                        cols_index.push_back(j);
+                cols_index.push_back(x.cols());
+                evaluation_coeffs_vec.push_back(std::pair<std::pair<double, VectorXd>, std::vector<bool> >(criterion.calculate(xx(Eigen::all, cols_index), y), combinations[i]));
+                if (verbose) {
+                    bar.set_progress(100.0 * (i + 1) / combinations.size());
+                }
+            }
+        }
+
         // > or >= ?
         if (last_level_evaluation > 
         (curr_level_evaluation = std::min_element(
@@ -158,6 +168,7 @@ COMBI& COMBI::fit(MatrixXd x, VectorXd y, const Criterion& criterion)
             best_coeffs = curr_level_evaluation->first.second;
         }
         else {
+            show_console_cursor(true);
             break; // TODO: fix bad code style
         }
         ++level;
@@ -171,10 +182,8 @@ COMBI& COMBI::fit(MatrixXd x, VectorXd y, const Criterion& criterion)
 std::string COMBI::getBestPolymon() const
 {
     std::string polynom_str = "y =";
-    for (int i = 0; i < best_cols_index.size(); ++i)
-    {
-        if (best_coeffs[i] > 0)
-        {
+    for (int i = 0; i < best_cols_index.size(); ++i) {
+        if (best_coeffs[i] > 0) {
             if (i > 0)
                 polynom_str += " + ";
             else
@@ -209,5 +218,4 @@ std::vector<int> COMBI::polinomToIndexes(const std::vector<bool>& polinom) const
     cols_index.push_back(polinom.size());
     return cols_index;
 }
-
 }
