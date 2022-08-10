@@ -2,40 +2,53 @@
 
 namespace GMDH {
 
-RegularityCriterion::RegularityCriterion(double _test_size, bool _shuffle, int _random_seed) : RegularityCriterionTS(_test_size)
+RegularityCriterion::RegularityCriterion(double _testSize, Solver _solver, bool _shuffle, int _randomSeed) : RegularityCriterionTS(_testSize)
 {
+    solver = _solver;
     shuffle = _shuffle;
-    random_seed = _random_seed;
+    randomSeed = _randomSeed;
 }
 
-VectorXd Criterion::internalCriterion(const MatrixXd& x_train, const VectorXd& y_train) const
+VectorXd Criterion::findBestCoeffs(const MatrixXd& xTrain, const VectorXd& yTrain) const
 { 
-    return x_train.colPivHouseholderQr().solve(y_train); // TODO: add parameter to choose solve algorithm
+    VectorXd coeffs;
+    switch (solver) {
+    case Solver::accurate:
+        coeffs = xTrain.fullPivHouseholderQr().solve(yTrain);
+        break;
+    case Solver::balanced:
+        coeffs = xTrain.colPivHouseholderQr().solve(yTrain);
+        break;
+    case Solver::fast:
+        coeffs =  xTrain.householderQr().solve(yTrain);
+        break;
+    }
+    return coeffs;
 }
 
 std::pair<double, VectorXd> RegularityCriterion::calculate(const MatrixXd& x, const VectorXd& y) const
 {
-    return getCriterionValue(splitData(x, y, test_size, shuffle, random_seed));
+    return getCriterionValue(splitData(x, y, testSize, shuffle, randomSeed));
 }
 
-std::pair<double, VectorXd> RegularityCriterionTS::getCriterionValue(const splitted_data& data) const
+std::pair<double, VectorXd> RegularityCriterionTS::getCriterionValue(const SplittedData& data) const
 {
-    VectorXd coeffs = internalCriterion(data.x_train, data.y_train);
-    //vec coeffs(data.x_test.n_cols, fill::randn);
-    VectorXd y_pred = data.x_test * coeffs;
-    return std::pair<double, VectorXd>(((data.y_test - y_pred).array().square().sum() / data.y_test.array().square().sum()), coeffs);
+    VectorXd coeffs = findBestCoeffs(data.xTrain, data.yTrain);
+    VectorXd yPred = data.xTest * coeffs;
+    return std::pair<double, VectorXd>(((data.yTest - yPred).array().square().sum() / data.yTest.array().square().sum()), coeffs);
 }
 
-RegularityCriterionTS::RegularityCriterionTS(double _test_size)
+RegularityCriterionTS::RegularityCriterionTS(double _testSize, Solver _solver)
 {
-    if (_test_size > 0 && _test_size < 1)
-        test_size = _test_size;
-    else
-        throw; // TODO: exception???
+    solver = _solver;
+    if (_testSize > 0 && _testSize < 1)
+        testSize = _testSize;
+    else // TODO: add warning about incorrect test_size value
+        testSize = 0.33; 
 }
 
 std::pair<double, VectorXd> RegularityCriterionTS::calculate(const MatrixXd& x, const VectorXd& y) const
 {
-    return getCriterionValue(splitTsData(x, y, test_size));
+    return getCriterionValue(splitTimeSeries(x, y, testSize));
 }
 }

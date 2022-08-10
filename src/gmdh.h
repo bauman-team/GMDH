@@ -28,18 +28,18 @@ using namespace Eigen;
 
 class Criterion;
 
-struct splitted_data {
-    MatrixXd x_train;
-    MatrixXd x_test;
-    VectorXd y_train;
-    VectorXd y_test;
+struct SplittedData {
+    MatrixXd xTrain;
+    MatrixXd xTest;
+    VectorXd yTrain;
+    VectorXd yTest;
 };
 
 class GMDH {
 
 protected:
     int level;
-    virtual std::string getModelName() const; // TODO: fix bug with always returning GMDH::GMDH 
+    virtual std::string getModelName() const;
 public:
     GMDH();
     virtual int save(const std::string& path) const = 0;
@@ -47,14 +47,13 @@ public:
     virtual GMDH& fit(MatrixXd x, VectorXd y, const Criterion& criterion, int threads = 1, int verbose = 0) = 0;
     virtual double predict(const RowVectorXd& x) const = 0;
     virtual VectorXd predict(const MatrixXd& x) const = 0;
-    virtual std::string getBestPolymon() const = 0;
+    virtual std::string getBestPolynomial() const = 0;
 };
-
 
 
 //mat polynomailFeatures(const mat X, int max_degree);
 std::pair<MatrixXd, VectorXd> convertToTimeSeries(VectorXd x, int lags);
-splitted_data splitTsData(MatrixXd x, VectorXd y, double validate_size = 0.2);
-splitted_data splitData(MatrixXd x, VectorXd y, double validate_size = 0.2, bool shuffle = true, int _random_seed = 0);
+SplittedData splitTimeSeries(MatrixXd x, VectorXd y, double testSize = 0.2);
+SplittedData splitData(MatrixXd x, VectorXd y, double testSize = 0.2, bool shuffle = true, int randomSeed = 0);
 
 }

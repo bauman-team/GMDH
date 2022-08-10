@@ -4,55 +4,54 @@ namespace GMDH {
 
 int COMBI::save(const std::string& path) const
 {
-    int status = 0;
-    std::ofstream model_file;
-    model_file.open(path);
-    if (!model_file.is_open())
-        status = -1;
+    std::ofstream modelFile;
+    modelFile.open(path);
+    if (!modelFile.is_open())
+        return -1;
     else {
-        model_file << this->getModelName() << "\n";
-        model_file << input_cols_number << "\n";
-        for (auto i : best_cols_index) model_file << i << ' ';
-        model_file << "\n";
-        for (auto i : best_coeffs) model_file << i << ' ';
-        model_file << "\n";
-        model_file.close();
+        modelFile << getModelName() << "\n";
+        modelFile << inputColsNumber << "\n";
+        for (auto i : bestColsIndexes) modelFile << i << ' ';
+        modelFile << "\n";
+        for (auto i : bestCoeffs) modelFile << i << ' ';
+        modelFile << "\n";
+        modelFile.close();
     }
-    return status;
+    return 0;
 }
 
 int COMBI::load(const std::string& path)
 {
-    input_cols_number = 0;
-    best_cols_index.clear();
+    inputColsNumber = 0;
+    bestColsIndexes.clear();
 
-    std::ifstream model_file;
-    model_file.open(path);
-    if (!model_file.is_open())
+    std::ifstream modelFile;
+    modelFile.open(path);
+    if (!modelFile.is_open())
         return -1;
     else {
-        std::string model_name;
-        model_file >> model_name;
-        if (model_name != getModelName())
+        std::string modelName;
+        modelFile >> modelName;
+        if (modelName != getModelName())
             return -1;
         else {
-            (model_file >> input_cols_number).get();
+            (modelFile >> inputColsNumber).get();
 
-            std::string cols_index_line;
-            std::getline(model_file, cols_index_line);
-            std::stringstream index_stream(cols_index_line);
+            std::string colsIndexesLine;
+            std::getline(modelFile, colsIndexesLine);
+            std::stringstream indexStream(colsIndexesLine);
             int index;
-            while (index_stream >> index)
-                best_cols_index.push_back(index);
+            while (indexStream >> index)
+                bestColsIndexes.push_back(index);
 
-            std::string coeffs_line;
+            std::string coeffsLine;
             std::vector<double> coeffs;
-            std::getline(model_file, coeffs_line);
-            std::stringstream coeffs_stream(coeffs_line);
+            std::getline(modelFile, coeffsLine);
+            std::stringstream coeffsStream(coeffsLine);
             double coeff;
-            while (coeffs_stream >> coeff)
+            while (coeffsStream >> coeff)
                 coeffs.push_back(coeff);
-            best_coeffs(coeffs);
+            bestCoeffs(coeffs);
         }
     }
     return 0;
@@ -65,107 +64,106 @@ double COMBI::predict(const RowVectorXd& x) const
 
 VectorXd COMBI::predict(const MatrixXd& x) const
 {
-    MatrixXd xx(x.rows(), x.cols() + 1);
-    xx.col(x.cols()).setOnes();
-    xx.leftCols(x.cols()) = x;
-    return xx(Eigen::all, best_cols_index) * best_coeffs;
+    MatrixXd modifiedX(x.rows(), x.cols() + 1);
+    modifiedX.col(x.cols()).setOnes();
+    modifiedX.leftCols(x.cols()) = x;
+    return modifiedX(Eigen::all, bestColsIndexes) * bestCoeffs;
 }
 
 COMBI& COMBI::fit(MatrixXd x, VectorXd y, const Criterion& criterion, int threads, int verbose)
 {   
-    //TODO: reset parameters
-
-    boost::asio::thread_pool pool(threads); // TODO: variable for count of threads
+    level = 1;
+    threads = std::min(threads, (int)std::thread::hardware_concurrency());
+    boost::asio::thread_pool pool(threads);
     boost::function<void(const MatrixXd&, const VectorXd&, const Criterion&, std::vector<std::vector<bool> >::const_iterator,
     std::vector<std::vector<bool> >::const_iterator, std::vector<std::pair<std::pair<double, VectorXd>, 
-    std::vector<bool> >>::iterator)> calc_evaluation_coeffs = 
-        [] (const MatrixXd& x, const VectorXd& y, const Criterion& criterion, std::vector<std::vector<bool> >::const_iterator begin_comb, 
-        std::vector<std::vector<bool> >::const_iterator end_comb, std::vector<std::pair<std::pair<double, VectorXd>, 
-        std::vector<bool> >>::iterator begin_coeff_vec) {
-            for (; begin_comb < end_comb; ++begin_comb, ++begin_coeff_vec) {
-                std::vector<int> cols_index; // TODO: typedef (using) for all types
-                for (int j = 0; j < begin_comb->size(); ++j)
-                    if ((*begin_comb)[j])
-                        cols_index.push_back(j);
-                cols_index.push_back(x.cols() - 1);
-                //MatrixXd comb_x = x(Eigen::all, cols_index);
-
-                begin_coeff_vec->first = criterion.calculate(x(Eigen::all, cols_index), y);
-                begin_coeff_vec->second = *begin_comb;
+    std::vector<bool> >>::iterator)> calcEvaluationCoeffs = 
+        [] (const MatrixXd& x, const VectorXd& y, const Criterion& criterion, std::vector<std::vector<bool> >::const_iterator beginComb, 
+        std::vector<std::vector<bool> >::const_iterator endComb, std::vector<std::pair<std::pair<double, VectorXd>, 
+        std::vector<bool> >>::iterator beginCoeffsVec) {
+            for (; beginComb < endComb; ++beginComb, ++beginCoeffsVec) {
+                std::vector<int> colsIndexes; // TODO: typedef (using) for all types
+                for (int j = 0; j < beginComb->size(); ++j)
+                    if ((*beginComb)[j])
+                        colsIndexes.push_back(j);
+                colsIndexes.push_back(x.cols() - 1);
+                beginCoeffsVec->first = criterion.calculate(x(Eigen::all, colsIndexes), y);
+                beginCoeffsVec->second = *beginComb;
             }      
         };
 
-    double last_level_evaluation = std::numeric_limits<double>::max();
-    std::vector<bool> best_polinom;
-    input_cols_number = x.cols();
+    double lastLevelEvaluation = std::numeric_limits<double>::max();
+    std::vector<bool> bestPolynomial;
+    inputColsNumber = x.cols();
 
-    MatrixXd xx(x.rows(), x.cols() + 1);
-    xx.col(x.cols()).setOnes();
-    xx.leftCols(x.cols()) = x;
+    MatrixXd modifiedX(x.rows(), x.cols() + 1);
+    modifiedX.col(x.cols()).setOnes();
+    modifiedX.leftCols(x.cols()) = x;
 
-    while (level < xx.cols()) {
-        std::vector<std::pair<std::pair<double, VectorXd>, std::vector<bool> >> evaluation_coeffs_vec; 
-        std::vector<std::pair<std::pair<double, VectorXd>, std::vector<bool> >>::const_iterator curr_level_evaluation; // TODO: add using (as typedef)
-        std::vector<std::vector<bool> > combinations = getCombinations(x.cols(), level);
+    while (level < modifiedX.cols()) {
+        std::vector<std::pair<std::pair<double, VectorXd>, std::vector<bool> >> evaluationCoeffsVec; 
+        std::vector<std::pair<std::pair<double, VectorXd>, std::vector<bool> >>::const_iterator currLevelEvaluation; // TODO: add using (as typedef)
+        std::vector<std::vector<bool>> combinations = getCombinations(x.cols(), level);
 
         using namespace indicators;
-        ProgressBar bar {
+        ProgressBar progressBar {
               option::BarWidth{30},
-              option::Start{"LEVEL " + std::to_string(level) + "  ["},
-              option::End{" ]"},
+              option::Start{"LEVEL " + std::to_string(level) + " ["},
+              option::End{"]"},
               option::ShowElapsedTime{true},
-              option::ShowPercentage{true}
+              option::ShowPercentage{true},
+              option::Lead{">"}
               //option::ForegroundColor{Color::white},
               //option::FontStyles{std::vector<FontStyle>{FontStyle::bold}}
         };
         if (verbose) {
             show_console_cursor(false);
-            bar.set_progress(0);
+            progressBar.set_progress(0);
         }
 
         if (threads > 1) {
             using T = boost::packaged_task<void>;
             std::vector<boost::unique_future<T::result_type> > futures; // TODO: reserve??? or array
 
-            evaluation_coeffs_vec.resize(combinations.size());
-            auto count_thread_comb = static_cast<int>(std::ceil(combinations.size() / static_cast<double>(threads)));
-            for (auto i = 0; i * count_thread_comb < combinations.size(); ++i) {
-                boost::packaged_task<void> pt(boost::bind(calc_evaluation_coeffs, xx, y, boost::ref(criterion),
-                    combinations.cbegin() + count_thread_comb * i,
-                    combinations.cbegin() + std::min(static_cast<size_t>(count_thread_comb * (i + 1)), combinations.size()),
-                    evaluation_coeffs_vec.begin() + count_thread_comb * i));
+            evaluationCoeffsVec.resize(combinations.size());
+            auto combsPortion = static_cast<int>(std::ceil(combinations.size() / static_cast<double>(threads)));
+            for (auto i = 0; i * combsPortion < combinations.size(); ++i) {
+                boost::packaged_task<void> pt(boost::bind(calcEvaluationCoeffs, modifiedX, y, boost::ref(criterion),
+                    combinations.cbegin() + combsPortion * i,
+                    combinations.cbegin() + std::min(static_cast<size_t>(combsPortion * (i + 1)), combinations.size()),
+                    evaluationCoeffsVec.begin() + combsPortion * i));
                 futures.push_back(pt.get_future());
                 post(pool, std::move(pt));
             }
             boost::when_all(futures.begin(), futures.end()).get();
         }
         else {
-            evaluation_coeffs_vec.reserve(combinations.size());
+            evaluationCoeffsVec.reserve(combinations.size());
             for (int i = 0; i < combinations.size(); ++i) {
-                std::vector<int> cols_index;
+                std::vector<int> colsIndexes;
                 for (int j = 0; j < combinations[i].size(); ++j)
                     if (combinations[i][j])
-                        cols_index.push_back(j);
-                cols_index.push_back(x.cols());
-                evaluation_coeffs_vec.push_back(std::pair<std::pair<double, VectorXd>, std::vector<bool> >(criterion.calculate(xx(Eigen::all, cols_index), y), combinations[i]));
+                        colsIndexes.push_back(j);
+                colsIndexes.push_back(x.cols());
+                evaluationCoeffsVec.push_back(std::pair<std::pair<double, VectorXd>, std::vector<bool> >(criterion.calculate(modifiedX(Eigen::all, colsIndexes), y), combinations[i]));
                 if (verbose) {
-                    bar.set_progress(100.0 * (i + 1) / combinations.size());
+                    progressBar.set_progress(100.0 * (i + 1) / combinations.size());
                 }
             }
         }
 
         // > or >= ?
-        if (last_level_evaluation > 
-        (curr_level_evaluation = std::min_element(
-        std::cbegin(evaluation_coeffs_vec), 
-        std::cend(evaluation_coeffs_vec), 
+        if (lastLevelEvaluation > 
+        (currLevelEvaluation = std::min_element(
+        std::cbegin(evaluationCoeffsVec), 
+        std::cend(evaluationCoeffsVec), 
         [](std::pair<std::pair<double, VectorXd>, std::vector<bool> > first, 
         std::pair<std::pair<double, VectorXd>, std::vector<bool> > second) { 
             return first.first.first < second.first.first;
         }))->first.first) {
-            last_level_evaluation = curr_level_evaluation->first.first;
-            best_polinom = curr_level_evaluation->second;
-            best_coeffs = curr_level_evaluation->first.second;
+            lastLevelEvaluation = currLevelEvaluation->first.first;
+            bestPolynomial = currLevelEvaluation->second;
+            bestCoeffs = currLevelEvaluation->first.second;
         }
         else {
             show_console_cursor(true);
@@ -174,48 +172,48 @@ COMBI& COMBI::fit(MatrixXd x, VectorXd y, const Criterion& criterion, int thread
         ++level;
     }
 
-    best_cols_index = polinomToIndexes(best_polinom);
+    bestColsIndexes = polynomialToIndexes(bestPolynomial);
 
     return *this;
 }
 
-std::string COMBI::getBestPolymon() const
+std::string COMBI::getBestPolynomial() const
 {
-    std::string polynom_str = "y =";
-    for (int i = 0; i < best_cols_index.size(); ++i) {
-        if (best_coeffs[i] > 0) {
+    std::string polynomialStr = "y =";
+    for (int i = 0; i < bestColsIndexes.size(); ++i) {
+        if (bestCoeffs[i] > 0) {
             if (i > 0)
-                polynom_str += " + ";
+                polynomialStr += " + ";
             else
-                polynom_str += " ";
+                polynomialStr += " ";
         }
         else
-            polynom_str += " - ";
-        polynom_str += std::to_string(abs(best_coeffs[i]));
-        if (i != best_cols_index.size() - 1)
-            polynom_str += "*x" + std::to_string(best_cols_index[i] + 1);
+            polynomialStr += " - ";
+        polynomialStr += std::to_string(abs(bestCoeffs[i]));
+        if (i != bestColsIndexes.size() - 1)
+            polynomialStr += "*x" + std::to_string(bestColsIndexes[i] + 1);
     }
-    return polynom_str;
+    return polynomialStr;
 }
 
-std::vector<std::vector<bool>> COMBI::getCombinations(int n, int k) const
+std::vector<std::vector<bool>> COMBI::getCombinations(int n_cols, int level) const
 {
     std::vector<std::vector<bool>> combinations;
-    std::vector<bool> combination(n);
-    std::fill(combination.begin(), combination.begin() + k, 1);
+    std::vector<bool> combination(n_cols);
+    std::fill(combination.begin(), combination.begin() + level, 1);
     do {
         combinations.push_back(combination);
     } while (std::prev_permutation(combination.begin(), combination.end()));
     return combinations;
 }
 
-std::vector<int> COMBI::polinomToIndexes(const std::vector<bool>& polinom) const
+std::vector<int> COMBI::polynomialToIndexes(const std::vector<bool>& polynomial) const
 {
-    std::vector<int> cols_index;
-    for (int i = 0; i < polinom.size(); ++i)
-        if (polinom[i])
-            cols_index.push_back(i);
-    cols_index.push_back(polinom.size());
-    return cols_index;
+    std::vector<int> colsIndexes;
+    for (int i = 0; i < polynomial.size(); ++i)
+        if (polynomial[i])
+            colsIndexes.push_back(i);
+    colsIndexes.push_back(polynomial.size());
+    return colsIndexes;
 }
 }

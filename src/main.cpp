@@ -5,22 +5,22 @@ int main() {
 
     using namespace Eigen;
 
-    std::ifstream o;
-    o.open("../Sber.csv");
-    std::string s;
-    std::vector<double> v;
-    if (o.is_open()) {
-        while (std::getline(o, s)) {
-            v.push_back(std::atof(s.c_str()));
+    std::ifstream dataStream;
+    dataStream.open("../Sber.csv");
+    std::string dataLine;
+    std::vector<double> dataValues;
+    if (dataStream.is_open()) {
+        while (std::getline(dataStream, dataLine)) {
+            dataValues.push_back(std::atof(dataLine.c_str()));
         }
     }
 
-    VectorXd x = Map<VectorXd, Unaligned>(v.data(), v.size() - 50000);
+    VectorXd data = Map<VectorXd, Unaligned>(dataValues.data(), dataValues.size() - 50000);
     int lags = 10;
-    double validate_size = 0.2;
-    double test_size = 0.33;
-    std::pair<MatrixXd, VectorXd> ts = GMDH::convertToTimeSeries(x, lags);
-    GMDH::splitted_data data = GMDH::splitTsData(ts.first, ts.second, validate_size);
+    double validateSize = 0.2;
+    double testSize = 0.33;
+    std::pair<MatrixXd, VectorXd> timeSeries = GMDH::convertToTimeSeries(data, lags);
+    GMDH::SplittedData splittedData = GMDH::splitTimeSeries(timeSeries.first, timeSeries.second, validateSize);
     //std::cout << data.x_train << "\n\n";
     //std::cout << data.x_test << "\n\n";
     //std::cout << data.y_train << "\n\n";
@@ -30,14 +30,14 @@ int main() {
     //std::cout << "Original time series:\n" << x << "\n\n";
 
     GMDH::COMBI combi;
-    combi.fit(data.x_train, data.y_train, GMDH::RegularityCriterionTS(test_size), 1, 1);
+    combi.fit(splittedData.xTrain, splittedData.yTrain, GMDH::RegularityCriterionTS(testSize, GMDH::Solver::fast), 1, 0);
 
-    std::cout << "The best polynom:\n" << combi.getBestPolymon() << std::endl;
+    std::cout << "The best polynom:\n" << combi.getBestPolynomial() << std::endl;
 
-    auto res = combi.predict(data.x_test);
+    auto res = combi.predict(splittedData.xTest);
     combi.save("model1.txt");
     combi.load("model1.txt");
-    auto res2 = combi.predict(data.x_test);
+    auto res2 = combi.predict(splittedData.xTest);
 
     //std::cout << "Predicted values before model saving:\n" << res << "\n\n";
     //std::cout << "Predicted values after model loading:\n" << res2 << "\n\n";

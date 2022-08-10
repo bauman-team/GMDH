@@ -11,23 +11,27 @@ PYBIND11_MODULE(gmdhpy, m)
 {
     using namespace std;
     
-    py::class_<GMDH::splitted_data>(m, "splitted_data")
-        .def_readwrite("x_train", &GMDH::splitted_data::x_train)
-        .def_readwrite("x_test", &GMDH::splitted_data::x_test)
-        .def_readwrite("y_train", &GMDH::splitted_data::y_train)
-        .def_readwrite("y_test", &GMDH::splitted_data::y_test); 
+    py::class_<GMDH::SplittedData>(m, "splitted_data")
+        .def_readwrite("x_train", &GMDH::SplittedData::xTrain)
+        .def_readwrite("x_test", &GMDH::SplittedData::xTest)
+        .def_readwrite("y_train", &GMDH::SplittedData::yTrain)
+        .def_readwrite("y_test", &GMDH::SplittedData::yTest); 
 
+    py::enum_<GMDH::Solver>(m, "Solver")
+        .value("fast", GMDH::Solver::fast)
+        .value("balanced", GMDH::Solver::balanced)
+        .value("accurate", GMDH::Solver::accurate)
+        .export_values();
 
     py::class_<GMDH::Criterion>(m, "Criterion");
 
-
     py::class_<GMDH::RegularityCriterionTS, GMDH::Criterion>(m, "RegularityCriterionTS")
-        .def(py::init<double>())
+        .def(py::init<double, GMDH::Solver>())
         .def("calculate", &GMDH::RegularityCriterionTS::calculate);
 
 
     py::class_<GMDH::RegularityCriterion, GMDH::RegularityCriterionTS, GMDH::Criterion>(m, "RegularityCriterion")
-        .def(py::init<double, bool, int>())
+        .def(py::init<double, GMDH::Solver, bool, int>())
         .def("calculate", &GMDH::RegularityCriterion::calculate);
 
 
@@ -40,13 +44,13 @@ PYBIND11_MODULE(gmdhpy, m)
         .def("load", &GMDH::COMBI::load)
         .def("predict", static_cast<double (GMDH::COMBI::*) (const Eigen::RowVectorXd&) const>(&GMDH::COMBI::predict))
         .def("predict", static_cast<Eigen::VectorXd (GMDH::COMBI::*) (const Eigen::MatrixXd&) const>(&GMDH::COMBI::predict))
-        .def("fit", &GMDH::COMBI::fit)
-        .def("getBestPolymon", &GMDH::COMBI::getBestPolymon);
+        .def("fit", &GMDH::COMBI::fit, py::call_guard<py::scoped_ostream_redirect, py::scoped_estream_redirect>())
+        .def("getBestPolymon", &GMDH::COMBI::getBestPolynomial);
 
 
     //m.def("polynomailFeatures", &polynomailFeatures);
     m.def("convertToTimeSeries", &GMDH::convertToTimeSeries);
-    m.def("splitTsData", &GMDH::splitTsData);
+    m.def("splitTsData", &GMDH::splitTimeSeries);
     m.def("splitData", &GMDH::splitData);
 
 }

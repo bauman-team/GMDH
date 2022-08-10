@@ -3,32 +3,17 @@
 
 namespace GMDH {
 
-    /*unsigned long COMBI::nChoosek(unsigned long n, unsigned long k)
-    {
-        if (k > n) return 0;
-        if (k * 2 > n) k = n - k;
-        if (k == 0) return 1;
-
-        unsigned long result = n;
-        for(unsigned long i = 2; i <= k; ++i) {
-            result /= i;
-            result *= (n - i + 1);
-        }
-        return result;
-    }*/
-
     std::string GMDH::getModelName() const
     {
-        std::string model_name = std::string(boost::typeindex::type_id_with_cvr<decltype(this)>().name());
-        model_name = model_name.substr(6, model_name.find(' ', 6) - 6);
-        return model_name;
+        std::string modelName = std::string(boost::typeindex::type_id_runtime(*this).pretty_name());
+        modelName = modelName.substr(modelName.find_last_of(':') + 1);
+        return modelName;
     }
 
     GMDH::GMDH()
     {
         level = 1;
     }
-
 
     /*mat polynomailFeatures(const mat X, int max_degree) {
         int n = X.n_cols;
@@ -66,31 +51,30 @@ namespace GMDH {
 
     std::pair<MatrixXd, VectorXd> convertToTimeSeries(VectorXd x, int lags)
     {
-        VectorXd y_ts = x.tail(x.size() - lags);
-        MatrixXd x_ts(x.size() - lags, lags);
-        for (int i = 0; i < x.size() - lags; ++i) {
-            x_ts.row(i) = x.segment(i, lags);
-        }
-        return std::pair<MatrixXd, VectorXd>(x_ts, y_ts);
+        VectorXd yTimeSeries = x.tail(x.size() - lags);
+        MatrixXd xTimeSeries(x.size() - lags, lags);
+        for (int i = 0; i < x.size() - lags; ++i)
+            xTimeSeries.row(i) = x.segment(i, lags);
+        return std::pair<MatrixXd, VectorXd>(xTimeSeries, yTimeSeries);
     }
 
-    splitted_data splitTsData(MatrixXd x, VectorXd y, double test_size)
+    SplittedData splitTimeSeries(MatrixXd x, VectorXd y, double testSize)
     {
-        splitted_data data;
-        data.x_train = x.topRows(x.rows() - round(x.rows() * test_size));
-        data.x_test = x.bottomRows(round(x.rows() * test_size));
-        data.y_train = y.head(y.size() - round(y.size() * test_size));
-        data.y_test = y.tail(round(y.size() * test_size));
+        SplittedData data;
+        data.xTrain = x.topRows(x.rows() - round(x.rows() * testSize));
+        data.xTest = x.bottomRows(round(x.rows() * testSize));
+        data.yTrain = y.head(y.size() - round(y.size() * testSize));
+        data.yTest = y.tail(round(y.size() * testSize));
         return data;
     }
 
-    splitted_data splitData(MatrixXd x, VectorXd y, double test_size, bool shuffle, int _random_seed)
+    SplittedData splitData(MatrixXd x, VectorXd y, double testSize, bool shuffle, int randomSeed)
     {
         if (!shuffle)
-            return splitTsData(x, y, test_size);
+            return splitTimeSeries(x, y, testSize);
 
-        if (_random_seed != 0)
-            std::srand(_random_seed);
+        if (randomSeed != 0)
+            std::srand(randomSeed);
         else
             std::srand(std::time(NULL));
 
@@ -99,14 +83,14 @@ namespace GMDH {
         std::iota(shuffled_rows_indexes.begin(), shuffled_rows_indexes.end(), 0);
         std::random_shuffle(shuffled_rows_indexes.begin(), shuffled_rows_indexes.end());
 
-        std::vector<int> train_indexes(shuffled_rows_indexes.begin(), shuffled_rows_indexes.end() - round(x.rows() * test_size));
-        std::vector<int> test_indexes(shuffled_rows_indexes.end() - round(x.rows() * test_size), shuffled_rows_indexes.end());
+        std::vector<int> train_indexes(shuffled_rows_indexes.begin(), shuffled_rows_indexes.end() - round(x.rows() * testSize));
+        std::vector<int> test_indexes(shuffled_rows_indexes.end() - round(x.rows() * testSize), shuffled_rows_indexes.end());
         
-        splitted_data data;
-        data.x_train = x(train_indexes, Eigen::all);
-        data.x_test = x(test_indexes, Eigen::all);
-        data.y_train = y(train_indexes);
-        data.y_test = y(test_indexes);
+        SplittedData data;
+        data.xTrain = x(train_indexes, Eigen::all);
+        data.xTest = x(test_indexes, Eigen::all);
+        data.yTrain = y(train_indexes);
+        data.yTest = y(test_indexes);
 
         return data;
     }
