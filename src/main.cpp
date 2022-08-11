@@ -6,7 +6,7 @@ int main() {
     using namespace Eigen;
 
     std::ifstream dataStream;
-    dataStream.open("../Sber.csv");
+    dataStream.open("../examples/Sber.csv");
     std::string dataLine;
     std::vector<double> dataValues;
     if (dataStream.is_open()) {
@@ -30,7 +30,7 @@ int main() {
     //std::cout << "Original time series:\n" << x << "\n\n";
 
     GMDH::COMBI combi;
-    combi.fit(splittedData.xTrain, splittedData.yTrain, GMDH::RegularityCriterionTS(testSize, GMDH::Solver::fast), 1, 0);
+    combi.fit(splittedData.xTrain, splittedData.yTrain, GMDH::RegularityCriterionTS(testSize, GMDH::Solver::fast), 1, 1);
 
     std::cout << "The best polynom:\n" << combi.getBestPolynomial() << std::endl;
 

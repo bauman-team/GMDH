@@ -73,20 +73,19 @@ VectorXd COMBI::predict(const MatrixXd& x) const
 COMBI& COMBI::fit(MatrixXd x, VectorXd y, const Criterion& criterion, int threads, int verbose)
 {   
     level = 1;
-    threads = std::min(threads, (int)std::thread::hardware_concurrency());
+    if (threads == -1)
+        threads = std::thread::hardware_concurrency();
+    else
+        threads = std::min(threads, (int)std::thread::hardware_concurrency());
     boost::asio::thread_pool pool(threads);
     boost::function<void(const MatrixXd&, const VectorXd&, const Criterion&, std::vector<std::vector<bool> >::const_iterator,
     std::vector<std::vector<bool> >::const_iterator, std::vector<std::pair<std::pair<double, VectorXd>, 
     std::vector<bool> >>::iterator)> calcEvaluationCoeffs = 
-        [] (const MatrixXd& x, const VectorXd& y, const Criterion& criterion, std::vector<std::vector<bool> >::const_iterator beginComb, 
+        [polynomialToIndexes=&polynomialToIndexes] (const MatrixXd& x, const VectorXd& y, const Criterion& criterion, std::vector<std::vector<bool> >::const_iterator beginComb, 
         std::vector<std::vector<bool> >::const_iterator endComb, std::vector<std::pair<std::pair<double, VectorXd>, 
         std::vector<bool> >>::iterator beginCoeffsVec) {
             for (; beginComb < endComb; ++beginComb, ++beginCoeffsVec) {
-                std::vector<int> colsIndexes; // TODO: typedef (using) for all types
-                for (int j = 0; j < beginComb->size(); ++j)
-                    if ((*beginComb)[j])
-                        colsIndexes.push_back(j);
-                colsIndexes.push_back(x.cols() - 1);
+                std::vector<int> colsIndexes = polynomialToIndexes(*beginComb); // TODO: typedef (using) for all types
                 beginCoeffsVec->first = criterion.calculate(x(Eigen::all, colsIndexes), y);
                 beginCoeffsVec->second = *beginComb;
             }      
@@ -108,13 +107,11 @@ COMBI& COMBI::fit(MatrixXd x, VectorXd y, const Criterion& criterion, int thread
         using namespace indicators;
         ProgressBar progressBar {
               option::BarWidth{30},
-              option::Start{"LEVEL " + std::to_string(level) + " ["},
+              option::Start{"LEVEL " + std::to_string(level) + " (" + std::to_string(combinations.size())  + " combinations) ["},
               option::End{"]"},
               option::ShowElapsedTime{true},
               option::ShowPercentage{true},
               option::Lead{">"}
-              //option::ForegroundColor{Color::white},
-              //option::FontStyles{std::vector<FontStyle>{FontStyle::bold}}
         };
         if (verbose) {
             show_console_cursor(false);
@@ -140,11 +137,7 @@ COMBI& COMBI::fit(MatrixXd x, VectorXd y, const Criterion& criterion, int thread
         else {
             evaluationCoeffsVec.reserve(combinations.size());
             for (int i = 0; i < combinations.size(); ++i) {
-                std::vector<int> colsIndexes;
-                for (int j = 0; j < combinations[i].size(); ++j)
-                    if (combinations[i][j])
-                        colsIndexes.push_back(j);
-                colsIndexes.push_back(x.cols());
+                std::vector<int> colsIndexes = polynomialToIndexes(combinations[i]);
                 evaluationCoeffsVec.push_back(std::pair<std::pair<double, VectorXd>, std::vector<bool> >(criterion.calculate(modifiedX(Eigen::all, colsIndexes), y), combinations[i]));
                 if (verbose) {
                     progressBar.set_progress(100.0 * (i + 1) / combinations.size());
@@ -207,7 +200,7 @@ std::vector<std::vector<bool>> COMBI::getCombinations(int n_cols, int level) con
     return combinations;
 }
 
-std::vector<int> COMBI::polynomialToIndexes(const std::vector<bool>& polynomial) const
+std::vector<int> COMBI::polynomialToIndexes(const std::vector<bool>& polynomial)
 {
     std::vector<int> colsIndexes;
     for (int i = 0; i < polynomial.size(); ++i)

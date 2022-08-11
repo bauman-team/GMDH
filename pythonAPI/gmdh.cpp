@@ -52,5 +52,4 @@ PYBIND11_MODULE(gmdhpy, m)
     m.def("convertToTimeSeries", &GMDH::convertToTimeSeries);
     m.def("splitTsData", &GMDH::splitTimeSeries);
     m.def("splitData", &GMDH::splitData);
-
 }

@@ -11,6 +11,7 @@
 #include <algorithm>
 
 #include <Eigen/Dense>
+
 #include <boost/asio.hpp>
 #include <boost/function.hpp>
 #include <boost/bind/bind.hpp>

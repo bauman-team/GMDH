@@ -8,7 +8,7 @@ class COMBI : public GMDH {
     int inputColsNumber;
 
     std::vector<std::vector<bool>> getCombinations(int n_cols, int level) const;
-    std::vector<int> polynomialToIndexes(const std::vector<bool>& polynomial) const;
+    static std::vector<int> polynomialToIndexes(const std::vector<bool>& polynomial);
         
 public:
     int save(const std::string& path) const override;
