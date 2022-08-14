@@ -54,12 +54,7 @@ int COMBI::load(const std::string& path)
             while (coeffsStream >> coeff)
                 coeffs.push_back(coeff);
 
-            double* ptr_data = &coeffs[0];
-            Eigen::VectorXd v = Eigen::Map<Eigen::VectorXd, Eigen::Unaligned>(coeffs.data(), coeffs.size());
-
-
-            bestCombinations[0].setBestCoeffs(std::move(v));
-            bestCombinations[0].setCombination(std::move(bestColsIndexes));
+            bestCombinations.push_back(Combination(std::move(bestColsIndexes), Map<VectorXd>(coeffs.data(), coeffs.size())));
         }
     }
     return 0;
@@ -105,108 +100,6 @@ std::vector<std::vector<uint16_t>> COMBI::getCombinations(int n, int k) const
         combs[i].push_back(n);
     return combs;
 }
-
-/*
-COMBI& COMBI::fit(MatrixXd x, VectorXd y, const Criterion& criterion, int threads, int verbose)
-{   
-    level = 1;
-    if (threads == -1)
-        threads = boost::thread::hardware_concurrency();
-    else
-        threads = std::min(threads, static_cast<int>(boost::thread::hardware_concurrency()));
-    boost::asio::thread_pool pool(threads);
-    boost::function<void(const MatrixXd&, const VectorXd&, const Criterion&, std::vector<std::vector<bool> >::const_iterator,
-    std::vector<std::vector<bool> >::const_iterator, std::vector<std::pair<std::pair<double, VectorXd>, 
-    std::vector<bool> >>::iterator)> calcEvaluationCoeffs = 
-        [polynomialToIndexes=&polynomialToIndexes] (const MatrixXd& x, const VectorXd& y, const Criterion& criterion, std::vector<std::vector<bool> >::const_iterator beginComb, 
-        std::vector<std::vector<bool> >::const_iterator endComb, std::vector<std::pair<std::pair<double, VectorXd>, 
-        std::vector<bool> >>::iterator beginCoeffsVec) {
-            for (; beginComb < endComb; ++beginComb, ++beginCoeffsVec) {
-                //std::vector<int> colsIndexes = polynomialToIndexes(*beginComb); // TODO: typedef (using) for all types
-                //beginCoeffsVec->first = criterion.calculate(x(Eigen::all, colsIndexes), y);
-                beginCoeffsVec->second = *beginComb;
-            }      
-        };
-
-    double lastLevelEvaluation = std::numeric_limits<double>::max();
-    std::vector<bool> bestPolynomial;
-    inputColsNumber = x.cols();
-
-    MatrixXd modifiedX(x.rows(), x.cols() + 1);
-    modifiedX.col(x.cols()).setOnes();
-    modifiedX.leftCols(x.cols()) = x;
-
-    while (level < modifiedX.cols()) {
-        std::vector<std::pair<std::pair<double, VectorXd>, std::vector<bool> >> evaluationCoeffsVec; 
-        std::vector<std::pair<std::pair<double, VectorXd>, std::vector<bool> >>::const_iterator currLevelEvaluation; // TODO: add using (as typedef)
-        std::vector<std::vector<bool>> combinations = getCombinations(x.cols(), level);
-
-        using namespace indicators;
-        ProgressBar progressBar {
-              option::BarWidth{30},
-              option::Start{"LEVEL " + std::to_string(level) + " (" + std::to_string(combinations.size())  + " combinations) ["},
-              option::End{"]"},
-              option::ShowElapsedTime{true},
-              option::ShowPercentage{true},
-              option::Lead{">"}
-        };
-        if (verbose) {
-            show_console_cursor(false);
-            progressBar.set_progress(0);
-        }
-
-        if (threads > 1) {
-            using T = boost::packaged_task<void>;
-            std::vector<boost::unique_future<T::result_type> > futures; // TODO: reserve??? or array
-
-            evaluationCoeffsVec.resize(combinations.size());
-            auto combsPortion = static_cast<int>(std::ceil(combinations.size() / static_cast<double>(threads)));
-            for (auto i = 0; i * combsPortion < combinations.size(); ++i) {
-                boost::packaged_task<void> pt(boost::bind(calcEvaluationCoeffs, modifiedX, y, boost::ref(criterion),
-                    combinations.cbegin() + combsPortion * i,
-                    combinations.cbegin() + std::min(static_cast<size_t>(combsPortion * (i + 1)), combinations.size()),
-                    evaluationCoeffsVec.begin() + combsPortion * i));
-                futures.push_back(pt.get_future());
-                post(pool, std::move(pt));
-            }
-            boost::when_all(futures.begin(), futures.end()).get();
-        }
-        else {
-            evaluationCoeffsVec.reserve(combinations.size());
-            for (int i = 0; i < combinations.size(); ++i) {
-                std::vector<int> colsIndexes = polynomialToIndexes(combinations[i]);
-                evaluationCoeffsVec.push_back(std::pair<std::pair<double, VectorXd>, std::vector<bool> >(criterion.calculate(modifiedX(Eigen::all, colsIndexes), y), combinations[i]));
-                if (verbose) {
-                    progressBar.set_progress(100.0 * (i + 1) / combinations.size());
-                }
-            }
-        }
-
-        // > or >= ?
-        if (lastLevelEvaluation > 
-        (currLevelEvaluation = std::min_element(
-        std::cbegin(evaluationCoeffsVec), 
-        std::cend(evaluationCoeffsVec), 
-        [](std::pair<std::pair<double, VectorXd>, std::vector<bool> > first, 
-        std::pair<std::pair<double, VectorXd>, std::vector<bool> > second) { 
-            return first.first.first < second.first.first;
-        }))->first.first) {
-            lastLevelEvaluation = currLevelEvaluation->first.first;
-            bestPolynomial = currLevelEvaluation->second;
-            bestCoeffs = currLevelEvaluation->first.second;
-        }
-        else {
-            show_console_cursor(true);
-            break; // TODO: change condition of ending cycle
-        }
-        ++level;
-    }
-
-    bestColsIndexes = polynomialToIndexes(bestPolynomial);
-
-    return *this;
-}
-*/
 
 std::string COMBI::getBestPolynomial() const
 {

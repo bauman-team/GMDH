@@ -4,18 +4,19 @@
 namespace GMDH {
 
     void GMDH::polinomialsEvaluation(const MatrixXd& x, const VectorXd& y, // TODO: typedef (using) for all types
-    const Criterion& criterion, std::vector<Combination>::iterator beginCoeffsVec, std::vector<Combination>::iterator endCoeffsVec) const {
+    const Criterion& criterion, std::vector<Combination>::iterator beginCoeffsVec, std::vector<Combination>::iterator endCoeffsVec, std::atomic<int> *leftTasks) const {
         for (; beginCoeffsVec < endCoeffsVec; ++beginCoeffsVec) {
             //std::vector<int> colsIndexes = polynomialToIndexes(*beginComb); 
             auto pairCoeffsEvaluation = criterion.calculate(x(Eigen::all, (*beginCoeffsVec).combination()), y);
             (*beginCoeffsVec).setEvaluation(pairCoeffsEvaluation.first);
             (*beginCoeffsVec).setBestCoeffs(std::move(pairCoeffsEvaluation.second));
+            --(*leftTasks);
         }      
     }
 
     bool GMDH::nextLevelCondition(double &lastLevelEvaluation, uint8_t p, std::vector<Combination>& combinations) {
-        std::vector<Combination> _bestCombinations; // TODO: maybe change multimap to sort vector
-        std::pair<int, Combination> bestComb;//(0, combinations[0]);
+        std::vector<Combination> _bestCombinations; // TODO: maybe multimap with swap() ????
+        std::pair<int, Combination> bestComb;
         for (auto i = 0; i < p; ++i) {
             bestComb = std::pair<int, Combination>(0, combinations[0]);
             for (auto j = 0; j != combinations.size(); ++j) 
@@ -38,6 +39,15 @@ namespace GMDH {
         return false;
     }
 
+    int GMDH::calculateLeftTasksForVerbose(const std::vector<std::shared_ptr<std::vector<Combination>::iterator >> beginTasksVec, 
+    const std::vector<std::shared_ptr<std::vector<Combination>::iterator >> endTasksVec) const {
+        auto leftTasks = 0;
+        auto itBegComb = std::cbegin(beginTasksVec), itEndComb = std::cbegin(endTasksVec); // TODO: change names
+        for (;itBegComb != std::cend(beginTasksVec); ++itBegComb, ++itEndComb)
+            leftTasks += (**itEndComb) - (**itBegComb);
+        return leftTasks;
+    }
+
     std::string GMDH::getModelName() const
     {
         std::string modelName = std::string(boost::typeindex::type_id_runtime(*this).pretty_name());
@@ -45,26 +55,19 @@ namespace GMDH {
         return modelName;
     }
 
-    GMDH& GMDH::fit(MatrixXd x, VectorXd y, const Criterion& criterion, uint8_t p, int threads, int verbose) { // TODO: except threads = 0 error!!!
+    GMDH& GMDH::fit(MatrixXd x, VectorXd y, const Criterion& criterion, uint8_t p, int threads, int verbose) { // TODO: except threads, p = 0 error!!!
         using namespace indicators;
-        ProgressBar progressBar {
-              option::BarWidth{30},
-              option::End{"]"},
-              option::ShowElapsedTime{true},
-              option::ShowPercentage{true},
-              option::Lead{">"}
-        };
-        /*
-        boost::function<void(const MatrixXd&, const VectorXd&, const Criterion&, std::vector<std::vector<bool> >::const_iterator,
-        std::vector<std::vector<bool> >::const_iterator, std::vector<std::pair<std::pair<double, VectorXd>, 
-        std::vector<bool> >>::iterator)> calcEvaluationCoeffs = polinomialsEvaluation;
-        */
+        using T = boost::packaged_task<void>;
+
         level = 1;
         if (threads == -1)
-            threads = boost::thread::hardware_concurrency();
+            threads = boost::thread::hardware_concurrency(); // TODO: maybe find optimal count based on data.size() and hardware_concurrency()
         else
             threads = std::min(threads, static_cast<int>(boost::thread::hardware_concurrency())); // TODO: change limit
-        boost::asio::thread_pool pool(threads);
+        boost::asio::thread_pool pool(threads); 
+        std::vector<boost::unique_future<T::result_type> > futures; // TODO: reserve??? or array
+        futures.reserve(threads);
+        std::atomic<int> leftTasks;
 
         inputColsNumber = x.cols();
         auto lastLevelEvaluation = std::numeric_limits<double>::max();
@@ -73,37 +76,50 @@ namespace GMDH {
         modifiedX.col(x.cols()).setOnes();
         modifiedX.leftCols(x.cols()) = x;
 
-        while (level < modifiedX.cols()) { // TODO: move condition to method
+        while (level < modifiedX.cols()) { // TODO: move condition to virtual method
             // TODO: add using (as typedef)
             std::vector<Combination> evaluationCoeffsVec; 
             auto combinations = getCombinations(x.cols(), level);
             evaluationCoeffsVec.resize(combinations.size());
             auto currLevelEvaluation = std::begin(evaluationCoeffsVec);
             for (auto it = std::begin(combinations); it != std::end(combinations); ++it)
-                currLevelEvaluation->setCombination(std::move(*it));
+                currLevelEvaluation->setCombination(*it);
 
-            if (verbose) {
-                progressBar.set_option(option::Start{"LEVEL " + std::to_string(level) + " (" + std::to_string(evaluationCoeffsVec.size())  + " combinations) ["});
-                show_console_cursor(false);
-                progressBar.set_progress(0);
-            }
-
-            using T = boost::packaged_task<void>;
-            std::vector<boost::unique_future<T::result_type> > futures; // TODO: reserve??? or array
+            leftTasks = static_cast<int>(evaluationCoeffsVec.size());
 
             auto combsPortion = static_cast<int>(std::ceil(evaluationCoeffsVec.size() / static_cast<double>(threads)));
             for (auto i = 0; i * combsPortion < evaluationCoeffsVec.size(); ++i) {
-                boost::packaged_task<void> pt(boost::bind(&GMDH::polinomialsEvaluation, this, modifiedX, y, boost::ref(criterion), // MAYBE boost::function<>
-                    evaluationCoeffsVec.begin() + combsPortion * i,
-                    evaluationCoeffsVec.begin() + std::min(static_cast<size_t>(combsPortion * (i + 1)), evaluationCoeffsVec.size())));
+                boost::packaged_task<void> pt(boost::bind(&GMDH::polinomialsEvaluation, this, modifiedX, y, boost::ref(criterion), 
+                    std::begin(evaluationCoeffsVec) + combsPortion * i,
+                    std::begin(evaluationCoeffsVec) + std::min(static_cast<size_t>(combsPortion * (i + 1)), evaluationCoeffsVec.size()), &leftTasks));
                 futures.push_back(pt.get_future());
                 post(pool, std::move(pt));
             }
-            boost::when_all(futures.begin(), futures.end()).get();
+
+            if (verbose) {
+                ProgressBar progressBar {
+                    option::BarWidth{30},
+                    option::Start{"LEVEL " + std::to_string(level) + " (" + std::to_string(evaluationCoeffsVec.size())  + " combinations) ["},
+                    option::End{"]"},
+                    option::ShowElapsedTime{true},
+                    option::ShowPercentage{true},
+                    option::Lead{">"}
+                };
+                show_console_cursor(false);
+                progressBar.set_progress(0);
+
+                while (leftTasks) {
+                    progressBar.set_progress(100.0 * (evaluationCoeffsVec.size() - leftTasks) / evaluationCoeffsVec.size());
+                }
+                progressBar.set_progress(100);
+            } else {
+                boost::when_all(futures.begin(), futures.end()).get();
+            }
 
             // > or >= ?
             if (nextLevelCondition(lastLevelEvaluation, p, evaluationCoeffsVec)) { 
                 ++level; //TODO: add goToTheNextLevel() virtual method
+                futures.clear();
             }
             else {
                 show_console_cursor(true);

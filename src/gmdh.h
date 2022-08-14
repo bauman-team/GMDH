@@ -9,6 +9,7 @@
 #include <sstream>
 #include <ctime>
 #include <algorithm>
+#include <atomic>
 
 #include <Eigen/Dense>
 
@@ -47,24 +48,26 @@ public:
     const VectorXd& bestCoeffs() const { return _bestCoeffs; }
     double evaluation() const { return _evaluation; }
 
-    void setCombination(std::vector<uint16_t>&& combination) { _combination = std::forward<decltype(combination)>(combination); }
-    void setBestCoeffs(VectorXd&& bestCoeffs) { _bestCoeffs = std::forward<decltype(bestCoeffs)>(bestCoeffs);}
+    void setCombination(std::vector<uint16_t>&& combination) { _combination = std::move(combination); }
+    void setCombination(std::vector<uint16_t> combination) { _combination = combination; }
+    void setBestCoeffs(VectorXd&& bestCoeffs) { _bestCoeffs = std::move(bestCoeffs);}
     void setEvaluation(double evaluation) { _evaluation = evaluation; }
 
 };
 
 class GMDH {
     void polinomialsEvaluation(const MatrixXd& x, const VectorXd& y, 
-    const Criterion& criterion, std::vector<Combination>::iterator beginCoeffsVec, std::vector<Combination>::iterator endCoeffsVec) const;
+        const Criterion& criterion, std::vector<Combination>::iterator beginCoeffsVec, std::vector<Combination>::iterator endCoeffsVec, std::atomic<int> *leftTasks) const;
     virtual std::vector<std::vector<uint16_t>> getCombinations(int n, int k) const = 0;
     virtual bool nextLevelCondition(double &lastLevelEvaluation, uint8_t p, std::vector<Combination>& combinations);
+    int calculateLeftTasksForVerbose(const std::vector<std::shared_ptr<std::vector<Combination>::iterator> > beginTasksVec, 
+    const std::vector<std::shared_ptr<std::vector<Combination>::iterator> > endTasksVec) const;
 
-    //virtual std::vector<int> polynomialToIndexes(const std::vector<bool>& polynomial) = 0;
 protected:
 
     int level;
     int inputColsNumber; // TODO: maybe delete???
-    std::vector<Combination> bestCombinations; // TODO: maybe multimap
+    std::vector<Combination> bestCombinations; 
     virtual std::string getModelName() const; // TODO: virtual delete
 
 public:
