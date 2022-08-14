@@ -43,13 +43,12 @@ class Combination {
     double _evaluation;
 public:
     Combination() {}
-    Combination(std::vector<uint16_t> comb, VectorXd coeffs) : _combination(comb), _bestCoeffs(coeffs) {} // TODO: maybe std::move
+    Combination(std::vector<uint16_t>&& comb, VectorXd&& coeffs) : _combination(std::move(comb)), _bestCoeffs(std::move(coeffs)) {} // TODO: maybe std::move
     const std::vector<uint16_t>& combination() const { return _combination; }
     const VectorXd& bestCoeffs() const { return _bestCoeffs; }
     double evaluation() const { return _evaluation; }
 
     void setCombination(std::vector<uint16_t>&& combination) { _combination = std::move(combination); }
-    void setCombination(std::vector<uint16_t> combination) { _combination = combination; }
     void setBestCoeffs(VectorXd&& bestCoeffs) { _bestCoeffs = std::move(bestCoeffs);}
     void setEvaluation(double evaluation) { _evaluation = evaluation; }
 

@@ -82,8 +82,8 @@ namespace GMDH {
             auto combinations = getCombinations(x.cols(), level);
             evaluationCoeffsVec.resize(combinations.size());
             auto currLevelEvaluation = std::begin(evaluationCoeffsVec);
-            for (auto it = std::begin(combinations); it != std::end(combinations); ++it)
-                currLevelEvaluation->setCombination(*it);
+            for (auto it = std::begin(combinations); it != std::end(combinations); ++it, ++currLevelEvaluation)
+                currLevelEvaluation->setCombination(std::move(*it));
 
             leftTasks = static_cast<int>(evaluationCoeffsVec.size());
 

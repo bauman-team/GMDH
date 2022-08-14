@@ -17,7 +17,7 @@ int main() {
     }
 
     VectorXd data = Map<VectorXd, Unaligned>(dataValues.data(), dataValues.size() - 50000);
-    int lags = 50;
+    int lags = 12;
     double validateSize = 0.2;
     double testSize = 0.33;
     std::pair<MatrixXd, VectorXd> timeSeries = GMDH::convertToTimeSeries(data, lags);
@@ -26,6 +26,46 @@ int main() {
     //std::cout << data.x_test << "\n\n";
     //std::cout << data.y_train << "\n\n";
     //std::cout << data.y_test << "\n\n";
+
+    /*
+        x1    x2     x3     x4   => x1, x2
+        1111
+
+        1000, 0100
+
+        1000 (1111 ^ 1000 = 0111)
+
+        1100 !
+        1010
+        1001
+
+        1000 + 0100 (1111 ^ 1100 = 0011)
+ 
+        0110 !
+        0101
+
+        1100 (1111 ^ 1100 = 0011)
+
+        1110
+        1101
+
+        1100 + 0110 (1111 ^ 1110 = 0001)
+
+        0111
+
+
+        x1 + x2 !
+        x1 + x3
+        x1 + x4
+        x2 + x3 !
+        x2 + x4
+
+        x1 + x2 + x3 => (1, 2, 3)
+        x1 + x2 + x4
+        x2 + x3 + x1 (2, 3, 1) => (1, 2, 3) -
+        x2 + x3 + x4
+
+    */
 
 
     //std::cout << "Original time series:\n" << x << "\n\n";
