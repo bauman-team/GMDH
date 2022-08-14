@@ -1,5 +1,5 @@
 #include <iostream>
-#include "combi.h"
+#include "multi.h"
 
 
 int main() {
@@ -70,16 +70,17 @@ int main() {
 
     //std::cout << "Original time series:\n" << x << "\n\n";
 
-    GMDH::COMBI combi;
-    combi.fit(splittedData.xTrain, splittedData.yTrain, GMDH::RegularityCriterionTS(testSize, GMDH::Solver::fast), 1, -1, 1);
 
-    std::cout << "The best polynom:\n" << combi.getBestPolynomial() << std::endl;
+    GMDH::MULTI multi;
+    multi.fit(splittedData.xTrain, splittedData.yTrain, GMDH::RegularityCriterionTS(testSize, GMDH::Solver::fast), 3, 1, 1);
 
-    auto res = combi.predict(splittedData.xTest);
-    combi.save("model1.txt");
-    combi.load("model1.txt");
-    auto res2 = combi.predict(splittedData.xTest);
-    std::cout << "The best polynom after loading:\n" << combi.getBestPolynomial() << std::endl;
+    std::cout << "The best polynom:\n" << multi.getBestPolynomial() << std::endl;
+
+    auto res = multi.predict(splittedData.xTest);
+    multi.save("model1.txt");
+    multi.load("model1.txt");
+    auto res2 = multi.predict(splittedData.xTest);
+    std::cout << "The best polynom after loading:\n" << multi.getBestPolynomial() << std::endl;
 
     //std::cout << "Predicted values before model saving:\n" << res << "\n\n";
     //std::cout << "Predicted values after model loading:\n" << res2 << "\n\n";

@@ -43,6 +43,7 @@ class Combination {
     double _evaluation;
 public:
     Combination() {}
+    Combination(std::vector<uint16_t> comb) : _combination(comb) {} // TODO: maybe std::move
     Combination(std::vector<uint16_t>&& comb, VectorXd&& coeffs) : _combination(std::move(comb)), _bestCoeffs(std::move(coeffs)) {} // TODO: maybe std::move
     const std::vector<uint16_t>& combination() const { return _combination; }
     const VectorXd& bestCoeffs() const { return _bestCoeffs; }
@@ -56,18 +57,18 @@ public:
 
 class GMDH {
     void polinomialsEvaluation(const MatrixXd& x, const VectorXd& y, 
-        const Criterion& criterion, std::vector<Combination>::iterator beginCoeffsVec, std::vector<Combination>::iterator endCoeffsVec, std::atomic<int> *leftTasks) const;
-    virtual std::vector<std::vector<uint16_t>> getCombinations(int n, int k) const = 0;
+    const Criterion& criterion, std::vector<Combination>::iterator beginCoeffsVec, std::vector<Combination>::iterator endCoeffsVec, std::atomic<int> *leftTasks) const;
     virtual bool nextLevelCondition(double &lastLevelEvaluation, uint8_t p, std::vector<Combination>& combinations);
     int calculateLeftTasksForVerbose(const std::vector<std::shared_ptr<std::vector<Combination>::iterator> > beginTasksVec, 
     const std::vector<std::shared_ptr<std::vector<Combination>::iterator> > endTasksVec) const;
-
 protected:
 
     int level;
     int inputColsNumber; // TODO: maybe delete???
-    std::vector<Combination> bestCombinations; 
+    std::vector<Combination> bestCombinations; // TODO: maybe multimap
+
     virtual std::string getModelName() const; // TODO: virtual delete
+    virtual std::vector<std::vector<uint16_t>> getCombinations(int n, int k) const = 0;
 
 public:
     GMDH() : level(1) { }
