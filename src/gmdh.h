@@ -42,6 +42,7 @@ class Combination {
     double _evaluation;
 public:
     Combination() {}
+    Combination(std::vector<uint16_t> comb) : _combination(comb) {} // TODO: maybe std::move
     Combination(std::vector<uint16_t> comb, VectorXd coeffs) : _combination(comb), _bestCoeffs(coeffs) {} // TODO: maybe std::move
     const std::vector<uint16_t>& combination() const { return _combination; }
     const VectorXd& bestCoeffs() const { return _bestCoeffs; }
@@ -56,16 +57,16 @@ public:
 class GMDH {
     void polinomialsEvaluation(const MatrixXd& x, const VectorXd& y, 
     const Criterion& criterion, std::vector<Combination>::iterator beginCoeffsVec, std::vector<Combination>::iterator endCoeffsVec) const;
-    virtual std::vector<std::vector<uint16_t>> getCombinations(int n, int k) const = 0;
-    virtual bool nextLevelCondition(double &lastLevelEvaluation, uint8_t p, std::vector<Combination>& combinations);
-
+    virtual bool nextLevelCondition(double& lastLevelEvaluation, uint8_t p, std::vector<Combination>& combinations);
     //virtual std::vector<int> polynomialToIndexes(const std::vector<bool>& polynomial) = 0;
 protected:
 
     int level;
     int inputColsNumber; // TODO: maybe delete???
     std::vector<Combination> bestCombinations; // TODO: maybe multimap
+
     virtual std::string getModelName() const; // TODO: virtual delete
+    virtual std::vector<std::vector<uint16_t>> getCombinations(int n, int k) const = 0;
 
 public:
     GMDH() : level(1) { }

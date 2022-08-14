@@ -74,12 +74,12 @@ namespace GMDH {
         modifiedX.leftCols(x.cols()) = x;
 
         while (level < modifiedX.cols()) { // TODO: move condition to method
+            std::vector<Combination> evaluationCoeffsVec;
             // TODO: add using (as typedef)
-            std::vector<Combination> evaluationCoeffsVec; 
             auto combinations = getCombinations(x.cols(), level);
             evaluationCoeffsVec.resize(combinations.size());
             auto currLevelEvaluation = std::begin(evaluationCoeffsVec);
-            for (auto it = std::begin(combinations); it != std::end(combinations); ++it)
+            for (auto it = std::begin(combinations); it != std::end(combinations); ++it, ++currLevelEvaluation)
                 currLevelEvaluation->setCombination(std::move(*it));
 
             if (verbose) {

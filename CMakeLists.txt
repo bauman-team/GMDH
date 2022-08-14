@@ -11,7 +11,9 @@ add_executable(GMDH src/main.cpp
                     src/criterion.h 
                     src/criterion.cpp 
                     src/combi.h 
-                    src/combi.cpp)
+                    src/combi.cpp 
+                    src/multi.h 
+                    src/multi.cpp)
 
 set(LIBRARY_NAME gmdhpy)
 
@@ -22,7 +24,9 @@ pybind11_add_module(${LIBRARY_NAME} pythonAPI/gmdh.cpp
                                    src/criterion.h 
                                    src/criterion.cpp 
                                    src/combi.h 
-                                   src/combi.cpp)
+                                   src/combi.cpp 
+                                   src/multi.h 
+                                   src/multi.cpp)
 target_include_directories(${LIBRARY_NAME} PUBLIC external/pybind11-2.10.0/include)
 
 target_include_directories(${PROJECT_NAME} PUBLIC external/eigen-3.4)
