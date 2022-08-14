@@ -13,6 +13,7 @@ int COMBI::save(const std::string& path) const
         modelFile << inputColsNumber << "\n";
         for (auto i : bestCombinations[0].combination()) modelFile << i << ' ';
         modelFile << "\n";
+        modelFile.precision(10); // TODOL maybe change precision
         for (auto i : bestCombinations[0].bestCoeffs()) modelFile << i << ' ';
         modelFile << "\n";
         modelFile.close();
@@ -56,6 +57,7 @@ int COMBI::load(const std::string& path)
 
             bestCombinations.push_back(Combination(std::move(bestColsIndexes), Map<VectorXd>(coeffs.data(), coeffs.size())));
         }
+        modelFile.close();
     }
     return 0;
 }

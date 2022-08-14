@@ -1,6 +1,7 @@
 #include <iostream>
 #include "combi.h"
 
+
 int main() {
 
     using namespace Eigen;
@@ -38,6 +39,7 @@ int main() {
     combi.save("model1.txt");
     combi.load("model1.txt");
     auto res2 = combi.predict(splittedData.xTest);
+    std::cout << "The best polynom after loading:\n" << combi.getBestPolynomial() << std::endl;
 
     //std::cout << "Predicted values before model saving:\n" << res << "\n\n";
     //std::cout << "Predicted values after model loading:\n" << res2 << "\n\n";

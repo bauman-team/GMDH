@@ -67,7 +67,7 @@ namespace GMDH {
         boost::asio::thread_pool pool(threads); 
         std::vector<boost::unique_future<T::result_type> > futures; // TODO: reserve??? or array
         futures.reserve(threads);
-        std::atomic<int> leftTasks;
+        std::atomic<int> leftTasks; // TODO: change to volatile structure
 
         inputColsNumber = x.cols();
         auto lastLevelEvaluation = std::numeric_limits<double>::max();
