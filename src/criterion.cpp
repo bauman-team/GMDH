@@ -1,4 +1,4 @@
-#include "criterion.h"
+#include "gmdh.h"
 
 namespace GMDH {
 

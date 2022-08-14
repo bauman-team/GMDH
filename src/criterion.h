@@ -1,5 +1,3 @@
-#include "gmdh.h"
-
 namespace GMDH {
 
 enum Solver { fast, accurate, balanced };

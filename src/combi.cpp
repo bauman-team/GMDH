@@ -11,9 +11,9 @@ int COMBI::save(const std::string& path) const
     else {
         modelFile << getModelName() << "\n";
         modelFile << inputColsNumber << "\n";
-        for (auto i : bestColsIndexes) modelFile << i << ' ';
+        for (auto i : bestCombinations[0].combination()) modelFile << i << ' ';
         modelFile << "\n";
-        for (auto i : bestCoeffs) modelFile << i << ' ';
+        for (auto i : bestCombinations[0].bestCoeffs()) modelFile << i << ' ';
         modelFile << "\n";
         modelFile.close();
     }
@@ -23,7 +23,8 @@ int COMBI::save(const std::string& path) const
 int COMBI::load(const std::string& path)
 {
     inputColsNumber = 0;
-    bestColsIndexes.clear();
+    bestCombinations.clear();
+    std::vector<uint16_t> bestColsIndexes;
 
     std::ifstream modelFile;
     modelFile.open(path);
@@ -40,9 +41,10 @@ int COMBI::load(const std::string& path)
             std::string colsIndexesLine;
             std::getline(modelFile, colsIndexesLine);
             std::stringstream indexStream(colsIndexesLine);
-            int index;
+            uint16_t index;
             while (indexStream >> index)
                 bestColsIndexes.push_back(index);
+              
 
             std::string coeffsLine;
             std::vector<double> coeffs;
@@ -51,7 +53,13 @@ int COMBI::load(const std::string& path)
             double coeff;
             while (coeffsStream >> coeff)
                 coeffs.push_back(coeff);
-            bestCoeffs(coeffs);
+
+            double* ptr_data = &coeffs[0];
+            Eigen::VectorXd v = Eigen::Map<Eigen::VectorXd, Eigen::Unaligned>(coeffs.data(), coeffs.size());
+
+
+            bestCombinations[0].setBestCoeffs(std::move(v));
+            bestCombinations[0].setCombination(std::move(bestColsIndexes));
         }
     }
     return 0;
@@ -67,16 +75,45 @@ VectorXd COMBI::predict(const MatrixXd& x) const
     MatrixXd modifiedX(x.rows(), x.cols() + 1);
     modifiedX.col(x.cols()).setOnes();
     modifiedX.leftCols(x.cols()) = x;
-    return modifiedX(Eigen::all, bestColsIndexes) * bestCoeffs;
+    return modifiedX(Eigen::all, bestCombinations[0].combination()) * bestCombinations[0].bestCoeffs();
 }
 
+std::vector<std::vector<uint16_t>> COMBI::getCombinations(int n, int k) const
+{
+    struct c_unique {
+        uint16_t current;
+        c_unique() { current = -1; }
+        uint16_t operator()() { return ++current; }
+    } UniqueNumber;
+
+    std::vector<std::vector<uint16_t>> combs;
+    std::vector<uint16_t> comb(k);
+    std::vector<uint16_t>::iterator first = comb.begin(), last = comb.end();
+
+    std::generate(first, last, UniqueNumber);
+    combs.push_back(comb);
+
+    while ((*first) != n - k) {
+        std::vector<uint16_t>::iterator mt = last;
+        while (*(--mt) == n - (last - mt));
+        (*mt)++;
+        while (++mt != last) *mt = *(mt - 1) + 1;
+        combs.push_back(comb);
+    }
+
+    for (int i = 0; i < combs.size(); ++i)
+        combs[i].push_back(n);
+    return combs;
+}
+
+/*
 COMBI& COMBI::fit(MatrixXd x, VectorXd y, const Criterion& criterion, int threads, int verbose)
 {   
     level = 1;
     if (threads == -1)
-        threads = std::thread::hardware_concurrency();
+        threads = boost::thread::hardware_concurrency();
     else
-        threads = std::min(threads, (int)std::thread::hardware_concurrency());
+        threads = std::min(threads, static_cast<int>(boost::thread::hardware_concurrency()));
     boost::asio::thread_pool pool(threads);
     boost::function<void(const MatrixXd&, const VectorXd&, const Criterion&, std::vector<std::vector<bool> >::const_iterator,
     std::vector<std::vector<bool> >::const_iterator, std::vector<std::pair<std::pair<double, VectorXd>, 
@@ -85,8 +122,8 @@ COMBI& COMBI::fit(MatrixXd x, VectorXd y, const Criterion& criterion, int thread
         std::vector<std::vector<bool> >::const_iterator endComb, std::vector<std::pair<std::pair<double, VectorXd>, 
         std::vector<bool> >>::iterator beginCoeffsVec) {
             for (; beginComb < endComb; ++beginComb, ++beginCoeffsVec) {
-                std::vector<int> colsIndexes = polynomialToIndexes(*beginComb); // TODO: typedef (using) for all types
-                beginCoeffsVec->first = criterion.calculate(x(Eigen::all, colsIndexes), y);
+                //std::vector<int> colsIndexes = polynomialToIndexes(*beginComb); // TODO: typedef (using) for all types
+                //beginCoeffsVec->first = criterion.calculate(x(Eigen::all, colsIndexes), y);
                 beginCoeffsVec->second = *beginComb;
             }      
         };
@@ -160,7 +197,7 @@ COMBI& COMBI::fit(MatrixXd x, VectorXd y, const Criterion& criterion, int thread
         }
         else {
             show_console_cursor(true);
-            break; // TODO: fix bad code style
+            break; // TODO: change condition of ending cycle
         }
         ++level;
     }
@@ -169,10 +206,13 @@ COMBI& COMBI::fit(MatrixXd x, VectorXd y, const Criterion& criterion, int thread
 
     return *this;
 }
+*/
 
 std::string COMBI::getBestPolynomial() const
 {
     std::string polynomialStr = "y =";
+    auto bestColsIndexes = bestCombinations[0].combination();
+    auto bestCoeffs = bestCombinations[0].bestCoeffs();
     for (int i = 0; i < bestColsIndexes.size(); ++i) {
         if (bestCoeffs[i] > 0) {
             if (i > 0)
@@ -187,26 +227,5 @@ std::string COMBI::getBestPolynomial() const
             polynomialStr += "*x" + std::to_string(bestColsIndexes[i] + 1);
     }
     return polynomialStr;
-}
-
-std::vector<std::vector<bool>> COMBI::getCombinations(int n_cols, int level) const
-{
-    std::vector<std::vector<bool>> combinations;
-    std::vector<bool> combination(n_cols);
-    std::fill(combination.begin(), combination.begin() + level, 1);
-    do {
-        combinations.push_back(combination);
-    } while (std::prev_permutation(combination.begin(), combination.end()));
-    return combinations;
-}
-
-std::vector<int> COMBI::polynomialToIndexes(const std::vector<bool>& polynomial)
-{
-    std::vector<int> colsIndexes;
-    for (int i = 0; i < polynomial.size(); ++i)
-        if (polynomial[i])
-            colsIndexes.push_back(i);
-    colsIndexes.push_back(polynomial.size());
-    return colsIndexes;
 }
 }
