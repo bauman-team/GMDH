@@ -13,6 +13,7 @@ int COMBI::save(const std::string& path) const
         modelFile << inputColsNumber << "\n";
         for (auto i : bestCombinations[0].combination()) modelFile << i << ' ';
         modelFile << "\n";
+        modelFile.precision(10); // TODOL maybe change precision
         for (auto i : bestCombinations[0].bestCoeffs()) modelFile << i << ' ';
         modelFile << "\n";
         modelFile.close();
@@ -24,6 +25,7 @@ int COMBI::load(const std::string& path)
 {
     inputColsNumber = 0;
     bestCombinations.clear();
+    bestCombinations.resize(1);
     std::vector<uint16_t> bestColsIndexes;
 
     std::ifstream modelFile;
@@ -44,7 +46,7 @@ int COMBI::load(const std::string& path)
             uint16_t index;
             while (indexStream >> index)
                 bestColsIndexes.push_back(index);
-              
+            bestCombinations[0].setCombination(std::move(bestColsIndexes));
 
             std::string coeffsLine;
             std::vector<double> coeffs;
@@ -53,14 +55,9 @@ int COMBI::load(const std::string& path)
             double coeff;
             while (coeffsStream >> coeff)
                 coeffs.push_back(coeff);
-
-            double* ptr_data = &coeffs[0];
-            Eigen::VectorXd v = Eigen::Map<Eigen::VectorXd, Eigen::Unaligned>(coeffs.data(), coeffs.size());
-
-
-            bestCombinations[0].setBestCoeffs(std::move(v));
-            bestCombinations[0].setCombination(std::move(bestColsIndexes));
+            bestCombinations[0].setBestCoeffs(Map<VectorXd>(coeffs.data(), coeffs.size()));
         }
+        modelFile.close();
     }
     return 0;
 }
