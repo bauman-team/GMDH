@@ -20,7 +20,7 @@ int main() {
     int lags = 12;
     double validateSize = 0.2;
     double testSize = 0.33;
-    std::pair<MatrixXd, VectorXd> timeSeries = GMDH::convertToTimeSeries(data, lags);
+    auto timeSeries = GMDH::convertToTimeSeries(data, lags);
     GMDH::SplittedData splittedData = GMDH::splitTimeSeries(timeSeries.first, timeSeries.second, validateSize);
     //std::cout << data.x_train << "\n\n";
     //std::cout << data.x_test << "\n\n";
@@ -71,7 +71,7 @@ int main() {
     //std::cout << "Original time series:\n" << x << "\n\n";
 
 
-    GMDH::MULTI multi;
+    GMDH::COMBI multi;
     multi.fit(splittedData.xTrain, splittedData.yTrain, GMDH::RegularityCriterionTS(testSize, GMDH::Solver::fast), 3, 1, 1);
 
     std::cout << "The best polynom:\n" << multi.getBestPolynomial() << std::endl;

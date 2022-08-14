@@ -3,29 +3,26 @@
 
 namespace GMDH {
 
-    void GMDH::polinomialsEvaluation(const MatrixXd& x, const VectorXd& y, // TODO: typedef (using) for all types
-    const Criterion& criterion, std::vector<Combination>::iterator beginCoeffsVec, std::vector<Combination>::iterator endCoeffsVec, std::atomic<int> *leftTasks) const {
+    void GMDH::polinomialsEvaluation(const MatrixXd& x, const VectorXd& y, const Criterion& criterion, 
+        IterC beginCoeffsVec, IterC endCoeffsVec, std::atomic<int> *leftTasks, bool verbose) const {
         for (; beginCoeffsVec < endCoeffsVec; ++beginCoeffsVec) {
-            //std::vector<int> colsIndexes = polynomialToIndexes(*beginComb); 
             auto pairCoeffsEvaluation = criterion.calculate(x(Eigen::all, (*beginCoeffsVec).combination()), y);
             (*beginCoeffsVec).setEvaluation(pairCoeffsEvaluation.first);
             (*beginCoeffsVec).setBestCoeffs(std::move(pairCoeffsEvaluation.second));
-            --(*leftTasks);
+            if (unlikely(verbose))
+                --(*leftTasks);
         }      
     }
 
-    bool GMDH::nextLevelCondition(double &lastLevelEvaluation, uint8_t p, std::vector<Combination>& combinations) {
-        std::vector<Combination> _bestCombinations; // TODO: maybe multimap with swap() ????
-        std::pair<int, Combination> bestComb;
-        for (auto i = 0; i < p; ++i) {
-            bestComb = std::pair<int, Combination>(0, combinations[0]);
-            for (auto j = 0; j != combinations.size(); ++j) 
-                if (combinations[j].evaluation() < bestComb.second.evaluation()) {  // < or <= ?
-                    bestComb.first = j;
-                    bestComb.second = combinations[j];
-                }
-            combinations.erase(std::begin(combinations) + bestComb.first); // TODO: optimization
-            _bestCombinations.push_back(bestComb.second);
+    bool GMDH::nextLevelCondition(double &lastLevelEvaluation, uint8_t p, VectorC& combinations) {
+        VectorC _bestCombinations(std::begin(combinations), std::begin(combinations) + p); 
+        std::sort(std::begin(_bestCombinations), std::end(_bestCombinations));
+        for (auto combBegin = std::begin(combinations) + p, combEnd = std::end(combinations); 
+        combBegin != combEnd; ++combBegin) {
+            if (*combBegin < _bestCombinations.back()) {
+                std::swap(*combBegin, _bestCombinations.back());
+                std::sort(std::begin(_bestCombinations), std::end(_bestCombinations));
+            }
         }
         double currLevelEvaluation = 0;
         for (auto i : _bestCombinations)
@@ -38,16 +35,16 @@ namespace GMDH {
         }
         return false;
     }
-
+/*
     int GMDH::calculateLeftTasksForVerbose(const std::vector<std::shared_ptr<std::vector<Combination>::iterator >> beginTasksVec, 
     const std::vector<std::shared_ptr<std::vector<Combination>::iterator >> endTasksVec) const {
         auto leftTasks = 0;
-        auto itBegComb = std::cbegin(beginTasksVec), itEndComb = std::cbegin(endTasksVec); // TODO: change names
+        auto itBegComb = std::cbegin(beginTasksVec), itEndComb = std::cbegin(endTasksVec);
         for (;itBegComb != std::cend(beginTasksVec); ++itBegComb, ++itEndComb)
             leftTasks += (**itEndComb) - (**itBegComb);
         return leftTasks;
     }
-
+*/
     std::string GMDH::getModelName() const
     {
         std::string modelName = std::string(boost::typeindex::type_id_runtime(*this).pretty_name());
@@ -59,13 +56,15 @@ namespace GMDH {
         using namespace indicators;
         using T = boost::packaged_task<void>;
 
+        std::unique_ptr<ProgressBar> progressBar;
+
         level = 1;
         if (threads == -1)
             threads = boost::thread::hardware_concurrency(); // TODO: maybe find optimal count based on data.size() and hardware_concurrency()
         else
             threads = std::min(threads, static_cast<int>(boost::thread::hardware_concurrency())); // TODO: change limit
         boost::asio::thread_pool pool(threads); 
-        std::vector<boost::unique_future<T::result_type> > futures; // TODO: reserve??? or array
+        std::vector<boost::unique_future<T::result_type> > futures;
         futures.reserve(threads);
         std::atomic<int> leftTasks; // TODO: change to volatile structure
 
@@ -77,8 +76,7 @@ namespace GMDH {
         modifiedX.leftCols(x.cols()) = x;
 
         while (level < modifiedX.cols()) { // TODO: move condition to virtual method
-            std::vector<Combination> evaluationCoeffsVec;
-            // TODO: add using (as typedef)
+            VectorC evaluationCoeffsVec;
             auto combinations = getCombinations(x.cols(), level);
             evaluationCoeffsVec.resize(combinations.size());
             auto currLevelEvaluation = std::begin(evaluationCoeffsVec);
@@ -87,31 +85,35 @@ namespace GMDH {
 
             leftTasks = static_cast<int>(evaluationCoeffsVec.size());
 
-            auto combsPortion = static_cast<int>(std::ceil(evaluationCoeffsVec.size() / static_cast<double>(threads)));
-            for (auto i = 0; i * combsPortion < evaluationCoeffsVec.size(); ++i) {
-                boost::packaged_task<void> pt(boost::bind(&GMDH::polinomialsEvaluation, this, modifiedX, y, boost::ref(criterion), 
-                    std::begin(evaluationCoeffsVec) + combsPortion * i,
-                    std::begin(evaluationCoeffsVec) + std::min(static_cast<size_t>(combsPortion * (i + 1)), evaluationCoeffsVec.size()), &leftTasks));
-                futures.push_back(pt.get_future());
-                post(pool, std::move(pt));
-            }
-
             if (verbose) {
-                ProgressBar progressBar {
+                progressBar = std::make_unique<ProgressBar>(
                     option::BarWidth{30},
                     option::Start{"LEVEL " + std::to_string(level) + " (" + std::to_string(evaluationCoeffsVec.size())  + " combinations) ["},
                     option::End{"]"},
                     option::ShowElapsedTime{true},
                     option::ShowPercentage{true},
                     option::Lead{">"}
-                };
+                );
                 show_console_cursor(false);
-                progressBar.set_progress(0);
+                progressBar->set_progress(0);
+            }
 
+            auto combsPortion = static_cast<int>(std::ceil(evaluationCoeffsVec.size() / static_cast<double>(threads)));
+            for (auto i = 0; i * combsPortion < evaluationCoeffsVec.size(); ++i) {
+                boost::packaged_task<void> pt(boost::bind(&GMDH::polinomialsEvaluation, this, modifiedX, y, boost::ref(criterion), 
+                    std::begin(evaluationCoeffsVec) + combsPortion * i,
+                    std::begin(evaluationCoeffsVec) + std::min(static_cast<size_t>(combsPortion * (i + 1)), evaluationCoeffsVec.size()), &leftTasks, verbose));
+                futures.push_back(pt.get_future());
+                post(pool, std::move(pt));
+                //if (verbose)
+                  //  progressBar->set_progress(100.0 * (evaluationCoeffsVec.size() - leftTasks) / evaluationCoeffsVec.size());
+            }
+
+            if (verbose) {
                 while (leftTasks) {
-                    progressBar.set_progress(100.0 * (evaluationCoeffsVec.size() - leftTasks) / evaluationCoeffsVec.size());
+                    progressBar->set_progress(100.0 * (evaluationCoeffsVec.size() - leftTasks) / evaluationCoeffsVec.size());
                 }
-                progressBar.set_progress(100);
+                progressBar->set_progress(100);
             } else {
                 boost::when_all(futures.begin(), futures.end()).get();
             }
@@ -165,13 +167,13 @@ namespace GMDH {
         return poly_X;
     }*/
 
-    std::pair<MatrixXd, VectorXd> convertToTimeSeries(VectorXd x, int lags)
+    PairMVXd convertToTimeSeries(VectorXd x, int lags)
     {
         VectorXd yTimeSeries = x.tail(x.size() - lags);
         MatrixXd xTimeSeries(x.size() - lags, lags);
         for (int i = 0; i < x.size() - lags; ++i)
             xTimeSeries.row(i) = x.segment(i, lags);
-        return std::pair<MatrixXd, VectorXd>(xTimeSeries, yTimeSeries);
+        return PairMVXd(xTimeSeries, yTimeSeries);
     }
 
     SplittedData splitTimeSeries(MatrixXd x, VectorXd y, double testSize)
@@ -195,12 +197,12 @@ namespace GMDH {
             std::srand(std::time(NULL));
 
         
-        std::vector<int> shuffled_rows_indexes(x.rows());
+        VectorI shuffled_rows_indexes(x.rows());
         std::iota(shuffled_rows_indexes.begin(), shuffled_rows_indexes.end(), 0);
         std::random_shuffle(shuffled_rows_indexes.begin(), shuffled_rows_indexes.end());
 
-        std::vector<int> train_indexes(shuffled_rows_indexes.begin(), shuffled_rows_indexes.end() - round(x.rows() * testSize));
-        std::vector<int> test_indexes(shuffled_rows_indexes.end() - round(x.rows() * testSize), shuffled_rows_indexes.end());
+        VectorI train_indexes(shuffled_rows_indexes.begin(), shuffled_rows_indexes.end() - round(x.rows() * testSize));
+        VectorI test_indexes(shuffled_rows_indexes.end() - round(x.rows() * testSize), shuffled_rows_indexes.end());
         
         SplittedData data;
         data.xTrain = x(train_indexes, Eigen::all);

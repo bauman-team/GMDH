@@ -2,9 +2,9 @@
 
 namespace GMDH
 {
-	std::vector<std::vector<uint16_t>> MULTI::getCombinations(int n_cols, int level) const // TODO: maybe change for bit masks
+	VectorVu16 MULTI::getCombinations(int n_cols, int level) const // TODO: maybe change for bit masks
 	{
-		std::vector<std::vector<uint16_t>> combs;
+		VectorVu16 combs;
 		if (level == 1)
 			return COMBI::getCombinations(n_cols, level);
 	
@@ -12,7 +12,7 @@ namespace GMDH
 		{
 			for (int i = 0; i < n_cols; ++i)
 			{
-				std::vector<uint16_t> temp(comb.combination());
+				VectorU16 temp(comb.combination());
 				if (std::find(temp.begin(), temp.end(), i) == temp.end())
 				{
 					temp.push_back(i);

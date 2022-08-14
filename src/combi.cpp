@@ -25,7 +25,7 @@ int COMBI::load(const std::string& path)
 {
     inputColsNumber = 0;
     bestCombinations.clear();
-    std::vector<uint16_t> bestColsIndexes;
+    VectorU16 bestColsIndexes;
 
     std::ifstream modelFile;
     modelFile.open(path);
@@ -75,7 +75,7 @@ VectorXd COMBI::predict(const MatrixXd& x) const
     return modifiedX(Eigen::all, bestCombinations[0].combination()) * bestCombinations[0].bestCoeffs();
 }
 
-std::vector<std::vector<uint16_t>> COMBI::getCombinations(int n, int k) const
+VectorVu16 COMBI::getCombinations(int n, int k) const
 {
     struct c_unique {
         uint16_t current;
@@ -83,15 +83,15 @@ std::vector<std::vector<uint16_t>> COMBI::getCombinations(int n, int k) const
         uint16_t operator()() { return ++current; }
     } UniqueNumber;
 
-    std::vector<std::vector<uint16_t>> combs;
-    std::vector<uint16_t> comb(k);
-    std::vector<uint16_t>::iterator first = comb.begin(), last = comb.end();
+    VectorVu16 combs;
+    VectorU16 comb(k);
+    IterU16 first = comb.begin(), last = comb.end();
 
     std::generate(first, last, UniqueNumber);
     combs.push_back(comb);
 
     while ((*first) != n - k) {
-        std::vector<uint16_t>::iterator mt = last;
+        IterU16 mt = last;
         while (*(--mt) == n - (last - mt));
         (*mt)++;
         while (++mt != last) *mt = *(mt - 1) + 1;

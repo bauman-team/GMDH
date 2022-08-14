@@ -26,16 +26,16 @@ VectorXd Criterion::findBestCoeffs(const MatrixXd& xTrain, const VectorXd& yTrai
     return coeffs;
 }
 
-std::pair<double, VectorXd> RegularityCriterion::calculate(const MatrixXd& x, const VectorXd& y) const
+PairDVXd RegularityCriterion::calculate(const MatrixXd& x, const VectorXd& y) const
 {
     return getCriterionValue(splitData(x, y, testSize, shuffle, randomSeed));
 }
 
-std::pair<double, VectorXd> RegularityCriterionTS::getCriterionValue(const SplittedData& data) const
+PairDVXd RegularityCriterionTS::getCriterionValue(const SplittedData& data) const
 {
     VectorXd coeffs = findBestCoeffs(data.xTrain, data.yTrain);
     VectorXd yPred = data.xTest * coeffs;
-    return std::pair<double, VectorXd>(((data.yTest - yPred).array().square().sum() / data.yTest.array().square().sum()), coeffs);
+    return PairDVXd(((data.yTest - yPred).array().square().sum() / data.yTest.array().square().sum()), coeffs);
 }
 
 RegularityCriterionTS::RegularityCriterionTS(double _testSize, Solver _solver)
@@ -47,7 +47,7 @@ RegularityCriterionTS::RegularityCriterionTS(double _testSize, Solver _solver)
         testSize = 0.33; 
 }
 
-std::pair<double, VectorXd> RegularityCriterionTS::calculate(const MatrixXd& x, const VectorXd& y) const
+PairDVXd RegularityCriterionTS::calculate(const MatrixXd& x, const VectorXd& y) const
 {
     return getCriterionValue(splitTimeSeries(x, y, testSize));
 }
