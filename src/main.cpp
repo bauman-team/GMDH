@@ -1,73 +1,91 @@
 #include <iostream>
-#include <algorithm>
-#include <vector>
-#include <armadillo>
+#include "multi.h"
 
-unsigned long nChoosek(unsigned long n, unsigned long k)
-{
-    if (k > n) return 0;
-    if (k * 2 > n) k = n - k;
-    if (k == 0) return 1;
-
-    unsigned long result = n;
-    for(unsigned long i = 2; i <= k; ++i) {
-        result /= i;
-        result *= (n - i + 1);
-    }
-    return result;
-}
 
 int main() {
-    using namespace std;
-    using namespace arma;
 
-    cout << "Armadillo version: " << arma_version::as_string() << endl;
-    //std::cout << nChoosek(100, 40) << "\n";
-    int n, k;
-    std::cin >> n >> k;
+    using namespace Eigen;
 
-    std::vector<bool> v(n);
-    std::fill(v.begin(), v.begin() + k, true);
-    do {
-        for (int i = 0; i < n; ++i)
-            std::cout << v[i];
-        std::cout << "\n";
-    } while (std::prev_permutation(v.begin(), v.end()));
-    cin >> n;
+    std::ifstream dataStream;
+    dataStream.open("../examples/Sber.csv");
+    std::string dataLine;
+    std::vector<double> dataValues;
+    if (dataStream.is_open()) {
+        while (std::getline(dataStream, dataLine)) {
+            dataValues.push_back(std::atof(dataLine.c_str()));
+        }
+    }
+
+    VectorXd data = Map<VectorXd, Unaligned>(dataValues.data(), dataValues.size() - 50000);
+    int lags = 100;
+    double validateSize = 0.2;
+    double testSize = 0.33;
+    auto timeSeries = GMDH::convertToTimeSeries(data, lags);
+    GMDH::SplittedData splittedData = GMDH::splitTimeSeries(timeSeries.first, timeSeries.second, validateSize);
+    //std::cout << data.x_train << "\n\n";
+    //std::cout << data.x_test << "\n\n";
+    //std::cout << data.y_train << "\n\n";
+    //std::cout << data.y_test << "\n\n";
+
+    /*
+        x1    x2     x3     x4   => x1, x2
+        1111
+
+        1000, 0100
+
+        1000 (1111 ^ 1000 = 0111)
+
+        1100 !
+        1010
+        1001
+
+        1000 + 0100 (1111 ^ 1100 = 0011)
+ 
+        0110 !
+        0101
+
+        1100 (1111 ^ 1100 = 0011)
+
+        1110
+        1101
+
+        1100 + 0110 (1111 ^ 1110 = 0001)
+
+        0111
+
+
+        x1 + x2 !
+        x1 + x3
+        x1 + x4
+        x2 + x3 !
+        x2 + x4
+
+        x1 + x2 + x3 => (1, 2, 3)
+        x1 + x2 + x4
+        x2 + x3 + x1 (2, 3, 1) => (1, 2, 3) -
+        x2 + x3 + x4
+
+    */
+
+
+    //std::cout << "Original time series:\n" << x << "\n\n";
+
+
+    GMDH::MULTI multi;
+    multi.fit(splittedData.xTrain, splittedData.yTrain, GMDH::RegularityCriterionTS(testSize, GMDH::Solver::fast), 3, -1, 1);
+
+    std::cout << "The best polynom:\n" << multi.getBestPolynomial() << std::endl;
+
+    auto res = multi.predict(splittedData.xTest);
+    multi.save("model1.txt");
+    multi.load("model1.txt");
+    auto res2 = multi.predict(splittedData.xTest);
+    std::cout << "The best polynom after loading:\n" << multi.getBestPolynomial() << std::endl;
+
+    //std::cout << "Predicted values before model saving:\n" << res << "\n\n";
+    //std::cout << "Predicted values after model loading:\n" << res2 << "\n\n";
+
+    //(std::cin).get();
+
     return 0;
-}
-namespace GMDH {
-
-enum class ExternalCriterion {regularity};  // TODO: define and realise external criterions
-
-class GMDH {
-    double ExternalCriterion() const;
-
-public:
-    virtual void save() const = 0;
-    virtual int load() = 0;
-    virtual GMDH& fit() = 0;
-    virtual double predict() const = 0;
-    
-};
-
-class COMBI : public GMDH {
-
-    std::vector<bool> bestPolinom;
-    std::vector<double> bestCoeffs;
-
-    std::vector<double> InternalCriterion() const;
-    
-    
-    
-        
-public:
-    
-
-    void save() const override;
-    int load() override;
-    COMBI& fit() override;
-    double predict() const override;
-};
-
 }

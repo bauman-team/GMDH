@@ -1,2 +1,6 @@
 /build
 /.vscode
+/venv
+/.ipynb_checkpoints
+/gmdhpy
+/.vs
