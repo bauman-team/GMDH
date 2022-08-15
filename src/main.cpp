@@ -17,7 +17,7 @@ int main() {
     }
 
     VectorXd data = Map<VectorXd, Unaligned>(dataValues.data(), dataValues.size() - 50000);
-    int lags = 12;
+    int lags = 100;
     double validateSize = 0.2;
     double testSize = 0.33;
     auto timeSeries = GMDH::convertToTimeSeries(data, lags);
@@ -71,8 +71,8 @@ int main() {
     //std::cout << "Original time series:\n" << x << "\n\n";
 
 
-    GMDH::COMBI multi;
-    multi.fit(splittedData.xTrain, splittedData.yTrain, GMDH::RegularityCriterionTS(testSize, GMDH::Solver::fast), 3, 1, 1);
+    GMDH::MULTI multi;
+    multi.fit(splittedData.xTrain, splittedData.yTrain, GMDH::RegularityCriterionTS(testSize, GMDH::Solver::fast), 3, -1, 1);
 
     std::cout << "The best polynom:\n" << multi.getBestPolynomial() << std::endl;
 

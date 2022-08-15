@@ -97,16 +97,18 @@ namespace GMDH {
                 show_console_cursor(false);
                 progressBar->set_progress(0);
             }
-
+            decltype(auto) model = this;
             auto combsPortion = static_cast<int>(std::ceil(evaluationCoeffsVec.size() / static_cast<double>(threads)));
-            for (auto i = 0; i * combsPortion < evaluationCoeffsVec.size(); ++i) {
-                boost::packaged_task<void> pt(boost::bind(&GMDH::polinomialsEvaluation, this, modifiedX, y, boost::ref(criterion), 
+            for (auto i = 0; i * combsPortion < evaluationCoeffsVec.size(); ++i) { 
+                boost::packaged_task<void> pt([model=static_cast<const GMDH*>(model), &modifiedX=static_cast<const MatrixXd&>(modifiedX), 
+                &y=static_cast<const VectorXd&>(y), &criterion=static_cast<const Criterion&>(criterion), &evaluationCoeffsVec, 
+                &leftTasks, verbose, combsPortion, i] () { 
+                    model->polinomialsEvaluation(modifiedX, y, criterion, 
                     std::begin(evaluationCoeffsVec) + combsPortion * i,
-                    std::begin(evaluationCoeffsVec) + std::min(static_cast<size_t>(combsPortion * (i + 1)), evaluationCoeffsVec.size()), &leftTasks, verbose));
+                    std::begin(evaluationCoeffsVec) + std::min(static_cast<size_t>(combsPortion * (i + 1)), evaluationCoeffsVec.size()), 
+                    &leftTasks, verbose);});
                 futures.push_back(pt.get_future());
                 post(pool, std::move(pt));
-                //if (verbose)
-                  //  progressBar->set_progress(100.0 * (evaluationCoeffsVec.size() - leftTasks) / evaluationCoeffsVec.size());
             }
 
             if (verbose) {
