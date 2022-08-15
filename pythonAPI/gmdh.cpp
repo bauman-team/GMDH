@@ -3,7 +3,7 @@
 // to convert C++ STL containers to python list
 #include <pybind11/stl.h>
 #include <pybind11/iostream.h>
-#include "../src/combi.h"
+#include "../src/multi.h"
 
 namespace py = pybind11;
 
@@ -46,6 +46,15 @@ PYBIND11_MODULE(gmdhpy, m)
         .def("predict", static_cast<Eigen::VectorXd (GMDH::COMBI::*) (const Eigen::MatrixXd&) const>(&GMDH::COMBI::predict))
         .def("fit", &GMDH::COMBI::fit, py::call_guard<py::scoped_ostream_redirect, py::scoped_estream_redirect>())
         .def("getBestPolymon", &GMDH::COMBI::getBestPolynomial);
+
+    py::class_<GMDH::MULTI, GMDH::COMBI>(m, "MULTI")
+        .def(py::init<>())
+        .def("save", &GMDH::MULTI::save)
+        .def("load", &GMDH::MULTI::load)
+        .def("predict", static_cast<double (GMDH::MULTI::*) (const Eigen::RowVectorXd&) const>(&GMDH::MULTI::predict))
+        .def("predict", static_cast<Eigen::VectorXd(GMDH::MULTI::*) (const Eigen::MatrixXd&) const>(&GMDH::MULTI::predict))
+        .def("fit", &GMDH::MULTI::fit, py::call_guard<py::scoped_ostream_redirect, py::scoped_estream_redirect>())
+        .def("getBestPolymon", &GMDH::MULTI::getBestPolynomial);
 
 
     //m.def("polynomailFeatures", &polynomailFeatures);
