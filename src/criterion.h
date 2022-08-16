@@ -2,7 +2,7 @@ namespace GMDH {
 
 enum Solver { fast, accurate, balanced };
 
-class Criterion {
+class GMDH_API Criterion {
 
 protected:
     Solver solver;
@@ -12,7 +12,7 @@ public:
     virtual PairDVXd calculate(const MatrixXd& x, const VectorXd& y) const = 0;
 };
 
-class RegularityCriterionTS : public Criterion
+class GMDH_API RegularityCriterionTS : public Criterion
 {
 protected:
     double testSize;
@@ -23,7 +23,7 @@ public:
     PairDVXd calculate(const MatrixXd& x, const VectorXd& y) const override;
 };
 
-class RegularityCriterion : public RegularityCriterionTS {
+class GMDH_API RegularityCriterion : public RegularityCriterionTS {
 
     bool shuffle;
     int randomSeed;

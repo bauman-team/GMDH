@@ -1,3 +1,4 @@
+//#include "pch.h"
 #include "multi.h"
 
 namespace GMDH

@@ -1,4 +1,3 @@
-#include <iostream>
 #include "gmdh.h"
 
 namespace GMDH {
@@ -84,7 +83,6 @@ namespace GMDH {
                 currLevelEvaluation->setCombination(std::move(*it));
 
             leftTasks = static_cast<int>(evaluationCoeffsVec.size());
-
             if (verbose) {
                 progressBar = std::make_unique<ProgressBar>(
                     option::BarWidth{30},
