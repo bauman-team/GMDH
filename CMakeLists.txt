@@ -59,11 +59,18 @@ if(Boost_FOUND)
     target_link_libraries(${PROJECT_EXAMPLES} PRIVATE ${Boost_LIBRARIES})
 endif()
 
-#set(TESTS_NAME GTests)
-#add_executable(${TESTS_NAME}
-#	tests/combi_test.cpp
-#)
 
-#enable_testing()
-#add_test(NAME ${TESTS_NAME}
-#	COMMAND ${TESTS_NAME})
+
+set(TESTS_NAME gmdh_tests)
+add_executable(${TESTS_NAME}
+	tests/test_combi.cpp
+)
+
+target_include_directories(${TESTS_NAME} PRIVATE src/ external/eigen-3.4 external/indicators-master/include)
+target_include_directories(${TESTS_NAME} PRIVATE ${Boost_INCLUDE_DIR}) # fix boost not find
+target_link_libraries(${TESTS_NAME} PRIVATE ${Boost_LIBRARIES})
+target_link_libraries(${TESTS_NAME} PRIVATE ${LIBRARY_NAME} gtest gtest_main)
+
+enable_testing()
+add_test(NAME ${TESTS_NAME}
+	COMMAND ${TESTS_NAME})
