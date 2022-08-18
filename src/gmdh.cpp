@@ -3,10 +3,13 @@
 
 namespace GMDH {
 
-    void GMDH::polinomialsEvaluation(const MatrixXd& x, const VectorXd& y, const Criterion& criterion, 
+    void GMDH::polinomialsEvaluation(const SplittedData& data, const Criterion& criterion, 
         IterC beginCoeffsVec, IterC endCoeffsVec, std::atomic<int> *leftTasks, bool verbose) const {
         for (; beginCoeffsVec < endCoeffsVec; ++beginCoeffsVec) {
-            auto pairCoeffsEvaluation = criterion.calculate(x(Eigen::all, (*beginCoeffsVec).combination()), y);
+            //auto pairCoeffsEvaluation = criterion.calculate(x(Eigen::all, (*beginCoeffsVec).combination()), y);
+            auto pairCoeffsEvaluation = criterion.calculate(data.xTrain(Eigen::all, (*beginCoeffsVec).combination()),
+                                                            data.xTest(Eigen::all, (*beginCoeffsVec).combination()),
+                                                            data.yTrain, data.yTest);
             (*beginCoeffsVec).setEvaluation(pairCoeffsEvaluation.first);
             (*beginCoeffsVec).setBestCoeffs(std::move(pairCoeffsEvaluation.second));
             if (unlikely(verbose))
@@ -24,6 +27,7 @@ namespace GMDH {
                 std::sort(std::begin(_bestCombinations), std::end(_bestCombinations));
             }
         }
+        // TODO: if sequential criterion => call recalculate() for _bestCombinations
         double currLevelEvaluation = 0;
         for (auto i : _bestCombinations)
             currLevelEvaluation += i.evaluation();
@@ -52,7 +56,9 @@ namespace GMDH {
         return modelName;
     }
 
-    GMDH& GMDH::fit(MatrixXd x, VectorXd y, const Criterion& criterion, uint8_t p, int threads, int verbose) { // TODO: except threads, p = 0 error!!!
+    GMDH& GMDH::fit(MatrixXd x, VectorXd y, const Criterion& criterion, double testSize, bool shuffle, int randomSeed, 
+                    uint8_t p, int threads, int verbose) { // TODO: except threads, p = 0 error!!!
+
         using namespace indicators;
         using T = boost::packaged_task<void>;
 
@@ -75,9 +81,16 @@ namespace GMDH {
         modifiedX.col(x.cols()).setOnes();
         modifiedX.leftCols(x.cols()) = x;
 
-        while (level < modifiedX.cols()) { // TODO: move condition to virtual method
+        SplittedData data = splitData(modifiedX, y, testSize, shuffle, randomSeed);
+
+        std::cout << data.xTrain << "\n\n";
+        std::cout << data.xTest << "\n\n";
+        std::cout << data.yTrain << "\n\n";
+        std::cout << data.yTest << "\n\n";
+
+        while (level < data.xTrain.cols()) { // TODO: move condition to virtual method
             VectorC evaluationCoeffsVec;
-            auto combinations = getCombinations(x.cols(), level);
+            auto combinations = getCombinations(data.xTrain.cols() - 1, level);
             evaluationCoeffsVec.resize(combinations.size());
             auto currLevelEvaluation = std::begin(evaluationCoeffsVec);
             for (auto it = std::begin(combinations); it != std::end(combinations); ++it, ++currLevelEvaluation)
@@ -100,11 +113,9 @@ namespace GMDH {
             decltype(auto) model = this;
             auto combsPortion = static_cast<int>(std::ceil(evaluationCoeffsVec.size() / static_cast<double>(threads)));
             for (auto i = 0; i * combsPortion < evaluationCoeffsVec.size(); ++i) { 
-                boost::packaged_task<void> pt([model=static_cast<const GMDH*>(model), &modifiedX=static_cast<const MatrixXd&>(modifiedX), 
-                &y=static_cast<const VectorXd&>(y), &criterion=static_cast<const Criterion&>(criterion), &evaluationCoeffsVec, 
-                &leftTasks, verbose, combsPortion, i] () { 
-                    model->polinomialsEvaluation(modifiedX, y, criterion, 
-                    std::begin(evaluationCoeffsVec) + combsPortion * i,
+                boost::packaged_task<void> pt([model=static_cast<const GMDH*>(model), &data=static_cast<const SplittedData&>(data), 
+                &criterion=static_cast<const Criterion&>(criterion), &evaluationCoeffsVec, &leftTasks, verbose, combsPortion, i] () { 
+                    model->polinomialsEvaluation(data, criterion, std::begin(evaluationCoeffsVec) + combsPortion * i,
                     std::begin(evaluationCoeffsVec) + std::min(static_cast<size_t>(combsPortion * (i + 1)), evaluationCoeffsVec.size()), 
                     &leftTasks, verbose);});
                 futures.push_back(pt.get_future());
@@ -178,40 +189,35 @@ namespace GMDH {
         return PairMVXd(xTimeSeries, yTimeSeries);
     }
 
-    SplittedData splitTimeSeries(MatrixXd x, VectorXd y, double testSize)
-    {
-        SplittedData data;
-        data.xTrain = x.topRows(x.rows() - round(x.rows() * testSize));
-        data.xTest = x.bottomRows(round(x.rows() * testSize));
-        data.yTrain = y.head(y.size() - round(y.size() * testSize));
-        data.yTest = y.tail(round(y.size() * testSize));
-        return data;
-    }
-
     SplittedData splitData(MatrixXd x, VectorXd y, double testSize, bool shuffle, int randomSeed)
     {
-        if (!shuffle)
-            return splitTimeSeries(x, y, testSize);
-
-        if (randomSeed != 0)
-            std::srand(randomSeed);
-        else
-            std::srand(std::time(NULL));
-
-        
-        VectorI shuffled_rows_indexes(x.rows());
-        std::iota(shuffled_rows_indexes.begin(), shuffled_rows_indexes.end(), 0);
-        std::random_shuffle(shuffled_rows_indexes.begin(), shuffled_rows_indexes.end());
-
-        VectorI train_indexes(shuffled_rows_indexes.begin(), shuffled_rows_indexes.end() - round(x.rows() * testSize));
-        VectorI test_indexes(shuffled_rows_indexes.end() - round(x.rows() * testSize), shuffled_rows_indexes.end());
-        
         SplittedData data;
-        data.xTrain = x(train_indexes, Eigen::all);
-        data.xTest = x(test_indexes, Eigen::all);
-        data.yTrain = y(train_indexes);
-        data.yTest = y(test_indexes);
+        if (!shuffle)
+        {
+            data.xTrain = x.topRows(x.rows() - round(x.rows() * testSize));
+            data.xTest = x.bottomRows(round(x.rows() * testSize));
+            data.yTrain = y.head(y.size() - round(y.size() * testSize));
+            data.yTest = y.tail(round(y.size() * testSize));
+        }
+        else
+        {
+            if (randomSeed != 0)
+                std::srand(randomSeed);
+            else
+                std::srand(std::time(NULL));
 
+            VectorI shuffled_rows_indexes(x.rows());
+            std::iota(shuffled_rows_indexes.begin(), shuffled_rows_indexes.end(), 0);
+            std::random_shuffle(shuffled_rows_indexes.begin(), shuffled_rows_indexes.end());
+
+            VectorI train_indexes(shuffled_rows_indexes.begin(), shuffled_rows_indexes.end() - round(x.rows() * testSize));
+            VectorI test_indexes(shuffled_rows_indexes.end() - round(x.rows() * testSize), shuffled_rows_indexes.end());
+
+            data.xTrain = x(train_indexes, Eigen::all);
+            data.xTest = x(test_indexes, Eigen::all);
+            data.yTrain = y(train_indexes);
+            data.yTest = y(test_indexes);
+        }
         return data;
     }
 

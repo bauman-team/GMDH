@@ -79,7 +79,7 @@ using cIterC = VectorC::const_iterator;
     
 
 class GMDH {
-    void polinomialsEvaluation(const MatrixXd& x, const VectorXd& y, const Criterion& criterion, 
+    void polinomialsEvaluation(const SplittedData& data, const Criterion& criterion,
         IterC beginCoeffsVec, IterC endCoeffsVec, std::atomic<int> *leftTasks, bool verbose) const;
     virtual bool nextLevelCondition(double &lastLevelEvaluation, uint8_t p, VectorC& combinations);
     //int calculateLeftTasksForVerbose(const std::vector<std::shared_ptr<std::vector<Combination>::iterator> > beginTasksVec, 
@@ -97,7 +97,10 @@ public:
     GMDH() : level(1) { }
     virtual int save(const std::string& path) const = 0;
     virtual int load(const std::string& path) = 0;
-    GMDH& fit(MatrixXd x, VectorXd y, const Criterion& criterion, uint8_t p = 1, int threads = 1, int verbose = 0);
+
+    GMDH& fit(MatrixXd x, VectorXd y, const Criterion& criterion, double testSize = 0.5, bool shuffle = false,
+            int randomSeed = 0, uint8_t p = 1, int threads = 1, int verbose = 0);
+
     virtual double predict(const RowVectorXd& x) const = 0;
     virtual VectorXd predict(const MatrixXd& x) const = 0;
     virtual std::string getBestPolynomial() const = 0;
@@ -106,8 +109,7 @@ public:
 
 //mat polynomailFeatures(const mat X, int max_degree);
 PairMVXd convertToTimeSeries(VectorXd x, int lags);
-SplittedData splitTimeSeries(MatrixXd x, VectorXd y, double testSize = 0.2);
-SplittedData splitData(MatrixXd x, VectorXd y, double testSize = 0.2, bool shuffle = true, int randomSeed = 0);
+SplittedData splitData(MatrixXd x, VectorXd y, double testSize = 0.2, bool shuffle = false, int randomSeed = 0);
 
 }
 

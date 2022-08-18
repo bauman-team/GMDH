@@ -1,35 +1,57 @@
 namespace GMDH {
 
-enum Solver { fast, accurate, balanced };
+enum class Solver { fast, accurate, balanced };
+
+enum class CriterionType {regularity, symRegularity, stability, symStability, unbiasedOutputs, symUnbiasedOutputs,
+                    unbiasedCoeffs, absoluteStability, symAbsoluteStability}; // TODO: maybe add cross validation criterion
 
 class Criterion {
 
+    // TODO: add map to save found coeffs and y-values
+    
 protected:
+    CriterionType criterionType;
     Solver solver;
+
     VectorXd findBestCoeffs(const MatrixXd& xTrain, const VectorXd& yTrain) const;
+    PairDVXd getResult(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain, const VectorXd& yTest, CriterionType _criterionType) const;
+
+    PairDVXd regularity(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain, const VectorXd& yTest, bool inverseSplit = false) const;
+    PairDVXd symRegularity(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain, const VectorXd& yTest) const;
+    PairDVXd stability(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain, const VectorXd& yTest, bool inverseSplit = false) const;
+    PairDVXd symStability(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain, const VectorXd& yTest) const;
+    PairDVXd unbiasedOutputs(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain, const VectorXd& yTest) const;
+    PairDVXd symUnbiasedOutputs(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain, const VectorXd& yTest) const;
+    PairDVXd unbiasedCoeffs(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain, const VectorXd& yTest) const;
+    PairDVXd absoluteStability(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain, const VectorXd& yTest) const;
+    PairDVXd symAbsoluteStability(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain, const VectorXd& yTest) const;
 
 public:
-    virtual PairDVXd calculate(const MatrixXd& x, const VectorXd& y) const = 0;
+    Criterion() {};
+    Criterion(CriterionType _criterionType, Solver _solver = Solver::balanced);
+
+    virtual PairDVXd calculate(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain, const VectorXd& yTest) const;
 };
 
-class RegularityCriterionTS : public Criterion
-{
-protected:
-    double testSize;
 
-    PairDVXd getCriterionValue(const SplittedData& data) const;
-public:
-    RegularityCriterionTS(double _testSize = 0.33, Solver _solver = Solver::balanced);
-    PairDVXd calculate(const MatrixXd& x, const VectorXd& y) const override;
-};
-
-class RegularityCriterion : public RegularityCriterionTS {
-
-    bool shuffle;
-    int randomSeed;
+class ParallelCriterion : public Criterion {
+    CriterionType secondCriterionType;
+    double alpha;
 
 public:
-    RegularityCriterion(double _testSize = 0.33, Solver _solver = Solver::balanced, bool _shuffle = true, int _randomSeed = 0);
-    PairDVXd calculate(const MatrixXd& x, const VectorXd& y) const override;
+    ParallelCriterion(CriterionType _firstCriterionType, CriterionType _secondCriterionType, 
+                        double _alpha = 0.5, Solver _solver = Solver::balanced);
+
+    PairDVXd calculate(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain, const VectorXd& yTest) const override;
 };
+
+/*class SequentialCriterion : public Criterion {
+    CriterionType secondCriterionType;
+
+public:
+    SequentialCriterion(CriterionType _firstCriterionType, CriterionType _secondCriterionType, Solver _solver = Solver::balanced);
+
+    PairDVXd calculate(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain, const VectorXd& yTest) const override;
+    PairDVXd recalculate(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain, const VectorXd& yTest, const VectorXd& foundCoeffs) const;
+};*/
 }

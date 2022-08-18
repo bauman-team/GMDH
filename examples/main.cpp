@@ -1,5 +1,5 @@
 #include <iostream>
-#include "multi.h"
+#include <multi.h>
 
 
 int main() {
@@ -23,7 +23,6 @@ int main() {
     double testSize = 0.33;
     auto timeSeries = GMDH::convertToTimeSeries(data, lags);
     GMDH::SplittedData splittedData = GMDH::splitData(timeSeries.first, timeSeries.second, validateSize);
-
     std::cout << splittedData.xTrain << "\n\n";
     std::cout << splittedData.xTest << "\n\n";
     std::cout << splittedData.yTrain << "\n\n";
@@ -70,11 +69,11 @@ int main() {
     */
 
 
-    std::cout << "Original time series:\n" << data << "\n\n";
+    std::cout << "Original time series:\n" << x << "\n\n";
 
 
     GMDH::MULTI multi;
-    multi.fit(splittedData.xTrain, splittedData.yTrain, GMDH::ParallelCriterion(GMDH::CriterionType::unbiasedCoeffs, GMDH::CriterionType::regularity), testSize, 0, 0, 1, 1, 0);
+    multi.fit(splittedData.xTrain, splittedData.yTrain, GMDH::Criterion(GMDH::CriterionType::regularity, GMDH::Solver::fast), testSize);
 
     std::cout << "The best polynom:\n" << multi.getBestPolynomial() << std::endl;
 
