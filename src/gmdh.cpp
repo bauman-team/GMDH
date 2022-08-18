@@ -6,7 +6,6 @@ namespace GMDH {
     void GMDH::polinomialsEvaluation(const SplittedData& data, const Criterion& criterion, 
         IterC beginCoeffsVec, IterC endCoeffsVec, std::atomic<int> *leftTasks, bool verbose) const {
         for (; beginCoeffsVec < endCoeffsVec; ++beginCoeffsVec) {
-            //auto pairCoeffsEvaluation = criterion.calculate(x(Eigen::all, (*beginCoeffsVec).combination()), y);
             auto pairCoeffsEvaluation = criterion.calculate(data.xTrain(Eigen::all, (*beginCoeffsVec).combination()),
                                                             data.xTest(Eigen::all, (*beginCoeffsVec).combination()),
                                                             data.yTrain, data.yTest);
@@ -17,21 +16,23 @@ namespace GMDH {
         }      
     }
 
-    bool GMDH::nextLevelCondition(double &lastLevelEvaluation, uint8_t p, VectorC& combinations) {
-        VectorC _bestCombinations(std::begin(combinations), std::begin(combinations) + p); 
-        std::sort(std::begin(_bestCombinations), std::end(_bestCombinations));
-        for (auto combBegin = std::begin(combinations) + p, combEnd = std::end(combinations); 
-        combBegin != combEnd; ++combBegin) {
-            if (*combBegin < _bestCombinations.back()) {
-                std::swap(*combBegin, _bestCombinations.back());
-                std::sort(std::begin(_bestCombinations), std::end(_bestCombinations));
+    bool GMDH::nextLevelCondition(double &lastLevelEvaluation, uint8_t p, VectorC& combinations, const Criterion& criterion, const SplittedData& data) {
+        VectorC _bestCombinations = getBestCombinations(combinations, kBest);
+
+        // TODO: add threads or kBest value will be always small?
+        if (criterion.getClassName() == "SequentialCriterion") {
+            for (auto combBegin = std::begin(_bestCombinations), combEnd = std::end(_bestCombinations); combBegin != combEnd; ++combBegin) {
+                auto pairCoeffsEvaluation = static_cast<const SequentialCriterion&>(criterion).recalculate(
+                                            data.xTrain(Eigen::all, (*combBegin).combination()),
+                                            data.xTest(Eigen::all, (*combBegin).combination()),
+                                            data.yTrain, data.yTest);
+                (*combBegin).setEvaluation(pairCoeffsEvaluation.first);
+                //(*combBegin).setBestCoeffs(std::move(pairCoeffsEvaluation.second)); // coeffs before and after recalculation are always equal
             }
+            std::sort(std::begin(_bestCombinations), std::end(_bestCombinations));
         }
-        // TODO: if sequential criterion => call recalculate() for _bestCombinations
-        double currLevelEvaluation = 0;
-        for (auto i : _bestCombinations)
-            currLevelEvaluation += i.evaluation();
-        currLevelEvaluation /= static_cast<double>(p);
+
+        double currLevelEvaluation = getMeanCriterionValue(_bestCombinations, p);
         if (lastLevelEvaluation > currLevelEvaluation) {
             bestCombinations = std::move(_bestCombinations);
             lastLevelEvaluation = currLevelEvaluation;
@@ -54,6 +55,31 @@ namespace GMDH {
         std::string modelName = std::string(boost::typeindex::type_id_runtime(*this).pretty_name());
         modelName = modelName.substr(modelName.find_last_of(':') + 1);
         return modelName;
+    }
+
+    VectorC GMDH::getBestCombinations(VectorC& combinations, int k) const
+    {
+        k = std::min(k, static_cast<int>(combinations.size()));
+        VectorC _bestCombinations(std::begin(combinations), std::begin(combinations) + k);
+        std::sort(std::begin(_bestCombinations), std::end(_bestCombinations));
+        for (auto combBegin = std::begin(combinations) + k, combEnd = std::end(combinations);
+            combBegin != combEnd; ++combBegin) {
+            if (*combBegin < _bestCombinations.back()) {
+                std::swap(*combBegin, _bestCombinations.back());
+                std::sort(std::begin(_bestCombinations), std::end(_bestCombinations));
+            }
+        }
+        return _bestCombinations;
+    }
+
+    double GMDH::getMeanCriterionValue(const VectorC& sortedCombinations, int k) const
+    {
+        k = std::min(k, static_cast<int>(sortedCombinations.size()));
+        double currLevelEvaluation = 0;
+        for (auto combBegin = std::begin(sortedCombinations); combBegin != std::begin(sortedCombinations) + k; ++combBegin)
+            currLevelEvaluation += (*combBegin).evaluation();
+        currLevelEvaluation /= static_cast<double>(k);
+        return currLevelEvaluation;
     }
 
     GMDH& GMDH::fit(MatrixXd x, VectorXd y, const Criterion& criterion, double testSize, bool shuffle, int randomSeed, 
@@ -83,10 +109,10 @@ namespace GMDH {
 
         SplittedData data = splitData(modifiedX, y, testSize, shuffle, randomSeed);
 
-        std::cout << data.xTrain << "\n\n";
+        /*std::cout << data.xTrain << "\n\n";
         std::cout << data.xTest << "\n\n";
         std::cout << data.yTrain << "\n\n";
-        std::cout << data.yTest << "\n\n";
+        std::cout << data.yTest << "\n\n";*/
 
         while (level < data.xTrain.cols()) { // TODO: move condition to virtual method
             VectorC evaluationCoeffsVec;
@@ -132,7 +158,7 @@ namespace GMDH {
             }
 
             // > or >= ?
-            if (nextLevelCondition(lastLevelEvaluation, p, evaluationCoeffsVec)) { 
+            if (nextLevelCondition(lastLevelEvaluation, p, evaluationCoeffsVec, criterion, data)) { 
                 ++level; //TODO: add goToTheNextLevel() virtual method
                 futures.clear();
             }

@@ -10,6 +10,7 @@ class Criterion {
     // TODO: add map to save found coeffs and y-values
     
 protected:
+
     CriterionType criterionType;
     Solver solver;
 
@@ -30,6 +31,8 @@ public:
     Criterion() {};
     Criterion(CriterionType _criterionType, Solver _solver = Solver::balanced);
 
+    std::string getClassName() const;
+
     virtual PairDVXd calculate(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain, const VectorXd& yTest) const;
 };
 
@@ -45,13 +48,13 @@ public:
     PairDVXd calculate(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain, const VectorXd& yTest) const override;
 };
 
-/*class SequentialCriterion : public Criterion {
+class SequentialCriterion : public Criterion {
     CriterionType secondCriterionType;
 
 public:
     SequentialCriterion(CriterionType _firstCriterionType, CriterionType _secondCriterionType, Solver _solver = Solver::balanced);
 
     PairDVXd calculate(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain, const VectorXd& yTest) const override;
-    PairDVXd recalculate(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain, const VectorXd& yTest, const VectorXd& foundCoeffs) const;
-};*/
+    PairDVXd recalculate(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain, const VectorXd& yTest) const;
+};
 }

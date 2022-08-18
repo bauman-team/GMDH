@@ -6,7 +6,7 @@ int main() {
 
     using namespace Eigen;
 
-    /*std::ifstream dataStream;
+    std::ifstream dataStream;
     dataStream.open("../examples/Sber.csv");
     std::string dataLine;
     std::vector<double> dataValues;
@@ -15,19 +15,20 @@ int main() {
             dataValues.push_back(std::atof(dataLine.c_str()));
         }
     }
-    VectorXd data = Map<VectorXd, Unaligned>(dataValues.data(), dataValues.size() - 50000);*/
+    VectorXd data = Map<VectorXd, Unaligned>(dataValues.data(), dataValues.size() - 50000);
 
-    VectorXd data(10); data << 1, 2, 3, 4, 5, 6, 7, 8, 9, 10;
-    int lags = 5;
+    //VectorXd data(10); data << 1, 2, 3, 4, 5, 6, 7, 8, 9, 10;
+
+    int lags = 20;
     double validateSize = 0.2;
     double testSize = 0.33;
     auto timeSeries = GMDH::convertToTimeSeries(data, lags);
     GMDH::SplittedData splittedData = GMDH::splitData(timeSeries.first, timeSeries.second, validateSize);
 
-    std::cout << splittedData.xTrain << "\n\n";
+    /*std::cout << splittedData.xTrain << "\n\n";
     std::cout << splittedData.xTest << "\n\n";
     std::cout << splittedData.yTrain << "\n\n";
-    std::cout << splittedData.yTest << "\n\n";
+    std::cout << splittedData.yTest << "\n\n";*/
 
     /*
         x1    x2     x3     x4   => x1, x2
@@ -70,11 +71,11 @@ int main() {
     */
 
 
-    std::cout << "Original time series:\n" << data << "\n\n";
+    //std::cout << "Original time series:\n" << data << "\n\n";
 
 
     GMDH::MULTI multi;
-    multi.fit(splittedData.xTrain, splittedData.yTrain, GMDH::ParallelCriterion(GMDH::CriterionType::unbiasedCoeffs, GMDH::CriterionType::regularity), testSize, 0, 0, 1, 1, 0);
+    multi.fit(splittedData.xTrain, splittedData.yTrain, GMDH::SequentialCriterion(GMDH::CriterionType::regularity, GMDH::CriterionType::unbiasedCoeffs), 5, testSize, 0, 0, 1, 1, 1);
 
     std::cout << "The best polynom:\n" << multi.getBestPolynomial() << std::endl;
 
@@ -84,8 +85,8 @@ int main() {
     auto res2 = multi.predict(splittedData.xTest);
     std::cout << "The best polynom after loading:\n" << multi.getBestPolynomial() << std::endl;
 
-    std::cout << "Predicted values before model saving:\n" << res << "\n\n";
-    std::cout << "Predicted values after model loading:\n" << res2 << "\n\n";
+    /*std::cout << "Predicted values before model saving:\n" << res << "\n\n";
+    std::cout << "Predicted values after model loading:\n" << res2 << "\n\n";*/
 
     (std::cin).get();
 
