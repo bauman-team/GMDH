@@ -19,7 +19,7 @@ int main() {
 
     //VectorXd data(10); data << 1, 2, 3, 4, 5, 6, 7, 8, 9, 10;
 
-    int lags = 20;
+    int lags = 500;
     double validateSize = 0.2;
     double testSize = 0.33;
     auto timeSeries = GMDH::convertToTimeSeries(data, lags);
@@ -75,7 +75,7 @@ int main() {
 
 
     GMDH::MULTI multi;
-    multi.fit(splittedData.xTrain, splittedData.yTrain, GMDH::SequentialCriterion(GMDH::CriterionType::regularity, GMDH::CriterionType::unbiasedCoeffs), 5, testSize, 0, 0, 1, 1, 1);
+    multi.fit(splittedData.xTrain, splittedData.yTrain, GMDH::SequentialCriterion(GMDH::CriterionType::symStability, GMDH::CriterionType::symRegularity), 30, testSize, 0, 0, 20, 1, 1);
 
     std::cout << "The best polynom:\n" << multi.getBestPolynomial() << std::endl;
 
@@ -88,7 +88,7 @@ int main() {
     /*std::cout << "Predicted values before model saving:\n" << res << "\n\n";
     std::cout << "Predicted values after model loading:\n" << res2 << "\n\n";*/
 
-    (std::cin).get();
+    //(std::cin).get();
 
     return 0;
 }

@@ -20,6 +20,7 @@
 #include <boost/thread/thread.hpp>
 #include <boost/thread/future.hpp>
 #include <boost/type_index.hpp>
+#include <boost/chrono.hpp>
 
 #include <indicators/progress_bar.hpp>
 #include <indicators/cursor_control.hpp>
@@ -79,9 +80,9 @@ using cIterC = VectorC::const_iterator;
     
 
 class GMDH {
-    void polinomialsEvaluation(const SplittedData& data, const Criterion& criterion,
+    void polinomialsEvaluation(const SplittedData& data, Criterion& criterion,
         IterC beginCoeffsVec, IterC endCoeffsVec, std::atomic<int> *leftTasks, bool verbose) const;
-    virtual bool nextLevelCondition(double &lastLevelEvaluation, uint8_t p, VectorC& combinations, const Criterion& criterion, const SplittedData& data);
+    virtual bool nextLevelCondition(double &lastLevelEvaluation, uint8_t p, VectorC& combinations, Criterion& criterion, const SplittedData& data);
     //int calculateLeftTasksForVerbose(const std::vector<std::shared_ptr<std::vector<Combination>::iterator> > beginTasksVec, 
     //const std::vector<std::shared_ptr<std::vector<Combination>::iterator> > endTasksVec) const;
 protected:
@@ -97,7 +98,7 @@ protected:
     virtual VectorC getBestCombinations(VectorC& combinations, int k) const;
     double getMeanCriterionValue(const VectorC& sortedCombinations, int k) const;
 
-    GMDH& fit(MatrixXd x, VectorXd y, const Criterion& criterion, double testSize = 0.5, bool shuffle = false,
+    GMDH& fit(MatrixXd x, VectorXd y, Criterion& criterion, double testSize = 0.5, bool shuffle = false,
         int randomSeed = 0, uint8_t p = 1, int threads = 1, int verbose = 0);
 
 public:
