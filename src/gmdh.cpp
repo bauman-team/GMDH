@@ -3,7 +3,7 @@
 
 namespace GMDH {
 
-    void GMDH::polinomialsEvaluation(const SplittedData& data, Criterion& criterion, 
+    void GMDH::polinomialsEvaluation(const SplittedData& data, const Criterion& criterion, 
         IterC beginCoeffsVec, IterC endCoeffsVec, std::atomic<int> *leftTasks, bool verbose) const {
         for (; beginCoeffsVec < endCoeffsVec; ++beginCoeffsVec) {
             auto pairCoeffsEvaluation = criterion.calculate(data.xTrain(Eigen::all, (*beginCoeffsVec).combination()),
@@ -16,18 +16,17 @@ namespace GMDH {
         }      
     }
 
-    bool GMDH::nextLevelCondition(double &lastLevelEvaluation, uint8_t p, VectorC& combinations, Criterion& criterion, const SplittedData& data) {
+    bool GMDH::nextLevelCondition(double &lastLevelEvaluation, uint8_t p, VectorC& combinations, const Criterion& criterion, const SplittedData& data) {
         VectorC _bestCombinations = getBestCombinations(combinations, kBest);
 
         // TODO: add threads or kBest value will be always small?
         if (criterion.getClassName() == "SequentialCriterion") {
             for (auto combBegin = std::begin(_bestCombinations), combEnd = std::end(_bestCombinations); combBegin != combEnd; ++combBegin) {
-                auto pairCoeffsEvaluation = static_cast<SequentialCriterion&>(criterion).recalculate(
+                auto pairCoeffsEvaluation = static_cast<const SequentialCriterion&>(criterion).recalculate(
                                             data.xTrain(Eigen::all, (*combBegin).combination()),
                                             data.xTest(Eigen::all, (*combBegin).combination()),
-                                            data.yTrain, data.yTest);
+                                            data.yTrain, data.yTest, (*combBegin).bestCoeffs());
                 (*combBegin).setEvaluation(pairCoeffsEvaluation.first);
-                //(*combBegin).setBestCoeffs(std::move(pairCoeffsEvaluation.second)); // coeffs before and after recalculation are always equal
             }
             std::sort(std::begin(_bestCombinations), std::end(_bestCombinations));
         }
@@ -82,7 +81,7 @@ namespace GMDH {
         return currLevelEvaluation;
     }
 
-    GMDH& GMDH::fit(MatrixXd x, VectorXd y, Criterion& criterion, double testSize, bool shuffle, int randomSeed, 
+    GMDH& GMDH::fit(MatrixXd x, VectorXd y, const Criterion& criterion, double testSize, bool shuffle, int randomSeed, 
                     uint8_t p, int threads, int verbose) { // TODO: except threads, p = 0 error!!!
 
         using namespace indicators;
@@ -140,7 +139,7 @@ namespace GMDH {
             auto combsPortion = static_cast<int>(std::ceil(evaluationCoeffsVec.size() / static_cast<double>(threads)));
             for (auto i = 0; i * combsPortion < evaluationCoeffsVec.size(); ++i) { 
                 boost::packaged_task<void> pt([model=static_cast<const GMDH*>(model), &data=static_cast<const SplittedData&>(data), 
-                &criterion=static_cast<Criterion&>(criterion), &evaluationCoeffsVec, &leftTasks, verbose, combsPortion, i] () { 
+                &criterion=static_cast<const Criterion&>(criterion), &evaluationCoeffsVec, &leftTasks, verbose, combsPortion, i] () { 
                     model->polinomialsEvaluation(data, criterion, std::begin(evaluationCoeffsVec) + combsPortion * i,
                     std::begin(evaluationCoeffsVec) + std::min(static_cast<size_t>(combsPortion * (i + 1)), evaluationCoeffsVec.size()), 
                     &leftTasks, verbose);});

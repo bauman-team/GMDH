@@ -2,29 +2,6 @@
 
 namespace GMDH {
 
-    void Criterion::resetCoeffsAndYPred()
-    {
-        /*coeffsTrain.resize(0);
-        coeffsTest.resize(0);
-        coeffsAll.resize(0);
-        yPredTrainByTrain.resize(0);
-        yPredTrainByTest.resize(0);
-        yPredTestByTrain.resize(0);
-        yPredTestByTest.resize(0);*/
-
-        coeffsTrain = VectorXd();
-        coeffsTest = VectorXd();
-        coeffsAll = VectorXd();
-        if (yPredTrainByTrain.size() != 0)
-            yPredTrainByTrain = VectorXd();
-        if (yPredTrainByTest.size() != 0)
-            yPredTrainByTest = VectorXd();
-        if (yPredTestByTrain.size() != 0)
-            yPredTestByTrain = VectorXd();
-        if (yPredTestByTest.size() != 0)
-            yPredTestByTest = VectorXd();
-    }
-
     VectorXd Criterion::findBestCoeffs(const MatrixXd& xTrain, const VectorXd& yTrain) const
     {
         if ((solver == Solver::accurate))
@@ -35,125 +12,125 @@ namespace GMDH {
             return xTrain.householderQr().solve(yTrain);
     }
 
-    PairDVXd Criterion::regularity(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain, const VectorXd& yTest, bool inverseSplit)
+    PairDVXd Criterion::regularity(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain, const VectorXd& yTest, TempValues& tempValues, bool inverseSplit) const
     {
         if (!inverseSplit) {
-            if (coeffsTrain.size() == 0)
-                coeffsTrain = findBestCoeffs(xTrain, yTrain);
-            if (yPredTestByTrain.size() == 0)
-                yPredTestByTrain = xTest * coeffsTrain;
-            return PairDVXd((yTest - yPredTestByTrain).array().square().sum(), coeffsTrain);
+            if (tempValues.coeffsTrain.size() == 0)
+                tempValues.coeffsTrain = findBestCoeffs(xTrain, yTrain);
+            if (tempValues.yPredTestByTrain.size() == 0)
+                tempValues.yPredTestByTrain = xTest * tempValues.coeffsTrain;
+            return PairDVXd((yTest - tempValues.yPredTestByTrain).array().square().sum(), tempValues.coeffsTrain);
         }
         else {
-            if (coeffsTest.size() == 0)
-                coeffsTest = findBestCoeffs(xTest, yTest);
-            if (yPredTrainByTest.size() == 0)
-                yPredTrainByTest = xTrain * coeffsTest;
-            return PairDVXd((yTrain - yPredTrainByTest).array().square().sum(), coeffsTest);
+            if (tempValues.coeffsTest.size() == 0)
+                tempValues.coeffsTest = findBestCoeffs(xTest, yTest);
+            if (tempValues.yPredTrainByTest.size() == 0)
+                tempValues.yPredTrainByTest = xTrain * tempValues.coeffsTest;
+            return PairDVXd((yTrain - tempValues.yPredTrainByTest).array().square().sum(), tempValues.coeffsTest);
         }
     }
 
-    PairDVXd Criterion::symRegularity(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain, const VectorXd& yTest)
+    PairDVXd Criterion::symRegularity(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain, const VectorXd& yTest, TempValues& tempValues) const
     {
-        PairDVXd part1 = regularity(xTrain, xTest, yTrain, yTest);
-        PairDVXd part2 = regularity(xTrain, xTest, yTrain, yTest, true);
+        PairDVXd part1 = regularity(xTrain, xTest, yTrain, yTest, tempValues);
+        PairDVXd part2 = regularity(xTrain, xTest, yTrain, yTest, tempValues, true);
         return PairDVXd(part1.first + part2.first, part1.second);
     }
 
-    PairDVXd Criterion::stability(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain, const VectorXd& yTest, bool inverseSplit)
+    PairDVXd Criterion::stability(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain, const VectorXd& yTest, TempValues& tempValues, bool inverseSplit) const
     {
         if (!inverseSplit) {
-            if (coeffsTrain.size() == 0)
-                coeffsTrain = findBestCoeffs(xTrain, yTrain);
-            if (yPredTrainByTrain.size() == 0)
-                yPredTrainByTrain = xTrain * coeffsTrain;
-            if (yPredTestByTrain.size() == 0)
-                yPredTestByTrain = xTest * coeffsTrain;
-            return PairDVXd((yTrain - yPredTrainByTrain).array().square().sum() +
-                            (yTest - yPredTestByTrain).array().square().sum(), coeffsTrain);
+            if (tempValues.coeffsTrain.size() == 0)
+                tempValues.coeffsTrain = findBestCoeffs(xTrain, yTrain);
+            if (tempValues.yPredTrainByTrain.size() == 0)
+                tempValues.yPredTrainByTrain = xTrain * tempValues.coeffsTrain;
+            if (tempValues.yPredTestByTrain.size() == 0)
+                tempValues.yPredTestByTrain = xTest * tempValues.coeffsTrain;
+            return PairDVXd((yTrain - tempValues.yPredTrainByTrain).array().square().sum() +
+                            (yTest - tempValues.yPredTestByTrain).array().square().sum(), tempValues.coeffsTrain);
         }
         else {
-            if (coeffsTest.size() == 0)
-                coeffsTest = findBestCoeffs(xTest, yTest);
-            if (yPredTrainByTest.size() == 0)
-                yPredTrainByTest = xTrain * coeffsTest;
-            if (yPredTestByTest.size() == 0)
-                yPredTestByTest = xTest * coeffsTest;
-            return PairDVXd((yTrain - yPredTrainByTest).array().square().sum() +
-                            (yTest - yPredTestByTest).array().square().sum(), coeffsTest);
+            if (tempValues.coeffsTest.size() == 0)
+                tempValues.coeffsTest = findBestCoeffs(xTest, yTest);
+            if (tempValues.yPredTrainByTest.size() == 0)
+                tempValues.yPredTrainByTest = xTrain * tempValues.coeffsTest;
+            if (tempValues.yPredTestByTest.size() == 0)
+                tempValues.yPredTestByTest = xTest * tempValues.coeffsTest;
+            return PairDVXd((yTrain - tempValues.yPredTrainByTest).array().square().sum() +
+                            (yTest - tempValues.yPredTestByTest).array().square().sum(), tempValues.coeffsTest);
         }
     }
 
-    PairDVXd Criterion::symStability(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain, const VectorXd& yTest)
+    PairDVXd Criterion::symStability(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain, const VectorXd& yTest, TempValues& tempValues) const
     {
-        PairDVXd part1 = stability(xTrain, xTest, yTrain, yTest);
-        PairDVXd part2 = stability(xTrain, xTest, yTrain, yTest, true);
+        PairDVXd part1 = stability(xTrain, xTest, yTrain, yTest, tempValues);
+        PairDVXd part2 = stability(xTrain, xTest, yTrain, yTest, tempValues, true);
         return PairDVXd(part1.first + part2.first, part1.second);
     }
 
-    PairDVXd Criterion::unbiasedOutputs(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain, const VectorXd& yTest)
+    PairDVXd Criterion::unbiasedOutputs(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain, const VectorXd& yTest, TempValues& tempValues) const
     {
-        if (coeffsTrain.size() == 0)
-            coeffsTrain = findBestCoeffs(xTrain, yTrain);
-        if (coeffsTest.size() == 0)
-            coeffsTest = findBestCoeffs(xTest, yTest);
-        if (yPredTestByTrain.size() == 0)
-            yPredTestByTrain = xTest * coeffsTrain;
-        if (yPredTestByTest.size() == 0)
-            yPredTestByTest = xTest * coeffsTest;
-        return PairDVXd((yPredTestByTrain - yPredTestByTest).array().square().sum(), coeffsTrain);
+        if (tempValues.coeffsTrain.size() == 0)
+            tempValues.coeffsTrain = findBestCoeffs(xTrain, yTrain);
+        if (tempValues.coeffsTest.size() == 0)
+            tempValues.coeffsTest = findBestCoeffs(xTest, yTest);
+        if (tempValues.yPredTestByTrain.size() == 0)
+            tempValues.yPredTestByTrain = xTest * tempValues.coeffsTrain;
+        if (tempValues.yPredTestByTest.size() == 0)
+            tempValues.yPredTestByTest = xTest * tempValues.coeffsTest;
+        return PairDVXd((tempValues.yPredTestByTrain - tempValues.yPredTestByTest).array().square().sum(), tempValues.coeffsTrain);
     }
 
-    PairDVXd Criterion::symUnbiasedOutputs(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain, const VectorXd& yTest)
+    PairDVXd Criterion::symUnbiasedOutputs(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain, const VectorXd& yTest, TempValues& tempValues) const
     {
-        if (coeffsTrain.size() == 0)
-            coeffsTrain = findBestCoeffs(xTrain, yTrain);
-        if (coeffsTest.size() == 0)
-            coeffsTest = findBestCoeffs(xTest, yTest);
-        if (yPredTrainByTrain.size() == 0)
-            yPredTrainByTrain = xTrain * coeffsTrain;
-        if (yPredTrainByTest.size() == 0)
-            yPredTrainByTest = xTrain * coeffsTest;
-        if (yPredTestByTrain.size() == 0)
-            yPredTestByTrain = xTest * coeffsTrain;
-        if (yPredTestByTest.size() == 0)
-            yPredTestByTest = xTest * coeffsTest;
-        return PairDVXd((yPredTrainByTrain - yPredTrainByTest).array().square().sum() +
-                        (yPredTestByTrain - yPredTestByTest).array().square().sum(), coeffsTrain);
+        if (tempValues.coeffsTrain.size() == 0)
+            tempValues.coeffsTrain = findBestCoeffs(xTrain, yTrain);
+        if (tempValues.coeffsTest.size() == 0)
+            tempValues.coeffsTest = findBestCoeffs(xTest, yTest);
+        if (tempValues.yPredTrainByTrain.size() == 0)
+            tempValues.yPredTrainByTrain = xTrain * tempValues.coeffsTrain;
+        if (tempValues.yPredTrainByTest.size() == 0)
+            tempValues.yPredTrainByTest = xTrain * tempValues.coeffsTest;
+        if (tempValues.yPredTestByTrain.size() == 0)
+            tempValues.yPredTestByTrain = xTest * tempValues.coeffsTrain;
+        if (tempValues.yPredTestByTest.size() == 0)
+            tempValues.yPredTestByTest = xTest * tempValues.coeffsTest;
+        return PairDVXd((tempValues.yPredTrainByTrain - tempValues.yPredTrainByTest).array().square().sum() +
+                        (tempValues.yPredTestByTrain - tempValues.yPredTestByTest).array().square().sum(), tempValues.coeffsTrain);
     }
 
-    PairDVXd Criterion::unbiasedCoeffs(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain, const VectorXd& yTest)
+    PairDVXd Criterion::unbiasedCoeffs(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain, const VectorXd& yTest, TempValues& tempValues) const
     {
-        if (coeffsTrain.size() == 0)
-            coeffsTrain = findBestCoeffs(xTrain, yTrain);
-        if (coeffsTest.size() == 0)
-            coeffsTest = findBestCoeffs(xTest, yTest);
-        return PairDVXd((coeffsTrain - coeffsTest).array().square().sum(), coeffsTrain);
+        if (tempValues.coeffsTrain.size() == 0)
+            tempValues.coeffsTrain = findBestCoeffs(xTrain, yTrain);
+        if (tempValues.coeffsTest.size() == 0)
+            tempValues.coeffsTest = findBestCoeffs(xTest, yTest);
+        return PairDVXd((tempValues.coeffsTrain - tempValues.coeffsTest).array().square().sum(), tempValues.coeffsTrain);
     }
 
-    PairDVXd Criterion::absoluteStability(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain, const VectorXd& yTest)
+    PairDVXd Criterion::absoluteStability(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain, const VectorXd& yTest, TempValues& tempValues) const
     {
         VectorXd yPredTestByAll;
-        if (coeffsTrain.size() == 0)
-            coeffsTrain = findBestCoeffs(xTrain, yTrain);
-        if (coeffsTest.size() == 0)
-            coeffsTest = findBestCoeffs(xTest, yTest);
-        if (coeffsAll.size() == 0) {
+        if (tempValues.coeffsTrain.size() == 0)
+            tempValues.coeffsTrain = findBestCoeffs(xTrain, yTrain);
+        if (tempValues.coeffsTest.size() == 0)
+            tempValues.coeffsTest = findBestCoeffs(xTest, yTest);
+        if (tempValues.coeffsAll.size() == 0) {
             MatrixXd dataX(xTrain.rows() + xTest.rows(), xTrain.cols());
             dataX << xTrain, xTest;
             VectorXd dataY(yTrain.size() + yTest.size());
             dataY << yTrain, yTest;
-            coeffsAll = findBestCoeffs(dataX, dataY);
+            tempValues.coeffsAll = findBestCoeffs(dataX, dataY);
         }
-        if (yPredTestByTrain.size() == 0)
-            yPredTestByTrain = xTest * coeffsTrain;
-        if (yPredTestByTest.size() == 0)
-            yPredTestByTest = xTest * coeffsTest;
-        yPredTestByAll = xTest * coeffsAll;
-        return PairDVXd(((yPredTestByAll - yPredTestByTrain) * (yPredTestByTest - yPredTestByAll)).array().sum(), coeffsTrain);
+        if (tempValues.yPredTestByTrain.size() == 0)
+            tempValues.yPredTestByTrain = xTest * tempValues.coeffsTrain;
+        if (tempValues.yPredTestByTest.size() == 0)
+            tempValues.yPredTestByTest = xTest * tempValues.coeffsTest;
+        yPredTestByAll = xTest * tempValues.coeffsAll;
+        return PairDVXd(((yPredTestByAll - tempValues.yPredTestByTrain) * (tempValues.yPredTestByTest - yPredTestByAll)).array().sum(), tempValues.coeffsTrain);
     }
 
-    PairDVXd Criterion::symAbsoluteStability(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain, const VectorXd& yTest)
+    PairDVXd Criterion::symAbsoluteStability(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain, const VectorXd& yTest, TempValues& tempValues) const
     {
         VectorXd yPredAllByTrain, yPredAllByTest, yPredAllByAll;
         MatrixXd dataX(xTrain.rows() + xTest.rows(), xTrain.cols());
@@ -161,47 +138,47 @@ namespace GMDH {
         VectorXd dataY(yTrain.size() + yTest.size());
         dataY << yTrain, yTest;
 
-        if (coeffsTrain.size() == 0)
-            coeffsTrain = findBestCoeffs(xTrain, yTrain);
-        if (coeffsTest.size() == 0)
-            coeffsTest = findBestCoeffs(xTest, yTest);
-        if (coeffsAll.size() == 0)
-            coeffsAll = findBestCoeffs(dataX, dataY);
+        if (tempValues.coeffsTrain.size() == 0)
+            tempValues.coeffsTrain = findBestCoeffs(xTrain, yTrain);
+        if (tempValues.coeffsTest.size() == 0)
+            tempValues.coeffsTest = findBestCoeffs(xTest, yTest);
+        if (tempValues.coeffsAll.size() == 0)
+            tempValues.coeffsAll = findBestCoeffs(dataX, dataY);
         
-        yPredAllByTrain = dataX * coeffsTrain;
-        yPredAllByTest = dataX * coeffsTest;
-        yPredAllByAll = dataX * coeffsAll;
-        return PairDVXd(((yPredAllByAll - yPredAllByTrain) * (yPredAllByTest - yPredAllByAll)).array().sum(), coeffsTrain);
+        yPredAllByTrain = dataX * tempValues.coeffsTrain;
+        yPredAllByTest = dataX * tempValues.coeffsTest;
+        yPredAllByAll = dataX * tempValues.coeffsAll;
+        return PairDVXd(((yPredAllByAll - yPredAllByTrain) * (yPredAllByTest - yPredAllByAll)).array().sum(), tempValues.coeffsTrain);
     }
 
-    PairDVXd Criterion::getResult(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain, const VectorXd& yTest, CriterionType _criterionType)
+    PairDVXd Criterion::getResult(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain, const VectorXd& yTest, CriterionType _criterionType, TempValues& tempValues) const
     {
         if ((_criterionType == CriterionType::regularity)) {
-            return regularity(xTrain, xTest, yTrain, yTest);
+            return regularity(xTrain, xTest, yTrain, yTest, tempValues);
         }
         else if ((_criterionType == CriterionType::symRegularity)) {
-            return symRegularity(xTrain, xTest, yTrain, yTest);
+            return symRegularity(xTrain, xTest, yTrain, yTest, tempValues);
         }
         else if ((_criterionType == CriterionType::stability)) {
-            return stability(xTrain, xTest, yTrain, yTest);
+            return stability(xTrain, xTest, yTrain, yTest, tempValues);
         }
         else if ((_criterionType == CriterionType::symStability)) {
-            return symStability(xTrain, xTest, yTrain, yTest);
+            return symStability(xTrain, xTest, yTrain, yTest, tempValues);
         }
         else if ((_criterionType == CriterionType::unbiasedOutputs)) {
-            return unbiasedOutputs(xTrain, xTest, yTrain, yTest);
+            return unbiasedOutputs(xTrain, xTest, yTrain, yTest, tempValues);
         }
         else if ((_criterionType == CriterionType::symUnbiasedOutputs)) {
-            return symUnbiasedOutputs(xTrain, xTest, yTrain, yTest);
+            return symUnbiasedOutputs(xTrain, xTest, yTrain, yTest, tempValues);
         }
         else if ((_criterionType == CriterionType::unbiasedCoeffs)) {
-            return unbiasedCoeffs(xTrain, xTest, yTrain, yTest);
+            return unbiasedCoeffs(xTrain, xTest, yTrain, yTest, tempValues);
         }
         else if ((_criterionType == CriterionType::absoluteStability)) {
-            return absoluteStability(xTrain, xTest, yTrain, yTest);
+            return absoluteStability(xTrain, xTest, yTrain, yTest, tempValues);
         }
         else {
-            return symAbsoluteStability(xTrain, xTest, yTrain, yTest);
+            return symAbsoluteStability(xTrain, xTest, yTrain, yTest, tempValues);
         }
     }
 
@@ -218,10 +195,10 @@ namespace GMDH {
         return className;
     }
 
-    PairDVXd Criterion::calculate(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain, const VectorXd& yTest)
+    PairDVXd Criterion::calculate(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain, const VectorXd& yTest) const
     {
-        resetCoeffsAndYPred();
-        return getResult(xTrain, xTest, yTrain, yTest, criterionType);
+        TempValues tempValues;
+        return getResult(xTrain, xTest, yTrain, yTest, criterionType, tempValues);
     }
 
     ParallelCriterion::ParallelCriterion(CriterionType _firstCriterionType, CriterionType _secondCriterionType,
@@ -231,11 +208,11 @@ namespace GMDH {
         alpha = _alpha;
     }
 
-    PairDVXd ParallelCriterion::calculate(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain, const VectorXd& yTest)
+    PairDVXd ParallelCriterion::calculate(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain, const VectorXd& yTest) const
     {
-        PairDVXd firstResult = Criterion::getResult(xTrain, xTest, yTrain, yTest, criterionType);
-        PairDVXd secondResult = Criterion::getResult(xTrain, xTest, yTrain, yTest, secondCriterionType);
-        resetCoeffsAndYPred();
+        TempValues tempValues;
+        PairDVXd firstResult = Criterion::getResult(xTrain, xTest, yTrain, yTest, criterionType, tempValues);
+        PairDVXd secondResult = Criterion::getResult(xTrain, xTest, yTrain, yTest, secondCriterionType, tempValues);
         return PairDVXd(alpha * firstResult.first + (1 - alpha) * secondResult.first, firstResult.second);
     }
 
@@ -245,13 +222,10 @@ namespace GMDH {
         secondCriterionType = _secondCriterionType;
     }
 
-    PairDVXd SequentialCriterion::calculate(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain, const VectorXd& yTest)
+    PairDVXd SequentialCriterion::recalculate(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain, const VectorXd& yTest, const VectorXd& _coeffsTrain) const
     {
-        return Criterion::getResult(xTrain, xTest, yTrain, yTest, criterionType);
-    }
-
-    PairDVXd SequentialCriterion::recalculate(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain, const VectorXd& yTest)
-    {
-        return Criterion::getResult(xTrain, xTest, yTrain, yTest, secondCriterionType);
+        TempValues tempValues;
+        tempValues.coeffsTrain = _coeffsTrain;
+        return Criterion::getResult(xTrain, xTest, yTrain, yTest, secondCriterionType, tempValues);
     }
 }
