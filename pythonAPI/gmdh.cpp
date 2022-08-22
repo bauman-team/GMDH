@@ -25,14 +25,14 @@ PYBIND11_MODULE(gmdhpy, m)
 
     py::class_<GMDH::Criterion>(m, "Criterion");
 
-    py::class_<GMDH::RegularityCriterionTS, GMDH::Criterion>(m, "RegularityCriterionTS")
+    /*py::class_<GMDH::RegularityCriterionTS, GMDH::Criterion>(m, "RegularityCriterionTS")
         .def(py::init<double, GMDH::Solver>())
         .def("calculate", &GMDH::RegularityCriterionTS::calculate);
 
 
     py::class_<GMDH::RegularityCriterion, GMDH::RegularityCriterionTS, GMDH::Criterion>(m, "RegularityCriterion")
         .def(py::init<double, GMDH::Solver, bool, int>())
-        .def("calculate", &GMDH::RegularityCriterion::calculate);
+        .def("calculate", &GMDH::RegularityCriterion::calculate);*/
 
 
     py::class_<GMDH::GMDH>(m, "GMDH");
@@ -59,6 +59,5 @@ PYBIND11_MODULE(gmdhpy, m)
 
     //m.def("polynomailFeatures", &polynomailFeatures);
     m.def("convertToTimeSeries", &GMDH::convertToTimeSeries);
-    m.def("splitTsData", &GMDH::splitTimeSeries);
     m.def("splitData", &GMDH::splitData);
 }

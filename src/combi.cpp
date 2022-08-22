@@ -62,6 +62,12 @@ int COMBI::load(const std::string& path)
     return 0;
 }
 
+GMDH& COMBI::fit(MatrixXd x, VectorXd y, Criterion& criterion, double testSize, bool shuffle, int randomSeed, uint8_t p, int threads, int verbose)
+{
+    kBest = p;
+    return GMDH::fit(x, y, criterion, testSize, shuffle, randomSeed, p, threads, verbose);
+}
+
 double COMBI::predict(const RowVectorXd& x) const
 {
     return predict(MatrixXd(x))[0];
