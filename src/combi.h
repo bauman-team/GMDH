@@ -2,7 +2,7 @@
 
 namespace GMDH {
 
-class COMBI : public GMDH {
+class GMDH_API COMBI : public GMDH {
 protected:
     virtual VectorVu16 getCombinations(int n_cols, int level) const;
 public:

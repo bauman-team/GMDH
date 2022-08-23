@@ -1,4 +1,6 @@
+#pragma once
 #define BOOST_THREAD_PROVIDES_FUTURE_WHEN_ALL_WHEN_ANY
+
 #include <vector>
 #include <cmath>
 #include <numeric>
@@ -25,6 +27,8 @@
 #include <indicators/cursor_control.hpp>
 #include <indicators/block_progress_bar.hpp>
 
+#include "gmdh_lib.h"
+
 #ifdef __GNUC__
     #define likely(expr)    (__builtin_expect(!!(expr), 1))
     #define unlikely(expr)  (__builtin_expect(!!(expr), 0))
@@ -46,14 +50,14 @@ using VectorI = std::vector<int>;
 
 class Criterion;
 
-struct SplittedData {
+struct GMDH_API SplittedData {
     MatrixXd xTrain;
     MatrixXd xTest;
     VectorXd yTrain;
     VectorXd yTest;
 };
 
-class Combination { // TODO: move to separate file
+class GMDH_API Combination { // TODO: move to separate file
     VectorU16 _combination;
     VectorXd _bestCoeffs;
     double _evaluation;
@@ -78,7 +82,7 @@ using IterC = VectorC::iterator;
 using cIterC = VectorC::const_iterator;
     
 
-class GMDH {
+class GMDH_API GMDH {
     void polinomialsEvaluation(const MatrixXd& x, const VectorXd& y, const Criterion& criterion, 
         IterC beginCoeffsVec, IterC endCoeffsVec, std::atomic<int> *leftTasks, bool verbose) const;
     virtual bool nextLevelCondition(double &lastLevelEvaluation, uint8_t p, VectorC& combinations);
@@ -105,9 +109,9 @@ public:
 
 
 //mat polynomailFeatures(const mat X, int max_degree);
-PairMVXd convertToTimeSeries(VectorXd x, int lags);
-SplittedData splitTimeSeries(MatrixXd x, VectorXd y, double testSize = 0.2);
-SplittedData splitData(MatrixXd x, VectorXd y, double testSize = 0.2, bool shuffle = true, int randomSeed = 0);
+PairMVXd GMDH_API convertToTimeSeries(VectorXd x, int lags);
+SplittedData GMDH_API splitTimeSeries(MatrixXd x, VectorXd y, double testSize = 0.2);
+SplittedData GMDH_API splitData(MatrixXd x, VectorXd y, double testSize = 0.2, bool shuffle = true, int randomSeed = 0);
 
 }
 
