@@ -5,31 +5,35 @@
 using namespace GMDH;
 using namespace Eigen;
 
+
 class TestCOMBI : public ::testing::Test
 {
 protected:
+    struct TestData {
+        std::vector<double> dataValues; 
+        int lags;
+        double testSize, validateSize;
+        Solver solverFunc;
+    };
 	void SetUp()
 	{
-        const int lags = 5; // TODO: NO CONST????
-        const double testSize = 0.33;
-
+        TestData data;
 
         /* SET MODEL FOR PREDICT GROWING LINEAR DEPENDENCE TIME SERIES */
-        std::vector<double> dataValues{ 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-        VectorXd data = Map<VectorXd, Unaligned>(dataValues.data(), dataValues.size());
-        setModelTS(testGrowingLinearDependenceTS, std::move(data), lags, testSize, Solver::fast);
+        data.lags = 5; data.testSize = 0.33; data.validateSize = 0.2;
+        data.solverFunc = Solver::fast;
+        data.dataValues = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17 };
+        testModels.push_back(getModelTS(data));
 
 
         /* SET MODEL FOR PREDICT DESCENDING LINEAR DEPENDENCE TIME SERIES */
-        dataValues = { 9, 8, 7, 6, 5, 4, 3, 2, 1 };
-        data = Map<VectorXd, Unaligned>(dataValues.data(), dataValues.size());
-        setModelTS(testDescendingLinearDependenceTS, std::move(data), lags, testSize, Solver::fast);
+        data.dataValues = { 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 };
+        testModels.push_back(getModelTS(data));
 
 
         /* SET MODEL FOR PREDICT GROWING LINEAR DEPENDENCE WITH NOISE TIME SERIES */
-        dataValues = { 10, 19, 31, 40, 50, 62, 71, 79, 89, 98 };
-        data = Map<VectorXd, Unaligned>(dataValues.data(), dataValues.size());
-        setModelTS(testGrowingLinearDependenceWithNoiseTS, std::move(data), lags, testSize, Solver::fast);
+        data.dataValues = { 10, 19, 31, 40, 50, 62, 71, 79, 89, 98, 106, 120, 124, 129, 140, 146 };
+        testModels.push_back(getModelTS(data));
 
 
         /* SET MODEL FOR PREDICT LINEAR POLINOMIAL DEPENDENCE */
@@ -45,20 +49,18 @@ protected:
 	{
 		// if it need clear memory
 	}
-    void setModelTS(COMBI& combi, VectorXd &&data, int lags, double testSize, Solver solverFunc) {
-        auto timeSeries = convertToTimeSeries(data, lags);
-        SplittedData splittedData = splitTimeSeries(timeSeries.first, timeSeries.second, 0);
-
-        combi.fit(splittedData.xTrain, splittedData.yTrain, RegularityCriterionTS(testSize, solverFunc), 1, 1);
+    std::pair<COMBI, SplittedData> getModelTS(TestData _data) {
+        VectorXd data = Map<VectorXd, Unaligned>(_data.dataValues.data(), _data.dataValues.size());
+        auto timeSeries = convertToTimeSeries(data, _data.lags);
+        SplittedData splittedData = splitTimeSeries(timeSeries.first, timeSeries.second, _data.validateSize);
+        COMBI combi;
+        combi.fit(splittedData.xTrain, splittedData.yTrain, RegularityCriterionTS(_data.testSize, _data.solverFunc), 1, 1);
+        return {combi, splittedData};
     }
-    void setModel() {
+    void setModel() { // TODO: for polinomial models
 
     }
-	COMBI testGrowingLinearDependenceTS, 
-    testDescendingLinearDependenceTS,
-    testGrowingLinearDependenceWithNoiseTS,
-    testLinearPolinomailDependence, // TODO: polinomial tests
-    testLinearPolinomailDependenceWithNoise;
+	std::vector<std::pair<COMBI, SplittedData>> testModels; // TODO: add polinomial tests
 };
 
 
@@ -67,6 +69,7 @@ protected:
     auto truncLast{ 10. };
     truncLast = std::pow(truncLast, precision);
     for (auto itPred = predict.begin(), itReal = real.begin(); itReal != real.end(); ++itPred, ++itReal) {
+        //std::cout << *itPred << '\n' << *itReal << std::endl;
         if (static_cast<int64_t>(round(*itPred * truncLast)) != static_cast<int64_t>(round(*itReal * truncLast)))
 		    return ::testing::AssertionFailure();
             //std::cout << static_cast<int>(*itPred) << " != " << static_cast<int>(*itReal) << std::endl;
@@ -77,38 +80,30 @@ protected:
 
 TEST_F(TestCOMBI, testPrediction)
 {
-    const int lags = 5;
-    const double validateSize = 1;
-
-    //std::vector<double> dataValues{ 22, 44, 66, 88, 110, 132 }; //TODO: ONLY SCALED DATA WAAAT????
-    std::vector<double> dataValues{ 140, 141, 142, 143, 144, 145, 146 };
-    VectorXd data = Map<VectorXd, Unaligned>(dataValues.data(), dataValues.size());
-    auto timeSeries = convertToTimeSeries(data, lags);
-    SplittedData splittedData = splitTimeSeries(timeSeries.first, timeSeries.second, validateSize);
-
     //std::cout << testGrowingLinearDependenceTS.getBestPolynomial() << std::endl;
     //std::cout << testGrowingLinearDependenceTS.predict(splittedData.xTest) << std::endl;
     //std::cout << splittedData.yTest << std::endl;
-    auto res = testGrowingLinearDependenceTS.predict(splittedData.xTest);
-    EXPECT_TRUE(PredictionEvaluation(res, splittedData.yTest, 8)); 
+    std::vector<double> data{ 16, 17 };
+    VectorXd standartData = Map<VectorXd, Unaligned>(data.data(), data.size());
+    auto res = testModels[0].first.predict(testModels[0].second.xTest);
+    EXPECT_TRUE(PredictionEvaluation(res, standartData, 3)); 
 
 
-    dataValues = { 59, 58, 57, 56, 55, 54, 53 };
-    data = Map<VectorXd, Unaligned>(dataValues.data(), dataValues.size());
-    timeSeries = convertToTimeSeries(data, lags);
-    splittedData = splitTimeSeries(timeSeries.first, timeSeries.second, validateSize);
-    res = testDescendingLinearDependenceTS.predict(splittedData.xTest);
-    EXPECT_TRUE(PredictionEvaluation(res, splittedData.yTest, 0));
+    data = { 3, 2, 1 };
+    standartData = Map<VectorXd, Unaligned>(data.data(), data.size());
+    res = testModels[1].first.predict(testModels[1].second.xTest);
+    EXPECT_TRUE(PredictionEvaluation(res, standartData, 3)); 
+    
 
-/*
-    dataValues = { 100, 108, 116, 124, 132, 140, 148 };
-    data = Map<VectorXd, Unaligned>(dataValues.data(), dataValues.size());
-    timeSeries = convertToTimeSeries(data, lags);
-    splittedData = splitTimeSeries(timeSeries.first, timeSeries.second, validateSize);
-    res = testDescendingLinearDependenceTS.predict(splittedData.xTest);
-    res = testGrowingLinearDependenceWithNoiseTS.predict(splittedData.xTest);
-    EXPECT_TRUE(PredictionEvaluation(res, splittedData.yTest, 0));
-*/
+    data = { 141.472, 146.277 };
+    standartData = Map<VectorXd, Unaligned>(data.data(), data.size());
+    res = testModels[2].first.predict(testModels[2].second.xTest);
+    EXPECT_TRUE(PredictionEvaluation(res, standartData, 3)); 
+    
+    //std::cout << testGrowingLinearDependenceTS.getBestPolynomial() << std::endl;
+    //std::cout << testGrowingLinearDependenceTS.predict(splittedData.xTest) << std::endl;
+    //std::cout << splittedData.yTest << std::endl;
+
 
     
 }
