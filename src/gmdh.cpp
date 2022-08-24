@@ -1,4 +1,3 @@
-#include <iostream>
 #include "gmdh.h"
 
 namespace GMDH {
@@ -86,18 +85,24 @@ namespace GMDH {
 
         using namespace indicators;
         using T = boost::packaged_task<void>;
-
         std::unique_ptr<ProgressBar> progressBar;
 
         level = 1;
         if (threads == -1)
             threads = boost::thread::hardware_concurrency(); // TODO: maybe find optimal count based on data.size() and hardware_concurrency()
-        else
+        else if (threads > 0)
             threads = std::min(threads, static_cast<int>(boost::thread::hardware_concurrency())); // TODO: change limit
+        else {
+            threads = 1; // TODO: warning!!!
+        }
         boost::asio::thread_pool pool(threads); 
         std::vector<boost::unique_future<T::result_type> > futures;
         futures.reserve(threads);
         std::atomic<int> leftTasks; // TODO: change to volatile structure
+
+        if (!p) {
+            p = 1; // TODO: warning!!!
+        }
 
         inputColsNumber = x.cols();
         auto lastLevelEvaluation = std::numeric_limits<double>::max();
@@ -122,7 +127,6 @@ namespace GMDH {
                 currLevelEvaluation->setCombination(std::move(*it));
 
             leftTasks = static_cast<int>(evaluationCoeffsVec.size());
-
             if (verbose) {
                 progressBar = std::make_unique<ProgressBar>(
                     option::BarWidth{30},

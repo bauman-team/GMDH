@@ -1,10 +1,11 @@
+
+
 namespace GMDH {
 
 enum class Solver { fast, accurate, balanced };
 
 enum class CriterionType {regularity, symRegularity, stability, symStability, unbiasedOutputs, symUnbiasedOutputs,
                     unbiasedCoeffs, absoluteStability, symAbsoluteStability}; // TODO: maybe add cross validation criterion
-
 
 struct TempValues {
     VectorXd coeffsTrain;
@@ -16,7 +17,7 @@ struct TempValues {
     VectorXd yPredTestByTest;
 };
 
-class Criterion {    
+class GMDH_API Criterion {
 protected:
 
     CriterionType criterionType;
@@ -45,7 +46,7 @@ public:
 };
 
 
-class ParallelCriterion : public Criterion {
+class GMDH_API ParallelCriterion : public Criterion {
     CriterionType secondCriterionType;
     double alpha;
 
@@ -56,7 +57,7 @@ public:
     PairDVXd calculate(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain, const VectorXd& yTest) const override;
 };
 
-class SequentialCriterion : public Criterion {
+class GMDH_API SequentialCriterion : public Criterion {
     CriterionType secondCriterionType;
 
 public:
