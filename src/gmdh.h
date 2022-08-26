@@ -13,6 +13,7 @@
 #include <algorithm>
 #include <atomic>
 #include <map>
+#include <set>
 
 #include <Eigen/Dense>
 

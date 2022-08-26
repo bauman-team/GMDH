@@ -75,19 +75,19 @@ int main() {
 
 
     GMDH::MIA mia;
-    mia.fit(splittedData.xTrain, splittedData.yTrain, GMDH::Criterion(GMDH::CriterionType::regularity), 6, 
+    mia.fit(splittedData.xTrain, splittedData.yTrain, GMDH::Criterion(GMDH::CriterionType::regularity), 5, 
         GMDH::PolynomialType::quadratic, testSize, 0, 0, 3, 4, 1);
 
-    /*std::cout << "The best polynom:\n" << mia.getBestPolynomial() << std::endl;
+    //std::cout << "The best polynom:\n" << mia.getBestPolynomial() << std::endl;
 
     auto res = mia.predict(splittedData.xTest);
-    mia.save("model1.txt");
+    /*mia.save("model1.txt");
     mia.load("model1.txt");
     auto res2 = mia.predict(splittedData.xTest);
-    std::cout << "The best polynom after loading:\n" << mia.getBestPolynomial() << std::endl;
+    std::cout << "The best polynom after loading:\n" << mia.getBestPolynomial() << std::endl;*/
 
-    /*std::cout << "Predicted values before model saving:\n" << res << "\n\n";
-    std::cout << "Predicted values after model loading:\n" << res2 << "\n\n";*/
+    //std::cout << "Predicted values before model saving:\n" << res << "\n\n";
+    //std::cout << "Predicted values after model loading:\n" << res2 << "\n\n";
 
     //(std::cin).get();
 
