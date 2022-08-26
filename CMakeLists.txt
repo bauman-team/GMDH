@@ -14,7 +14,9 @@ set(LIBRARY_SOURCES src/gmdh.h
     src/combi.h 
     src/combi.cpp 
     src/multi.h 
-    src/multi.cpp) 
+    src/multi.cpp
+	src/mia.h 
+	src/mia.cpp) 
 
 set(LIBRARY_NAME gmdh)
 add_library(${LIBRARY_NAME} SHARED ${LIBRARY_SOURCES})

@@ -84,28 +84,27 @@ using cIterC = VectorC::const_iterator;
     
 
 class GMDH_API GMDH {
-    void polinomialsEvaluation(const SplittedData& data, const Criterion& criterion, IterC beginCoeffsVec, IterC endCoeffsVec, std::atomic<int> *leftTasks, bool verbose) const;
-    virtual bool nextLevelCondition(double &lastLevelEvaluation, uint8_t p, VectorC& combinations, const Criterion& criterion, const SplittedData& data);
     //int calculateLeftTasksForVerbose(const std::vector<std::shared_ptr<std::vector<Combination>::iterator> > beginTasksVec, 
     //const std::vector<std::shared_ptr<std::vector<Combination>::iterator> > endTasksVec) const;
 protected:
 
     int level;
     int inputColsNumber; // TODO: maybe delete???
-    VectorC bestCombinations;
-
-    int kBest;
+    std::vector<VectorC> bestCombinations;
 
     std::string getModelName() const;
-    virtual VectorVu16 getCombinations(int n, int k) const = 0;
+    VectorVu16 nChooseK(int n, int k) const;
+    virtual VectorVu16 getCombinations(int n) const = 0;
     virtual VectorC getBestCombinations(VectorC& combinations, int k) const;
     double getMeanCriterionValue(const VectorC& sortedCombinations, int k) const;
-
-    GMDH& fit(const MatrixXd& x, const VectorXd& y, const Criterion& criterion, double testSize = 0.5, bool shuffle = false,
+    virtual void polinomialsEvaluation(const SplittedData& data, const Criterion& criterion, IterC beginCoeffsVec, IterC endCoeffsVec, std::atomic<int>* leftTasks, bool verbose) const;
+    virtual bool nextLevelCondition(double& lastLevelEvaluation, int kBest, uint8_t p, VectorC& combinations, const Criterion& criterion, SplittedData& data);
+   
+    GMDH& fit(const MatrixXd& x, const VectorXd& y, const Criterion& criterion, int kBest, double testSize = 0.5, bool shuffle = false,
         int randomSeed = 0, uint8_t p = 1, int threads = 1, int verbose = 0);
 
 public:
-    GMDH() : level(1) { }
+    GMDH() : level(1) {}
     virtual int save(const std::string& path) const = 0;
     virtual int load(const std::string& path) = 0;
 
@@ -114,8 +113,6 @@ public:
     virtual std::string getBestPolynomial() const = 0;
 };
 
-
-//mat polynomailFeatures(const mat X, int max_degree);
 PairMVXd GMDH_API convertToTimeSeries(VectorXd x, int lags);
 SplittedData GMDH_API splitData(const MatrixXd& x, const VectorXd& y, double testSize = 0.2, bool shuffle = false, int randomSeed = 0);
 }

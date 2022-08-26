@@ -1,5 +1,5 @@
 #include <iostream>
-#include <multi.h>
+#include <mia.h>
 
 
 int main() {
@@ -19,21 +19,17 @@ int main() {
 
     //VectorXd data(10); data << 1, 2, 3, 4, 5, 6, 7, 8, 9, 10;
 	
-    int lags = 100;
+    int lags = 10;
     double validateSize = 0.2;
     double testSize = 0.33;
     auto timeSeries = GMDH::convertToTimeSeries(data, lags);
     GMDH::SplittedData splittedData = GMDH::splitData(timeSeries.first, timeSeries.second, validateSize);
 
-    std::cout << splittedData.xTrain.rows() << " " << splittedData.xTrain.cols() << "\n";
-    std::cout << splittedData.xTest.rows() << " " << splittedData.xTest.cols() << "\n";
-    std::cout << splittedData.yTrain.rows() << " " << splittedData.yTrain.cols() << "\n";
-    std::cout << splittedData.yTest.rows() << " " << splittedData.yTest.cols() << "\n";
-
     /*std::cout << splittedData.xTrain << "\n\n";
     std::cout << splittedData.xTest << "\n\n";
     std::cout << splittedData.yTrain << "\n\n";
     std::cout << splittedData.yTest << "\n\n";*/
+
 
     /*
         x1    x2     x3     x4   => x1, x2
@@ -78,21 +74,22 @@ int main() {
    //std::cout << "Original time series:\n" << data << "\n\n";
 
 
-    GMDH::MULTI multi;
-    multi.fit(splittedData.xTrain, splittedData.yTrain, GMDH::Criterion(GMDH::CriterionType::regularity), 50, testSize, 0, 0, 2, -1, 1);
+    GMDH::MIA mia;
+    mia.fit(splittedData.xTrain, splittedData.yTrain, GMDH::Criterion(GMDH::CriterionType::regularity), 6, 
+        GMDH::PolynomialType::quadratic, testSize, 0, 0, 3, 4, 1);
 
-    std::cout << "The best polynom:\n" << multi.getBestPolynomial() << std::endl;
+    /*std::cout << "The best polynom:\n" << mia.getBestPolynomial() << std::endl;
 
-    auto res = multi.predict(splittedData.xTest);
-    multi.save("model1.txt");
-    multi.load("model1.txt");
-    auto res2 = multi.predict(splittedData.xTest);
-    std::cout << "The best polynom after loading:\n" << multi.getBestPolynomial() << std::endl;
+    auto res = mia.predict(splittedData.xTest);
+    mia.save("model1.txt");
+    mia.load("model1.txt");
+    auto res2 = mia.predict(splittedData.xTest);
+    std::cout << "The best polynom after loading:\n" << mia.getBestPolynomial() << std::endl;
 
     /*std::cout << "Predicted values before model saving:\n" << res << "\n\n";
     std::cout << "Predicted values after model loading:\n" << res2 << "\n\n";*/
 
-    (std::cin).get();
+    //(std::cin).get();
 
     return 0;
 }
