@@ -101,7 +101,7 @@ protected:
     virtual VectorC getBestCombinations(VectorC& combinations, int k) const;
     double getMeanCriterionValue(const VectorC& sortedCombinations, int k) const;
 
-    GMDH& fit(MatrixXd x, VectorXd y, const Criterion& criterion, double testSize = 0.5, bool shuffle = false,
+    GMDH& fit(const MatrixXd& x, const VectorXd& y, const Criterion& criterion, double testSize = 0.5, bool shuffle = false,
         int randomSeed = 0, uint8_t p = 1, int threads = 1, int verbose = 0);
 
 public:
@@ -117,7 +117,7 @@ public:
 
 //mat polynomailFeatures(const mat X, int max_degree);
 PairMVXd GMDH_API convertToTimeSeries(VectorXd x, int lags);
-SplittedData GMDH_API splitData(MatrixXd x, VectorXd y, double testSize = 0.2, bool shuffle = false, int randomSeed = 0);
+SplittedData GMDH_API splitData(const MatrixXd& x, const VectorXd& y, double testSize = 0.2, bool shuffle = false, int randomSeed = 0);
 }
 
 #include "criterion.h"

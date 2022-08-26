@@ -26,7 +26,7 @@ namespace GMDH
 		return combs;
 	}
 
-	GMDH& MULTI::fit(MatrixXd x, VectorXd y, Criterion& criterion, int _kBest, double testSize, bool shuffle, int randomSeed, uint8_t p, int threads, int verbose)
+	GMDH& MULTI::fit(const MatrixXd& x, const VectorXd& y, Criterion& criterion, int _kBest, double testSize, bool shuffle, int randomSeed, uint8_t p, int threads, int verbose)
 	{
 		kBest = _kBest;
 		return GMDH::fit(x, y, criterion, testSize, shuffle, randomSeed, p, threads, verbose);

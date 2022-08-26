@@ -80,7 +80,7 @@ namespace GMDH {
         return currLevelEvaluation;
     }
 
-    GMDH& GMDH::fit(MatrixXd x, VectorXd y, const Criterion& criterion, double testSize, bool shuffle, int randomSeed, 
+    GMDH& GMDH::fit(const MatrixXd& x, const VectorXd& y, const Criterion& criterion, double testSize, bool shuffle, int randomSeed, 
                     uint8_t p, int threads, int verbose) { // TODO: except threads, p = 0 error!!!
 
         using namespace indicators;
@@ -107,11 +107,11 @@ namespace GMDH {
         inputColsNumber = x.cols();
         auto lastLevelEvaluation = std::numeric_limits<double>::max();
 
-        MatrixXd modifiedX(x.rows(), x.cols() + 1); 
+        MatrixXd modifiedX(x.rows(), x.cols() + 1);
         modifiedX.col(x.cols()).setOnes();
         modifiedX.leftCols(x.cols()) = x;
-
         SplittedData data = splitData(modifiedX, y, testSize, shuffle, randomSeed);
+        modifiedX.resize(0, 0);
 
         /*std::cout << data.xTrain << "\n\n";
         std::cout << data.xTest << "\n\n";
@@ -220,7 +220,7 @@ namespace GMDH {
         return PairMVXd(xTimeSeries, yTimeSeries);
     }
 
-    SplittedData splitData(MatrixXd x, VectorXd y, double testSize, bool shuffle, int randomSeed)
+    SplittedData splitData(const MatrixXd& x, const VectorXd& y, double testSize, bool shuffle, int randomSeed)
     {
         SplittedData data;
         if (!shuffle)
@@ -251,6 +251,5 @@ namespace GMDH {
         }
         return data;
     }
-
 }
 
