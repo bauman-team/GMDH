@@ -11,7 +11,7 @@ namespace GMDH {
             (*beginCoeffsVec).setEvaluation(pairCoeffsEvaluation.first);
             (*beginCoeffsVec).setBestCoeffs(std::move(pairCoeffsEvaluation.second));
             if (unlikely(verbose))
-                --(*leftTasks);
+                --(*leftTasks); // maybe bottle neck
         }      
     }
 

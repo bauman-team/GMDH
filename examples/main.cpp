@@ -77,9 +77,9 @@ int main() {
 
    //std::cout << "Original time series:\n" << data << "\n\n";
 
-
+    auto criterion = GMDH::Criterion(GMDH::CriterionType::regularity);
     GMDH::MULTI multi;
-    multi.fit(splittedData.xTrain, splittedData.yTrain, GMDH::Criterion(GMDH::CriterionType::regularity), 50, testSize, 0, 0, 2, -1, 1);
+    multi.fit(splittedData.xTrain, splittedData.yTrain, criterion, 50, testSize, 0, 0, 2, -1, 1);
 
     std::cout << "The best polynom:\n" << multi.getBestPolynomial() << std::endl;
 
