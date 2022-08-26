@@ -16,6 +16,7 @@ int main() {
         }
     }
     VectorXd data = Map<VectorXd, Unaligned>(dataValues.data(), dataValues.size() - 50000);
+    std::cout << data[0] << " " << data[101612] << "\n";
 
     //VectorXd data(10); data << 1, 2, 3, 4, 5, 6, 7, 8, 9, 10;
 	
@@ -81,6 +82,10 @@ int main() {
     //std::cout << "The best polynom:\n" << mia.getBestPolynomial() << std::endl;
 
     auto res = mia.predict(splittedData.xTest);
+    for (int i = 0; i < 20; ++i)
+    {
+        std::cout << splittedData.yTest[i] << " " << res[i] << "\n";
+    }
     /*mia.save("model1.txt");
     mia.load("model1.txt");
     auto res2 = mia.predict(splittedData.xTest);

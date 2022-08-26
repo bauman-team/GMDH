@@ -57,7 +57,7 @@ namespace GMDH {
         }
         double currLevelEvaluation = getMeanCriterionValue(_bestCombinations, p);
 
-        if (lastLevelEvaluation > currLevelEvaluation || level < 4) {
+        if (lastLevelEvaluation > currLevelEvaluation) {
             bestCombinations.push_back(std::move(_bestCombinations));
             lastLevelEvaluation = currLevelEvaluation;
 
