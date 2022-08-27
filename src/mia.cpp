@@ -143,11 +143,71 @@ namespace GMDH {
 
     int MIA::save(const std::string& path) const
     {
+        std::ofstream modelFile;
+        modelFile.open(path);
+        if (!modelFile.is_open())
+            return -1;
+        else {
+            modelFile << getModelName() << "\n";
+            modelFile << inputColsNumber << "\n";
+            for (int i = 0; i < bestCombinations.size(); ++i) {
+                modelFile << "~\n";
+                for (int j = 0; j < bestCombinations[i].size(); ++j)
+                    modelFile << bestCombinations[i][j].getInfoForSaving();
+            }
+            modelFile.close();
+        }
         return 0;
     }
 
     int MIA::load(const std::string& path)
     {
+        inputColsNumber = 0;
+        bestCombinations.clear();
+
+        std::ifstream modelFile;
+        modelFile.open(path);
+        if (!modelFile.is_open())
+            return -1;
+        else {
+            std::string modelName;
+            modelFile >> modelName;
+            if (modelName != getModelName())
+                return -1;
+            else {
+                (modelFile >> inputColsNumber).get();
+
+                int currLevel = -1;
+                while (modelFile.peek() != EOF) {
+
+                    if (modelFile.peek() == '~') {
+                        std::string buffer;
+                        std::getline(modelFile, buffer);
+                        ++currLevel;
+                        bestCombinations.push_back(VectorC());
+                    }
+
+                    std::string colsIndexesLine;
+                    VectorU16 bestColsIndexes;
+                    std::getline(modelFile, colsIndexesLine);
+                    std::stringstream indexStream(colsIndexesLine);
+                    uint16_t index;
+                    while (indexStream >> index)
+                        bestColsIndexes.push_back(index);
+
+                    std::string coeffsLine;
+                    std::vector<double> coeffs;
+                    std::getline(modelFile, coeffsLine);
+                    std::stringstream coeffsStream(coeffsLine);
+                    double coeff;
+                    while (coeffsStream >> coeff)
+                        coeffs.push_back(coeff);
+
+                    bestCombinations[currLevel].push_back(Combination(std::move(bestColsIndexes), Map<VectorXd>(coeffs.data(), coeffs.size())));
+                }
+            }
+            modelFile.close();
+        }
         return 0;
     }
 

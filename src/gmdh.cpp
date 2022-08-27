@@ -193,7 +193,7 @@ namespace GMDH {
             }
             else
                 boost::when_all(futures.begin(), futures.end()).get();
-        } while (nextLevelCondition(lastLevelEvaluation, kBest, p, evaluationCoeffsVec, criterion, data)); // TODO: move condition to virtual method
+        } while (nextLevelCondition(lastLevelEvaluation, kBest, p, evaluationCoeffsVec, criterion, data));
 
         show_console_cursor(true);
         return *this;   
@@ -238,6 +238,17 @@ namespace GMDH {
             data.yTest = y(test_indexes);
         }
         return data;
+    }
+
+    std::string Combination::getInfoForSaving() const
+    {
+        std::stringstream info;
+        info.precision(12); // TODOL maybe change precision
+        for (auto i : _combination) info << i << ' ';
+        info << "\n";
+        for (auto i : _bestCoeffs) info << i << ' ';
+        info << "\n";
+        return info.str();
     }
 }
 

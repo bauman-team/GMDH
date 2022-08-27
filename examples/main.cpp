@@ -16,11 +16,10 @@ int main() {
         }
     }
     VectorXd data = Map<VectorXd, Unaligned>(dataValues.data(), dataValues.size() - 50000);
-    std::cout << data[0] << " " << data[101612] << "\n";
 
     //VectorXd data(10); data << 1, 2, 3, 4, 5, 6, 7, 8, 9, 10;
 	
-    int lags = 10;
+    int lags = 50;
     double validateSize = 0.2;
     double testSize = 0.33;
     auto timeSeries = GMDH::convertToTimeSeries(data, lags);
@@ -30,7 +29,6 @@ int main() {
     std::cout << splittedData.xTest << "\n\n";
     std::cout << splittedData.yTrain << "\n\n";
     std::cout << splittedData.yTest << "\n\n";*/
-
 
     /*
         x1    x2     x3     x4   => x1, x2
@@ -74,7 +72,6 @@ int main() {
 
    //std::cout << "Original time series:\n" << data << "\n\n";
 
-
     GMDH::MIA mia;
     mia.fit(splittedData.xTrain, splittedData.yTrain, GMDH::Criterion(GMDH::CriterionType::regularity), 5, 
         GMDH::PolynomialType::quadratic, testSize, 0, 0, 3, 4, 1);
@@ -82,14 +79,14 @@ int main() {
     //std::cout << "The best polynom:\n" << mia.getBestPolynomial() << std::endl;
 
     auto res = mia.predict(splittedData.xTest);
-    for (int i = 0; i < 20; ++i)
-    {
-        std::cout << splittedData.yTest[i] << " " << res[i] << "\n";
-    }
-    /*mia.save("model1.txt");
+    mia.save("model1.txt");
     mia.load("model1.txt");
     auto res2 = mia.predict(splittedData.xTest);
-    std::cout << "The best polynom after loading:\n" << mia.getBestPolynomial() << std::endl;*/
+
+    //std::cout << "The best polynom after loading:\n" << mia.getBestPolynomial() << std::endl;
+
+    for (int i = 0; i < 20; ++i)
+        std::cout << splittedData.yTest[i] << " " << res[i] << " " << res2[i] << "\n";
 
     //std::cout << "Predicted values before model saving:\n" << res << "\n\n";
     //std::cout << "Predicted values after model loading:\n" << res2 << "\n\n";

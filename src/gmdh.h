@@ -77,6 +77,8 @@ public:
 
     bool operator<(const Combination& comb) { return _evaluation < comb._evaluation; }
 
+    std::string getInfoForSaving() const;
+
 };
 
 using VectorC = std::vector<Combination>;

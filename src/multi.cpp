@@ -40,11 +40,7 @@ namespace GMDH {
         else {
             modelFile << getModelName() << "\n";
             modelFile << inputColsNumber << "\n";
-            for (auto i : bestCombinations[0][0].combination()) modelFile << i << ' ';
-            modelFile << "\n";
-            modelFile.precision(10); // TODOL maybe change precision
-            for (auto i : bestCombinations[0][0].bestCoeffs()) modelFile << i << ' ';
-            modelFile << "\n";
+            modelFile << bestCombinations[0][0].getInfoForSaving();
             modelFile.close();
         }
         return 0;
@@ -55,7 +51,6 @@ namespace GMDH {
         inputColsNumber = 0;
         bestCombinations.clear();
         bestCombinations.resize(1);
-        VectorU16 bestColsIndexes;
 
         std::ifstream modelFile;
         modelFile.open(path);
@@ -70,6 +65,7 @@ namespace GMDH {
                 (modelFile >> inputColsNumber).get();
 
                 std::string colsIndexesLine;
+                VectorU16 bestColsIndexes;
                 std::getline(modelFile, colsIndexesLine);
                 std::stringstream indexStream(colsIndexesLine);
                 uint16_t index;
