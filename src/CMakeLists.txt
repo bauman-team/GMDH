@@ -13,12 +13,13 @@ set(SOURCES gmdh.h
     multi.cpp) 
 
 add_library(${LIBRARY_NAME} SHARED ${SOURCES})
+target_compile_definitions(${LIBRARY_NAME} PRIVATE "GMDH_LIB")
 target_include_directories(${LIBRARY_NAME} PRIVATE ../external/eigen-3.4)
 target_include_directories(${LIBRARY_NAME} PRIVATE ../external/indicators-master/include)
 
 if(WIN32)
     target_sources(${LIBRARY_NAME} PRIVATE gmdh_lib.h dllmain.cpp)
-    target_compile_definitions(${LIBRARY_NAME} PRIVATE "GMDH_EXPORTS" "GMDH_LIB")
+    target_compile_definitions(${LIBRARY_NAME} PRIVATE "GMDH_EXPORTS")
 endif()
 
 

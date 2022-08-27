@@ -28,7 +28,12 @@
 #include <indicators/cursor_control.hpp>
 #include <indicators/block_progress_bar.hpp>
 
+
 #include "gmdh_lib.h"
+
+#ifdef GMDH_MODULE
+    #include <pybind11/pybind11.h>
+#endif
 
 #ifdef __GNUC__
     #define likely(expr)    (__builtin_expect(!!(expr), 1))
@@ -37,6 +42,12 @@
     #define likely(expr)    expr
     #define unlikely(expr)  expr
 #endif
+
+#ifdef GMDH_LIB
+    #define DISPLAYEDCOLORWARNING "\033[33m"
+    #define DISPLAYEDCOLORINFO "\033[0m"
+#endif
+#define DISPLAYEDWARNINGMSG(expr, param) "\nWarning! The input " expr " is incorrect!\nThe default value is used (" param ")!\n"
 
 namespace GMDH {
 
@@ -86,6 +97,7 @@ using cIterC = VectorC::const_iterator;
 class GMDH_API GMDH {
     void polinomialsEvaluation(const SplittedData& data, const Criterion& criterion, IterC beginCoeffsVec, IterC endCoeffsVec, std::atomic<int> *leftTasks, bool verbose) const;
     virtual bool nextLevelCondition(double &lastLevelEvaluation, uint8_t p, VectorC& combinations, const Criterion& criterion, const SplittedData& data);
+    int verifyInputData(uint8_t &p, int &threads) const; // TODO: add verify testSize, shuffle for TS
     //int calculateLeftTasksForVerbose(const std::vector<std::shared_ptr<std::vector<Combination>::iterator> > beginTasksVec, 
     //const std::vector<std::shared_ptr<std::vector<Combination>::iterator> > endTasksVec) const;
 protected:

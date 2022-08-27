@@ -1,15 +1,18 @@
-#include <pybind11/pybind11.h>
 #include <pybind11/eigen.h>
 // to convert C++ STL containers to python list
 #include <pybind11/stl.h>
 #include <pybind11/iostream.h>
 #include "../src/multi.h"
 
+#define xxxxx
+
 namespace py = pybind11;
 
 PYBIND11_MODULE(gmdhpy, m)
 {
     using namespace std;
+    using namespace pybind11::literals;
+    m.doc() = "Group method of data handling";  // TODO: add main documentation and for all methods
     
     py::class_<GMDH::SplittedData>(m, "splitted_data")
         .def_readwrite("x_train", &GMDH::SplittedData::xTrain)
@@ -44,7 +47,8 @@ PYBIND11_MODULE(gmdhpy, m)
         .def("load", &GMDH::COMBI::load)
         .def("predict", static_cast<double (GMDH::COMBI::*) (const Eigen::RowVectorXd&) const>(&GMDH::COMBI::predict))
         .def("predict", static_cast<Eigen::VectorXd (GMDH::COMBI::*) (const Eigen::MatrixXd&) const>(&GMDH::COMBI::predict))
-        .def("fit", &GMDH::COMBI::fit, py::call_guard<py::scoped_ostream_redirect, py::scoped_estream_redirect>())
+        .def("fit", &GMDH::COMBI::fit, py::call_guard<py::scoped_ostream_redirect, py::scoped_estream_redirect>(), "This method used for training model",
+        "x"_a, "y"_a, "criterion"_a, "testSize"_a = 0.5, "shuffle"_a = false, "randomSeed"_a = 0, "p"_a = 1, "threads"_a = 1, "verbose"_a = 0)
         .def("getBestPolymon", &GMDH::COMBI::getBestPolynomial);
 
     py::class_<GMDH::MULTI, GMDH::COMBI>(m, "MULTI")

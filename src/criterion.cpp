@@ -154,7 +154,7 @@ namespace GMDH {
 
     PairDVXd Criterion::getResult(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain, const VectorXd& yTest, CriterionType _criterionType, TempValues& tempValues) const
     {
-        if ((_criterionType == CriterionType::regularity)) {
+        if ((_criterionType == CriterionType::regularity)) { // TODO: switch?????
             return regularity(xTrain, xTest, yTrain, yTest, tempValues);
         }
         else if ((_criterionType == CriterionType::symRegularity)) {
