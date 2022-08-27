@@ -1,5 +1,5 @@
 #include <iostream>
-#include <multi.h>
+#include <mia.h>
 
 
 int main() {
@@ -7,28 +7,25 @@ int main() {
     using namespace Eigen;
 
     std::ifstream dataStream;
-    dataStream.open("../examples/Sber.csv");
+    dataStream.open("../../examples/Sber.csv");
     std::string dataLine;
     std::vector<double> dataValues;
+    VectorXd data;
     if (dataStream.is_open()) {
         while (std::getline(dataStream, dataLine)) {
             dataValues.push_back(std::atof(dataLine.c_str()));
         }
+        data = Map<VectorXd, Unaligned>(dataValues.data(), dataValues.size() - 50000);
+        dataStream.close();
     }
-    VectorXd data = Map<VectorXd, Unaligned>(dataValues.data(), dataValues.size() - 50000);
 
     //VectorXd data(10); data << 1, 2, 3, 4, 5, 6, 7, 8, 9, 10;
 	
-    int lags = 100;
+    int lags = 10;
     double validateSize = 0.2;
     double testSize = 0.33;
     auto timeSeries = GMDH::convertToTimeSeries(data, lags);
     GMDH::SplittedData splittedData = GMDH::splitData(timeSeries.first, timeSeries.second, validateSize);
-
-    std::cout << splittedData.xTrain.rows() << " " << splittedData.xTrain.cols() << "\n";
-    std::cout << splittedData.xTest.rows() << " " << splittedData.xTest.cols() << "\n";
-    std::cout << splittedData.yTrain.rows() << " " << splittedData.yTrain.cols() << "\n";
-    std::cout << splittedData.yTest.rows() << " " << splittedData.yTest.cols() << "\n";
 
     /*std::cout << splittedData.xTrain << "\n\n";
     std::cout << splittedData.xTest << "\n\n";
@@ -76,23 +73,27 @@ int main() {
     */
 
    //std::cout << "Original time series:\n" << data << "\n\n";
-
     auto criterion = GMDH::Criterion(GMDH::CriterionType::regularity);
-    GMDH::MULTI multi;
-    multi.fit(splittedData.xTrain, splittedData.yTrain, criterion, 50, testSize, 0, 0, 0, -2, 1);
+    GMDH::MIA mia;
+    mia.fit(splittedData.xTrain, splittedData.yTrain, criterion, 5,
+        GMDH::PolynomialType::quadratic, testSize, 0, 0, 0, -123, 1);
 
-    std::cout << "The best polynom:\n" << multi.getBestPolynomial() << std::endl;
+    std::cout << "\nThe best polynoms:\n\n" << mia.getBestPolynomial() << std::endl;
 
-    auto res = multi.predict(splittedData.xTest);
-    multi.save("model1.txt");
-    multi.load("model1.txt");
-    auto res2 = multi.predict(splittedData.xTest);
-    std::cout << "The best polynom after loading:\n" << multi.getBestPolynomial() << std::endl;
+    auto res = mia.predict(splittedData.xTest);
+    mia.save("model1.txt");
+    mia.load("model1.txt");
+    auto res2 = mia.predict(splittedData.xTest);
 
-    /*std::cout << "Predicted values before model saving:\n" << res << "\n\n";
-    std::cout << "Predicted values after model loading:\n" << res2 << "\n\n";*/
+    std::cout << "\nThe best polynoms after loading:\n\n" << mia.getBestPolynomial() << std::endl;
 
-    (std::cin).get();
+    /*for (int i = 0; i < 20; ++i)
+        std::cout << splittedData.yTest[i] << " " << res[i] << " " << res2[i] << "\n";*/
+
+    //std::cout << "Predicted values before model saving:\n" << res << "\n\n";
+    //std::cout << "Predicted values after model loading:\n" << res2 << "\n\n";
+
+    //(std::cin).get();
 
     return 0;
 }

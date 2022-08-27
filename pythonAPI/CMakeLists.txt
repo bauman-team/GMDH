@@ -12,6 +12,8 @@ set(SOURCES ../src/gmdh.h
     ../src/multi.h 
     ../src/multi.cpp
     ../src/gmdh_lib.h
+    ../src/mia.h 
+    ../src/mia.cpp
     gmdh.cpp) 
 
 pybind11_add_module(${MODULE_NAME}  ${SOURCES})

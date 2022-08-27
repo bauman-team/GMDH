@@ -10,7 +10,9 @@ set(SOURCES gmdh.h
     combi.h 
     combi.cpp 
     multi.h 
-    multi.cpp) 
+    multi.cpp
+	mia.h 
+	mia.cpp) 
 
 add_library(${LIBRARY_NAME} SHARED ${SOURCES})
 target_compile_definitions(${LIBRARY_NAME} PRIVATE "GMDH_LIB")
