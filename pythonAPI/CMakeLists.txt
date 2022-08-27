@@ -11,12 +11,14 @@ set(SOURCES ../src/gmdh.h
     ../src/combi.cpp 
     ../src/multi.h 
     ../src/multi.cpp
+    ../src/gmdh_lib.h
     gmdh.cpp) 
 
 pybind11_add_module(${MODULE_NAME}  ${SOURCES})
 target_include_directories(${MODULE_NAME} PRIVATE ../external/pybind11-2.10.0/include)
 target_include_directories(${MODULE_NAME} PRIVATE ../external/eigen-3.4)
 target_include_directories(${MODULE_NAME} PRIVATE ../external/indicators-master/include)
+target_compile_definitions(${MODULE_NAME} PRIVATE "GMDH_MODULE")
 
 
 if(Boost_FOUND)

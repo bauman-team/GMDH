@@ -7,6 +7,7 @@ add_executable(${TESTS_NAME} test_combi.cpp)
 target_include_directories(${TESTS_NAME} PRIVATE ../src/ ../external/eigen-3.4 ../external/indicators-master/include)
 
 if (WIN32)
+	target_compile_definitions(${TESTS_NAME} PRIVATE "GMDH_LIB")
 	include(FetchContent)
 	FetchContent_Declare(
 	  googletest

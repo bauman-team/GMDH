@@ -19,7 +19,7 @@ namespace GMDH {
         VectorC _bestCombinations = getBestCombinations(combinations, kBest);
 
         // TODO: add threads or kBest value will be always small?
-        if (criterion.getClassName() == "SequentialCriterion") {
+        if (criterion.getClassName() == "SequentialCriterion") { // TODO: bad code style (maybe violation SOLID barbara liscoff principle)
             for (auto combBegin = std::begin(_bestCombinations), combEnd = std::end(_bestCombinations); combBegin != combEnd; ++combBegin) {
                 auto pairCoeffsEvaluation = static_cast<const SequentialCriterion&>(criterion).recalculate(
                                             data.xTrain(Eigen::all, (*combBegin).combination()),
@@ -37,6 +37,36 @@ namespace GMDH {
             return true;
         }
         return false;
+    }
+
+    int GMDH::verifyInputData(uint8_t &p, int &threads) const {
+        auto errorCode{ 0 };
+#ifdef GMDH_LIB
+            std::cout << DISPLAYEDCOLORWARNING;
+#endif
+        if (threads < -1 || !threads)
+        {
+#ifdef GMDH_LIB
+            std::cout << DISPLAYEDWARNINGMSG("number of threads","threads = 1");
+#elif GMDH_MODULE
+    PyErr_WarnEx(PyExc_DeprecationWarning, DISPLAYEDWARNINGMSG("number of threads","threads = 1"), 1);
+#endif
+            threads = 1; // TODO: warning!!!
+            errorCode |= 1;
+        }
+        if (!p) {
+#ifdef GMDH_LIB
+            std::cout << DISPLAYEDWARNINGMSG("number of p","p = 1");
+#elif GMDH_MODULE
+    PyErr_WarnEx(PyExc_DeprecationWarning, DISPLAYEDWARNINGMSG("number of p","p = 1"), 1);
+#endif
+            p = 1; // TODO: warning!!!
+            errorCode |= 2;
+        }
+#ifdef GMDH_LIB
+            std::cout << DISPLAYEDCOLORINFO;
+#endif
+        return errorCode;
     }
 /*
     int GMDH::calculateLeftTasksForVerbose(const std::vector<std::shared_ptr<std::vector<Combination>::iterator >> beginTasksVec, 
@@ -81,28 +111,23 @@ namespace GMDH {
     }
 
     GMDH& GMDH::fit(const MatrixXd& x, const VectorXd& y, const Criterion& criterion, double testSize, bool shuffle, int randomSeed, 
-                    uint8_t p, int threads, int verbose) { // TODO: except threads, p = 0 error!!!
+                    uint8_t p, int threads, int verbose) { 
 
         using namespace indicators;
         using T = boost::packaged_task<void>;
         std::unique_ptr<ProgressBar> progressBar;
-
+        verifyInputData(p, threads);
+        
         level = 1;
         if (threads == -1)
             threads = boost::thread::hardware_concurrency(); // TODO: maybe find optimal count based on data.size() and hardware_concurrency()
-        else if (threads > 0)
+        else 
             threads = std::min(threads, static_cast<int>(boost::thread::hardware_concurrency())); // TODO: change limit
-        else {
-            threads = 1; // TODO: warning!!!
-        }
+
         boost::asio::thread_pool pool(threads); 
         std::vector<boost::unique_future<T::result_type> > futures;
         futures.reserve(threads);
         std::atomic<int> leftTasks; // TODO: change to volatile structure
-
-        if (!p) {
-            p = 1; // TODO: warning!!!
-        }
 
         inputColsNumber = x.cols();
         auto lastLevelEvaluation = std::numeric_limits<double>::max();
