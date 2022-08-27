@@ -1,4 +1,6 @@
+#pragma once
 #define BOOST_THREAD_PROVIDES_FUTURE_WHEN_ALL_WHEN_ANY
+
 #include <vector>
 #include <cmath>
 #include <numeric>
@@ -11,6 +13,7 @@
 #include <algorithm>
 #include <atomic>
 #include <map>
+#include <set>
 
 #include <Eigen/Dense>
 
@@ -20,10 +23,18 @@
 #include <boost/thread/thread.hpp>
 #include <boost/thread/future.hpp>
 #include <boost/type_index.hpp>
+#include <boost/chrono.hpp>
 
 #include <indicators/progress_bar.hpp>
 #include <indicators/cursor_control.hpp>
 #include <indicators/block_progress_bar.hpp>
+
+
+#include "gmdh_lib.h"
+
+#ifdef GMDH_MODULE
+    #include <pybind11/pybind11.h>
+#endif
 
 #ifdef __GNUC__
     #define likely(expr)    (__builtin_expect(!!(expr), 1))
@@ -32,6 +43,12 @@
     #define likely(expr)    expr
     #define unlikely(expr)  expr
 #endif
+
+#ifdef GMDH_LIB
+    #define DISPLAYEDCOLORWARNING "\033[33m"
+    #define DISPLAYEDCOLORINFO "\033[0m"
+#endif
+#define DISPLAYEDWARNINGMSG(expr, param) "\nWarning! The input " expr " is incorrect!\nThe default value is used (" param ")!\n"
 
 namespace GMDH {
 
@@ -46,14 +63,14 @@ using VectorI = std::vector<int>;
 
 class Criterion;
 
-struct SplittedData {
+struct GMDH_API SplittedData {
     MatrixXd xTrain;
     MatrixXd xTest;
     VectorXd yTrain;
     VectorXd yTest;
 };
 
-class Combination { // TODO: move to separate file
+class GMDH_API Combination { // TODO: move to separate file
     VectorU16 _combination;
     VectorXd _bestCoeffs;
     double _evaluation;
@@ -71,6 +88,8 @@ public:
 
     bool operator<(const Combination& comb) { return _evaluation < comb._evaluation; }
 
+    std::string getInfoForSaving() const;
+
 };
 
 using VectorC = std::vector<Combination>;
@@ -78,37 +97,39 @@ using IterC = VectorC::iterator;
 using cIterC = VectorC::const_iterator;
     
 
-class GMDH {
-    void polinomialsEvaluation(const MatrixXd& x, const VectorXd& y, const Criterion& criterion, 
-        IterC beginCoeffsVec, IterC endCoeffsVec, std::atomic<int> *leftTasks, bool verbose) const;
-    virtual bool nextLevelCondition(double &lastLevelEvaluation, uint8_t p, VectorC& combinations);
+class GMDH_API GMDH {
+    int verifyInputData(uint8_t& p, int& threads) const; // TODO: add verify testSize
     //int calculateLeftTasksForVerbose(const std::vector<std::shared_ptr<std::vector<Combination>::iterator> > beginTasksVec, 
     //const std::vector<std::shared_ptr<std::vector<Combination>::iterator> > endTasksVec) const;
 protected:
 
     int level;
-    int inputColsNumber; // TODO: maybe delete???
-    VectorC bestCombinations;
+    int inputColsNumber;
+    std::vector<VectorC> bestCombinations;
 
     std::string getModelName() const;
-    virtual VectorVu16 getCombinations(int n, int k) const = 0;
+    VectorVu16 nChooseK(int n, int k) const;
+    virtual VectorVu16 getCombinations(int n) const = 0;
+    virtual VectorC getBestCombinations(VectorC& combinations, int k) const;
+    double getMeanCriterionValue(const VectorC& sortedCombinations, int k) const;
+    virtual void polinomialsEvaluation(const SplittedData& data, const Criterion& criterion, IterC beginCoeffsVec, IterC endCoeffsVec, std::atomic<int>* leftTasks, bool verbose) const;
+    virtual bool nextLevelCondition(double& lastLevelEvaluation, int kBest, uint8_t p, VectorC& combinations, const Criterion& criterion, SplittedData& data);
+   
+    GMDH& fit(const MatrixXd& x, const VectorXd& y, const Criterion& criterion, int kBest, double testSize = 0.5, bool shuffle = false,
+        int randomSeed = 0, uint8_t p = 1, int threads = 1, int verbose = 0);
 
 public:
-    GMDH() : level(1) { }
+    GMDH() : level(1) {}
     virtual int save(const std::string& path) const = 0;
     virtual int load(const std::string& path) = 0;
-    GMDH& fit(MatrixXd x, VectorXd y, const Criterion& criterion, uint8_t p = 1, int threads = 1, int verbose = 0);
+
     virtual double predict(const RowVectorXd& x) const = 0;
     virtual VectorXd predict(const MatrixXd& x) const = 0;
     virtual std::string getBestPolynomial() const = 0;
 };
 
-
-//mat polynomailFeatures(const mat X, int max_degree);
-PairMVXd convertToTimeSeries(VectorXd x, int lags);
-SplittedData splitTimeSeries(MatrixXd x, VectorXd y, double testSize = 0.2);
-SplittedData splitData(MatrixXd x, VectorXd y, double testSize = 0.2, bool shuffle = true, int randomSeed = 0);
-
+PairMVXd GMDH_API convertToTimeSeries(VectorXd x, int lags);
+SplittedData GMDH_API splitData(const MatrixXd& x, const VectorXd& y, double testSize = 0.2, bool shuffle = false, int randomSeed = 0);
 }
 
 #include "criterion.h"

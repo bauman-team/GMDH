@@ -3,39 +3,7 @@ cmake_minimum_required(VERSION 3.19)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-project(GMDH VERSION 0.1)
-
-add_executable(GMDH src/main.cpp
-                    src/gmdh.h
-                    src/gmdh.cpp
-                    src/criterion.h 
-                    src/criterion.cpp 
-                    src/combi.h 
-                    src/combi.cpp 
-                    src/multi.h 
-                    src/multi.cpp)
-
-set(LIBRARY_NAME gmdhpy)
-
-add_subdirectory(external/pybind11-2.10.0)
-pybind11_add_module(${LIBRARY_NAME} pythonAPI/gmdh.cpp
-                                   src/gmdh.h
-                                   src/gmdh.cpp
-                                   src/criterion.h 
-                                   src/criterion.cpp 
-                                   src/combi.h 
-                                   src/combi.cpp 
-                                   src/multi.h 
-                                   src/multi.cpp)
-target_include_directories(${LIBRARY_NAME} PUBLIC external/pybind11-2.10.0/include)
-
-target_include_directories(${PROJECT_NAME} PUBLIC external/eigen-3.4)
-target_include_directories(${LIBRARY_NAME} PUBLIC external/eigen-3.4)
-
-add_subdirectory(external/indicators-master)
-target_include_directories(${PROJECT_NAME} PUBLIC external/indicators-master/include)
-target_include_directories(${LIBRARY_NAME} PUBLIC external/indicators-master/include)
-
+project(GMDH VERSION 0.2)
 
 if(WIN32)
     set(BOOST_ROOT "C:/boost_1_79_0")
@@ -49,9 +17,24 @@ set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_RUNTIME OFF) 
 find_package(Boost 1.79.0 COMPONENTS system thread) 
 
-if(Boost_FOUND)
-    target_include_directories(${PROJECT_NAME} PUBLIC ${Boost_INCLUDE_DIR})
-    target_link_libraries(${PROJECT_NAME} PUBLIC ${Boost_LIBRARIES})
-    target_include_directories(${LIBRARY_NAME} PUBLIC ${Boost_INCLUDE_DIR})
-    target_link_libraries(${LIBRARY_NAME} PUBLIC ${Boost_LIBRARIES})
-endif()
+set(LIBRARY_NAME gmdh)
+set(MODULE_NAME gmdhpy)
+set(TESTS_NAME gmdh_tests)
+set(PROJECT_EXAMPLES gmdh_example) # only for examples
+
+add_subdirectory(src/)
+add_subdirectory(external/pybind11-2.10.0)
+add_subdirectory(pythonAPI/)
+add_subdirectory(examples/)
+add_subdirectory(tests/)
+
+set_target_properties(${LIBRARY_NAME} ${MODULE_NAME} ${TESTS_NAME} ${PROJECT_EXAMPLES}
+    PROPERTIES
+    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+)
+
+enable_testing()
+add_test(NAME ${TESTS_NAME}
+	COMMAND ${TESTS_NAME})
