@@ -57,7 +57,7 @@ namespace GMDH {
         }
         double currLevelEvaluation = getMeanCriterionValue(_bestCombinations, p);
 
-        if (lastLevelEvaluation > currLevelEvaluation) {
+        if (lastLevelEvaluation > currLevelEvaluation || level < 4) {
             bestCombinations.push_back(std::move(_bestCombinations));
             lastLevelEvaluation = currLevelEvaluation;
 
@@ -237,7 +237,57 @@ namespace GMDH {
 
     std::string MIA::getBestPolynomial() const
     {
-        return std::string();
+        std::string polynomialStr = "";
+
+        for (int i = 0; i < bestCombinations.size(); ++i) {
+            //polynomialStr += "LEVEL " + std::to_string(i + 1) + ":\n";
+            for (int j = 0; j < bestCombinations[i].size(); ++j) {
+                if (i < bestCombinations.size() - 1)
+                {
+                    polynomialStr += "f" + std::to_string(i + 1) + "_" + std::to_string(j + 1) + " =";
+                }
+                else
+                {
+                    polynomialStr += "y =";
+                }
+                auto bestColsIndexes = bestCombinations[i][j].combination();
+                auto bestCoeffs = bestCombinations[i][j].bestCoeffs();
+                for (int k = 0; k < bestCoeffs.size(); ++k) {
+                    if (bestCoeffs[k] > 0) {
+                        if (k > 0)
+                            polynomialStr += " + ";
+                        else
+                            polynomialStr += " ";
+                    }
+                    else
+                        polynomialStr += " - ";
+                    polynomialStr += std::to_string(abs(bestCoeffs[k]));
+                    if (i == 0)
+                    {
+                        if (k < 2)
+                            polynomialStr += "*x" + std::to_string(bestColsIndexes[k] + 1);
+                        else if (k == 2 && bestCoeffs.size() > 3)
+                            polynomialStr += "*x" + std::to_string(bestColsIndexes[0] + 1) +
+                                             "*x" + std::to_string(bestColsIndexes[1] + 1);
+                        else if (k < 5 && bestCoeffs.size() > 4)
+                            polynomialStr += "*x" + std::to_string(bestColsIndexes[k - 3] + 1) + "^2";
+                    }
+                    else
+                    {
+                        if (k < 2)
+                            polynomialStr += "*f" + std::to_string(i) + "_" + std::to_string(bestColsIndexes[k] + 1);
+                        else if (k == 2 && bestCoeffs.size() > 3)
+                            polynomialStr += "*f" + std::to_string(i) + "_" + std::to_string(bestColsIndexes[0] + 1) +
+                                             "*f" + std::to_string(i) + "_" + std::to_string(bestColsIndexes[1] + 1);
+                        else if (k < 5 && bestCoeffs.size() > 4)
+                            polynomialStr += "*f" + std::to_string(i) + "_" + std::to_string(bestColsIndexes[k - 3] + 1) + "^2";
+                    }
+                }
+                polynomialStr += "\n";
+            }
+            polynomialStr += "\n";
+        }
+        return polynomialStr;
     }
 
     /*MatrixXd MIA::polynomailFeatures(const MatrixXd& X, int max_degree) {
