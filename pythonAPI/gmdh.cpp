@@ -5,8 +5,6 @@
 #include "../src/combi.h"
 #include "../src/mia.h"
 
-#define xxxxx
-
 namespace py = pybind11;
 
 PYBIND11_MODULE(gmdhpy, m)

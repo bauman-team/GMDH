@@ -1,5 +1,4 @@
-﻿//#include "pch.h"
-#include "combi.h"
+﻿#include "combi.h"
 
 namespace GMDH
 {
