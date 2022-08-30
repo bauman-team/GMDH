@@ -2,19 +2,15 @@
 
 namespace GMDH {
 
-    VectorVu16 MULTI::getCombinations(int n) const
-    {
+    VectorVu16 MULTI::generateCombinations(int n_cols) const {
         VectorVu16 combs;
         if (level == 1)
-            return nChooseK(n, level);
+            return nChooseK(n_cols, level);
 
-        for (auto comb : bestCombinations[0])
-        {
-            for (int i = 0; i < n; ++i)
-            {
+        for (auto comb : bestCombinations[0]) {
+            for (int i = 0; i < n_cols; ++i) {
                 VectorU16 temp(comb.combination());
-                if (std::find(temp.begin(), temp.end(), i) == temp.end())
-                {
+                if (std::find(temp.begin(), temp.end(), i) == temp.end()) {
                     temp.push_back(i);
                     std::sort(temp.begin(), temp.end());
                     if (std::find(combs.begin(), combs.end(), temp) == combs.end())
@@ -25,13 +21,11 @@ namespace GMDH {
         return combs;
     }
 
-    MULTI::MULTI()
-    {
+    MULTI::MULTI() {
         bestCombinations.resize(1);
     }
 
-    int MULTI::save(const std::string& path) const
-    {
+    int MULTI::save(const std::string& path) const {
         std::ofstream modelFile;
         modelFile.open(path);
         if (!modelFile.is_open())
@@ -45,8 +39,7 @@ namespace GMDH {
         return 0;
     }
 
-    int MULTI::load(const std::string& path)
-    {
+    int MULTI::load(const std::string& path) {
         inputColsNumber = 0;
         bestCombinations.clear();
         bestCombinations.resize(1);
@@ -80,33 +73,31 @@ namespace GMDH {
                 while (coeffsStream >> coeff)
                     coeffs.push_back(coeff);
 
-                bestCombinations[0].push_back(Combination(std::move(bestColsIndexes), Map<VectorXd>(coeffs.data(), coeffs.size())));
+                bestCombinations[0].push_back(Combination(std::move(bestColsIndexes), 
+                                              Map<VectorXd>(coeffs.data(), coeffs.size())));
             }
             modelFile.close();
         }
         return 0;
     }
 
-    GMDH& MULTI::fit(const MatrixXd& x, const VectorXd& y, const Criterion& criterion, int kBest, double testSize, bool shuffle, int randomSeed, uint8_t p, int threads, int verbose)
-    {
-        return GMDH::fit(x, y, criterion, kBest, testSize, shuffle, randomSeed, p, threads, verbose);
+    GMDH& MULTI::fit(const MatrixXd& x, const VectorXd& y, const Criterion& criterion, int kBest, double testSize, 
+                     bool shuffle, int randomSeed, uint8_t pAverage, int threads, int verbose) {
+        return GMDH::fit(x, y, criterion, kBest, testSize, shuffle, randomSeed, pAverage, threads, verbose);
     }
 
-    double MULTI::predict(const RowVectorXd& x) const
-    {
+    double MULTI::predict(const RowVectorXd& x) const {
         return predict(MatrixXd(x))[0];
     }
 
-    VectorXd MULTI::predict(const MatrixXd& x) const
-    {
+    VectorXd MULTI::predict(const MatrixXd& x) const {
         MatrixXd modifiedX(x.rows(), x.cols() + 1);
         modifiedX.col(x.cols()).setOnes();
         modifiedX.leftCols(x.cols()) = x;
         return modifiedX(Eigen::all, bestCombinations[0][0].combination()) * bestCombinations[0][0].bestCoeffs();
     }
 
-    std::string MULTI::getBestPolynomial() const
-    {
+    std::string MULTI::getBestPolynomial() const {
         std::string polynomialStr = "y =";
         auto bestColsIndexes = bestCombinations[0][0].combination();
         auto bestCoeffs = bestCombinations[0][0].bestCoeffs();

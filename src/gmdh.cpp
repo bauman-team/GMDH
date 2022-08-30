@@ -2,7 +2,7 @@
 
 namespace GMDH {
 
-    void GMDH::polinomialsEvaluation(const SplittedData& data, const Criterion& criterion, 
+    void GMDH::polynomialsEvaluation(const SplittedData& data, const Criterion& criterion, 
         IterC beginCoeffsVec, IterC endCoeffsVec, std::atomic<int> *leftTasks, bool verbose) const {
         for (; beginCoeffsVec < endCoeffsVec; ++beginCoeffsVec) {
             auto pairCoeffsEvaluation = criterion.calculate(data.xTrain(Eigen::all, (*beginCoeffsVec).combination()),
@@ -15,12 +15,14 @@ namespace GMDH {
         }      
     }
 
-    bool GMDH::nextLevelCondition(double &lastLevelEvaluation, int kBest, uint8_t p, VectorC& combinations, const Criterion& criterion, SplittedData& data) {
+    bool GMDH::nextLevelCondition(double &lastLevelEvaluation, int kBest, uint8_t pAverage, VectorC& combinations, 
+                                  const Criterion& criterion, SplittedData& data) {
         
         VectorC _bestCombinations = getBestCombinations(combinations, kBest);
         if (criterion.getClassName() == "SequentialCriterion") { // TODO: bad code style
             // TODO: add threads or kBest value will be always small?
-            for (auto combBegin = std::begin(_bestCombinations), combEnd = std::end(_bestCombinations); combBegin != combEnd; ++combBegin) {
+            for (auto combBegin = std::begin(_bestCombinations), 
+                       combEnd = std::end(_bestCombinations); combBegin != combEnd; ++combBegin) {
                 auto pairCoeffsEvaluation = static_cast<const SequentialCriterion&>(criterion).recalculate(
                                             data.xTrain(Eigen::all, (*combBegin).combination()),
                                             data.xTest(Eigen::all, (*combBegin).combination()),
@@ -29,7 +31,7 @@ namespace GMDH {
             }
             std::sort(std::begin(_bestCombinations), std::end(_bestCombinations));
         }
-        double currLevelEvaluation = getMeanCriterionValue(_bestCombinations, p);
+        double currLevelEvaluation = getMeanCriterionValue(_bestCombinations, pAverage);
 
         if (lastLevelEvaluation > currLevelEvaluation) {
             bestCombinations[0] = std::move(_bestCombinations);
@@ -40,13 +42,12 @@ namespace GMDH {
         return false;
     }
 
-    int GMDH::verifyInputData(uint8_t &p, int &threads) const {
+    int GMDH::verifyInputData(uint8_t &pAverage, int &threads) const {
         auto errorCode{ 0 };
 #ifdef GMDH_LIB
             std::cout << DISPLAYEDCOLORWARNING;
 #endif
-        if (threads < -1 || !threads)
-        {
+        if (threads < -1 || !threads) {
 #ifdef GMDH_LIB
             std::cout << DISPLAYEDWARNINGMSG("number of threads","threads = 1");
 #elif GMDH_MODULE
@@ -55,13 +56,13 @@ namespace GMDH {
             threads = 1;
             errorCode |= 1;
         }
-        if (!p) {
+        if (!pAverage) {
 #ifdef GMDH_LIB
-            std::cout << DISPLAYEDWARNINGMSG("number of p","p = 1");
+            std::cout << DISPLAYEDWARNINGMSG("number of pAverage","pAverage = 1");
 #elif GMDH_MODULE
-    PyErr_WarnEx(PyExc_Warning, DISPLAYEDWARNINGMSG("number of p","p = 1"), 1);
+    PyErr_WarnEx(PyExc_Warning, DISPLAYEDWARNINGMSG("number of pAverage","pAverage = 1"), 1);
 #endif
-            p = 1;
+            pAverage = 1;
             errorCode |= 2;
         }
 #ifdef GMDH_LIB
@@ -79,15 +80,13 @@ namespace GMDH {
         return leftTasks;
     }
 */
-    std::string GMDH::getModelName() const
-    {
+    std::string GMDH::getModelName() const {
         std::string modelName = std::string(boost::typeindex::type_id_runtime(*this).pretty_name());
         modelName = modelName.substr(modelName.find_last_of(':') + 1);
         return modelName;
     }
 
-    VectorVu16 GMDH::nChooseK(int n, int k) const
-    {
+    VectorVu16 GMDH::nChooseK(int n, int k) const {
         struct c_unique {
             uint16_t current;
             c_unique() { current = -1; }
@@ -114,8 +113,7 @@ namespace GMDH {
         return combs;
     }
 
-    VectorC GMDH::getBestCombinations(VectorC& combinations, int k) const
-    {
+    VectorC GMDH::getBestCombinations(VectorC& combinations, int k) const {
         k = std::min(k, static_cast<int>(combinations.size()));
         VectorC _bestCombinations(std::begin(combinations), std::begin(combinations) + k);
         std::sort(std::begin(_bestCombinations), std::end(_bestCombinations));
@@ -130,8 +128,7 @@ namespace GMDH {
         return _bestCombinations;
     }
 
-    double GMDH::getMeanCriterionValue(const VectorC& sortedCombinations, int k) const
-    {
+    double GMDH::getMeanCriterionValue(const VectorC& sortedCombinations, int k) const {
         k = std::min(k, static_cast<int>(sortedCombinations.size()));
         double currLevelEvaluation = 0;
         for (auto combBegin = std::begin(sortedCombinations); combBegin != std::begin(sortedCombinations) + k; ++combBegin)
@@ -140,13 +137,13 @@ namespace GMDH {
         return currLevelEvaluation;
     }
 
-    GMDH& GMDH::fit(const MatrixXd& x, const VectorXd& y, const Criterion& criterion, int kBest, double testSize, bool shuffle, int randomSeed,
-                    uint8_t p, int threads, int verbose) {
+    GMDH& GMDH::fit(const MatrixXd& x, const VectorXd& y, const Criterion& criterion, int kBest, double testSize, 
+                    bool shuffle, int randomSeed, uint8_t pAverage, int threads, int verbose) {
 
         using namespace indicators;
         using T = boost::packaged_task<void>;
         std::unique_ptr<ProgressBar> progressBar;
-        verifyInputData(p, threads);
+        verifyInputData(pAverage, threads);
         
         level = 1;
         if (threads == -1)
@@ -177,7 +174,7 @@ namespace GMDH {
         do {
             futures.clear();
             evaluationCoeffsVec.clear();
-            auto combinations = getCombinations(data.xTrain.cols() - 1);
+            auto combinations = generateCombinations(data.xTrain.cols() - 1);
             evaluationCoeffsVec.resize(combinations.size());
             auto currLevelEvaluation = std::begin(evaluationCoeffsVec);
             for (auto it = std::begin(combinations); it != std::end(combinations); ++it, ++currLevelEvaluation)
@@ -187,11 +184,12 @@ namespace GMDH {
             if (verbose) {
                 progressBar = std::make_unique<ProgressBar>(
                     option::BarWidth{ 30 },
-                    option::Start{ "LEVEL " + std::to_string(level) + " (" + std::to_string(evaluationCoeffsVec.size()) + " combinations) [" },
+                    option::Start{ "LEVEL " + std::to_string(level) + ((std::to_string(level).size() == 1) ? "  [" : " [")},
                     option::End{ "]" },
+                    option::Lead{ ">" },
                     option::ShowElapsedTime{ true },
                     option::ShowPercentage{ true },
-                    option::Lead{ ">" }
+                    option::PostfixText{ "(" + std::to_string(evaluationCoeffsVec.size()) + " combinations)" }
                 );
                 show_console_cursor(false);
                 progressBar->set_progress(0);
@@ -199,11 +197,12 @@ namespace GMDH {
             decltype(auto) model = this;
             auto combsPortion = static_cast<int>(std::ceil(evaluationCoeffsVec.size() / static_cast<double>(threads)));
             for (auto i = 0; i * combsPortion < evaluationCoeffsVec.size(); ++i) {
-                boost::packaged_task<void> pt([model = static_cast<const GMDH*>(model), &data = static_cast<const SplittedData&>(data),
-                    &criterion = static_cast<const Criterion&>(criterion), &evaluationCoeffsVec, &leftTasks, verbose, combsPortion, i]() {
-                    model->polinomialsEvaluation(data, criterion, std::begin(evaluationCoeffsVec) + combsPortion * i,
-                        std::begin(evaluationCoeffsVec) + std::min(static_cast<size_t>(combsPortion * (i + 1)), evaluationCoeffsVec.size()),
-                        &leftTasks, verbose); });
+                boost::packaged_task<void> pt([model = static_cast<const GMDH*>(model), 
+                    &data = static_cast<const SplittedData&>(data), &criterion = static_cast<const Criterion&>(criterion), 
+                    &evaluationCoeffsVec, &leftTasks, verbose, combsPortion, i]() {
+                        model->polynomialsEvaluation(data, criterion, std::begin(evaluationCoeffsVec) + combsPortion * i,
+                            std::begin(evaluationCoeffsVec) + std::min(static_cast<size_t>(combsPortion * (i + 1)), 
+                            evaluationCoeffsVec.size()), &leftTasks, verbose); });
                 futures.push_back(pt.get_future());
                 post(pool, std::move(pt));
             }
@@ -218,14 +217,13 @@ namespace GMDH {
             }
             else
                 boost::when_all(futures.begin(), futures.end()).get();
-        } while (nextLevelCondition(lastLevelEvaluation, kBest, p, evaluationCoeffsVec, criterion, data));
+        } while (nextLevelCondition(lastLevelEvaluation, kBest, pAverage, evaluationCoeffsVec, criterion, data));
 
         show_console_cursor(true);
         return *this;   
     }
 
-    PairMVXd convertToTimeSeries(VectorXd x, int lags)
-    {
+    PairMVXd timeSeriesTransformation(VectorXd x, int lags) {
         VectorXd yTimeSeries = x.tail(x.size() - lags);
         MatrixXd xTimeSeries(x.size() - lags, lags);
         for (int i = 0; i < x.size() - lags; ++i)
@@ -233,18 +231,15 @@ namespace GMDH {
         return PairMVXd(xTimeSeries, yTimeSeries);
     }
 
-    SplittedData splitData(const MatrixXd& x, const VectorXd& y, double testSize, bool shuffle, int randomSeed)
-    {
+    SplittedData splitData(const MatrixXd& x, const VectorXd& y, double testSize, bool shuffle, int randomSeed) {
         SplittedData data;
-        if (!shuffle)
-        {
+        if (!shuffle) {
             data.xTrain = x.topRows(x.rows() - round(x.rows() * testSize));
             data.xTest = x.bottomRows(round(x.rows() * testSize));
             data.yTrain = y.head(y.size() - round(y.size() * testSize));
             data.yTest = y.tail(round(y.size() * testSize));
         }
-        else
-        {
+        else {
             if (randomSeed != 0)
                 std::srand(randomSeed);
             else
@@ -265,8 +260,7 @@ namespace GMDH {
         return data;
     }
 
-    std::string Combination::getInfoForSaving() const
-    {
+    std::string Combination::getInfoForSaving() const {
         std::stringstream info;
         info.precision(12); // TODOL maybe change precision
         for (auto i : _combination) info << i << ' ';

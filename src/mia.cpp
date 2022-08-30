@@ -2,22 +2,18 @@
 
 namespace GMDH {
 
-	VectorVu16 MIA::getCombinations(int n) const
-	{
-		return nChooseK(n, 2);
+	VectorVu16 MIA::generateCombinations(int n_cols) const {
+		return nChooseK(n_cols, 2);
 	}
 
-    MatrixXd MIA::getPolynomialX(const MatrixXd& x) const
-    {
+    MatrixXd MIA::getPolynomialX(const MatrixXd& x) const {
         MatrixXd polyX(x);
-        if ((polynomialType == PolynomialType::linear_cov))
-        {
+        if ((polynomialType == PolynomialType::linear_cov)) {
             polyX.conservativeResize(NoChange, 4);
             polyX.col(2) = x.col(0).cwiseProduct(x.col(1));
             polyX.col(3) = x.col(2);
         }
-        else if ((polynomialType == PolynomialType::quadratic))
-        {
+        else if ((polynomialType == PolynomialType::quadratic)) {
             polyX.conservativeResize(NoChange, 6);
             polyX.col(2) = x.col(0).cwiseProduct(x.col(1));
             polyX.col(3) = x.col(0).cwiseProduct(x.col(0));
@@ -27,8 +23,8 @@ namespace GMDH {
         return polyX;
     }
 
-    void MIA::polinomialsEvaluation(const SplittedData& data, const Criterion& criterion, IterC beginCoeffsVec, IterC endCoeffsVec, std::atomic<int>* leftTasks, bool verbose) const
-    {
+    void MIA::polynomialsEvaluation(const SplittedData& data, const Criterion& criterion, IterC beginCoeffsVec, 
+                                    IterC endCoeffsVec, std::atomic<int>* leftTasks, bool verbose) const {
         for (; beginCoeffsVec < endCoeffsVec; ++beginCoeffsVec) {
             auto pairCoeffsEvaluation = criterion.calculate(
                                             getPolynomialX(data.xTrain(Eigen::all, (*beginCoeffsVec).combination())),
@@ -41,12 +37,13 @@ namespace GMDH {
         }
     }
 
-    bool MIA::nextLevelCondition(double& lastLevelEvaluation, int kBest, uint8_t p, VectorC& combinations, const Criterion& criterion, SplittedData& data)
-    {
+    bool MIA::nextLevelCondition(double& lastLevelEvaluation, int kBest, uint8_t pAverage, VectorC& combinations,
+                                 const Criterion& criterion, SplittedData& data) {
         VectorC _bestCombinations = getBestCombinations(combinations, kBest);
         if (criterion.getClassName() == "SequentialCriterion") {
             // TODO: add threads or kBest value will be always small?
-            for (auto combBegin = std::begin(_bestCombinations), combEnd = std::end(_bestCombinations); combBegin != combEnd; ++combBegin) {
+            for (auto combBegin = std::begin(_bestCombinations), 
+                        combEnd = std::end(_bestCombinations); combBegin != combEnd; ++combBegin) {
                 auto pairCoeffsEvaluation = static_cast<const SequentialCriterion&>(criterion).recalculate(
                     getPolynomialX(data.xTrain(Eigen::all, (*combBegin).combination())),
                     getPolynomialX(data.xTest(Eigen::all, (*combBegin).combination())),
@@ -55,7 +52,7 @@ namespace GMDH {
             }
             std::sort(std::begin(_bestCombinations), std::end(_bestCombinations));
         }
-        double currLevelEvaluation = getMeanCriterionValue(_bestCombinations, p);
+        double currLevelEvaluation = getMeanCriterionValue(_bestCombinations, pAverage);
 
         if (lastLevelEvaluation > currLevelEvaluation) {
             bestCombinations.push_back(std::move(_bestCombinations));
@@ -135,14 +132,13 @@ namespace GMDH {
         return false;
     }
 
-    GMDH& MIA::fit(MatrixXd x, VectorXd y, Criterion& criterion, int kBest, PolynomialType _polynomialType, double testSize, bool shuffle, int randomSeed, uint8_t p, int threads, int verbose)
-    {
+    GMDH& MIA::fit(MatrixXd x, VectorXd y, Criterion& criterion, int kBest, PolynomialType _polynomialType, 
+                   double testSize, bool shuffle, int randomSeed, uint8_t pAverage, int threads, int verbose) {
         polynomialType = _polynomialType;
-        return GMDH::fit(x, y, criterion, kBest, testSize, shuffle, randomSeed, p, threads, verbose);
+        return GMDH::fit(x, y, criterion, kBest, testSize, shuffle, randomSeed, pAverage, threads, verbose);
     }
 
-    int MIA::save(const std::string& path) const
-    {
+    int MIA::save(const std::string& path) const {
         std::ofstream modelFile;
         modelFile.open(path);
         if (!modelFile.is_open())
@@ -160,8 +156,7 @@ namespace GMDH {
         return 0;
     }
 
-    int MIA::load(const std::string& path)
-    {
+    int MIA::load(const std::string& path) {
         inputColsNumber = 0;
         bestCombinations.clear();
 
@@ -203,7 +198,8 @@ namespace GMDH {
                     while (coeffsStream >> coeff)
                         coeffs.push_back(coeff);
 
-                    bestCombinations[currLevel].push_back(Combination(std::move(bestColsIndexes), Map<VectorXd>(coeffs.data(), coeffs.size())));
+                    bestCombinations[currLevel].push_back(Combination(std::move(bestColsIndexes), 
+                                                          Map<VectorXd>(coeffs.data(), coeffs.size())));
                 }
             }
             modelFile.close();
@@ -211,13 +207,11 @@ namespace GMDH {
         return 0;
     }
 
-    double MIA::predict(const RowVectorXd& x) const
-    {
+    double MIA::predict(const RowVectorXd& x) const {
         return predict(MatrixXd(x))[0];
     }
 
-    VectorXd MIA::predict(const MatrixXd& x) const
-    {
+    VectorXd MIA::predict(const MatrixXd& x) const {
         MatrixXd modifiedX(x.rows(), x.cols() + 1);
         modifiedX.col(x.cols()).setOnes();
         modifiedX.leftCols(x.cols()) = x;
@@ -235,21 +229,18 @@ namespace GMDH {
         return modifiedX.col(0);
     }
 
-    std::string MIA::getBestPolynomial() const
-    {
+    std::string MIA::getBestPolynomial() const {
         std::string polynomialStr = "";
 
         for (int i = 0; i < bestCombinations.size(); ++i) {
             //polynomialStr += "LEVEL " + std::to_string(i + 1) + ":\n";
             for (int j = 0; j < bestCombinations[i].size(); ++j) {
+
                 if (i < bestCombinations.size() - 1)
-                {
                     polynomialStr += "f" + std::to_string(i + 1) + "_" + std::to_string(j + 1) + " =";
-                }
                 else
-                {
                     polynomialStr += "y =";
-                }
+
                 auto bestColsIndexes = bestCombinations[i][j].combination();
                 auto bestCoeffs = bestCombinations[i][j].bestCoeffs();
                 for (int k = 0; k < bestCoeffs.size(); ++k) {
@@ -262,8 +253,7 @@ namespace GMDH {
                     else
                         polynomialStr += " - ";
                     polynomialStr += std::to_string(abs(bestCoeffs[k]));
-                    if (i == 0)
-                    {
+                    if (i == 0) {
                         if (k < 2)
                             polynomialStr += "*x" + std::to_string(bestColsIndexes[k] + 1);
                         else if (k == 2 && bestCoeffs.size() > 3)
@@ -272,8 +262,7 @@ namespace GMDH {
                         else if (k < 5 && bestCoeffs.size() > 4)
                             polynomialStr += "*x" + std::to_string(bestColsIndexes[k - 3] + 1) + "^2";
                     }
-                    else
-                    {
+                    else {
                         if (k < 2)
                             polynomialStr += "*f" + std::to_string(i) + "_" + std::to_string(bestColsIndexes[k] + 1);
                         else if (k == 2 && bestCoeffs.size() > 3)

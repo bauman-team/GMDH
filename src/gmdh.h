@@ -36,7 +36,7 @@
 namespace GMDH {    
 
 class GMDH_API GMDH {
-    int verifyInputData(uint8_t& p, int& threads) const; // TODO: add verify testSize
+    int verifyInputData(uint8_t& pAverage, int& threads) const; // TODO: add verify testSize
     //int calculateLeftTasksForVerbose(const std::vector<std::shared_ptr<std::vector<Combination>::iterator> > beginTasksVec, 
     //const std::vector<std::shared_ptr<std::vector<Combination>::iterator> > endTasksVec) const;
 protected:
@@ -47,14 +47,18 @@ protected:
 
     std::string getModelName() const;
     VectorVu16 nChooseK(int n, int k) const;
-    virtual VectorVu16 getCombinations(int n) const = 0;
+    virtual VectorVu16 generateCombinations(int n_cols) const = 0;
     virtual VectorC getBestCombinations(VectorC& combinations, int k) const;
     double getMeanCriterionValue(const VectorC& sortedCombinations, int k) const;
-    virtual void polinomialsEvaluation(const SplittedData& data, const Criterion& criterion, IterC beginCoeffsVec, IterC endCoeffsVec, std::atomic<int>* leftTasks, bool verbose) const;
-    virtual bool nextLevelCondition(double& lastLevelEvaluation, int kBest, uint8_t p, VectorC& combinations, const Criterion& criterion, SplittedData& data);
+
+    virtual void polynomialsEvaluation(const SplittedData& data, const Criterion& criterion, IterC beginCoeffsVec, 
+                                       IterC endCoeffsVec, std::atomic<int>* leftTasks, bool verbose) const;
+
+    virtual bool nextLevelCondition(double& lastLevelEvaluation, int kBest, uint8_t pAverage, VectorC& combinations,
+                                    const Criterion& criterion, SplittedData& data);
    
-    GMDH& fit(const MatrixXd& x, const VectorXd& y, const Criterion& criterion, int kBest, double testSize = 0.5, bool shuffle = false,
-        int randomSeed = 0, uint8_t p = 1, int threads = 1, int verbose = 0);
+    GMDH& fit(const MatrixXd& x, const VectorXd& y, const Criterion& criterion, int kBest, double testSize = 0.5, 
+              bool shuffle = false, int randomSeed = 0, uint8_t pAverage = 1, int threads = 1, int verbose = 0);
 
 public:
     GMDH() : level(1) {}
@@ -66,8 +70,9 @@ public:
     virtual std::string getBestPolynomial() const = 0;
 };
 
-PairMVXd GMDH_API convertToTimeSeries(VectorXd x, int lags);
-SplittedData GMDH_API splitData(const MatrixXd& x, const VectorXd& y, double testSize = 0.2, bool shuffle = false, int randomSeed = 0);
+PairMVXd GMDH_API timeSeriesTransformation(VectorXd x, int lags);
+SplittedData GMDH_API splitData(const MatrixXd& x, const VectorXd& y, double testSize = 0.2, 
+                                bool shuffle = false, int randomSeed = 0);
 }
 
 #include "criterion.h"
