@@ -16,7 +16,7 @@ namespace GMDH {
     }
 
     bool GMDH::nextLevelCondition(double &lastLevelEvaluation, int kBest, uint8_t pAverage, VectorC& combinations, 
-                                  const Criterion& criterion, SplittedData& data) {
+                                  const Criterion& criterion, SplittedData& data, double limit) {
         
         VectorC _bestCombinations = getBestCombinations(combinations, kBest);
         if (criterion.getClassName() == "SequentialCriterion") { // TODO: bad code style
@@ -32,8 +32,9 @@ namespace GMDH {
             std::sort(std::begin(_bestCombinations), std::end(_bestCombinations));
         }
         double currLevelEvaluation = getMeanCriterionValue(_bestCombinations, pAverage);
+        //std::cout << "\n" << currLevelEvaluation << "\n";
 
-        if (lastLevelEvaluation > currLevelEvaluation) {
+        if (lastLevelEvaluation - currLevelEvaluation > limit) {
             bestCombinations[0] = std::move(_bestCombinations);
             lastLevelEvaluation = currLevelEvaluation;
             if (++level < data.xTrain.cols())
@@ -138,7 +139,7 @@ namespace GMDH {
     }
 
     GMDH& GMDH::fit(const MatrixXd& x, const VectorXd& y, const Criterion& criterion, int kBest, double testSize, 
-                    bool shuffle, int randomSeed, uint8_t pAverage, int threads, int verbose) {
+                    bool shuffle, int randomSeed, uint8_t pAverage, int threads, int verbose, double limit) {
 
         using namespace indicators;
         using T = boost::packaged_task<void>;
@@ -217,8 +218,7 @@ namespace GMDH {
             }
             else
                 boost::when_all(futures.begin(), futures.end()).get();
-        } while (nextLevelCondition(lastLevelEvaluation, kBest, pAverage, evaluationCoeffsVec, criterion, data));
-
+        } while (nextLevelCondition(lastLevelEvaluation, kBest, pAverage, evaluationCoeffsVec, criterion, data, limit));
         show_console_cursor(true);
         return *this;   
     }

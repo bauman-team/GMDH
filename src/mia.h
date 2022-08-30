@@ -16,11 +16,11 @@ namespace GMDH {
 								   IterC endCoeffsVec, std::atomic<int>* leftTasks, bool verbose) const override;
 
 		bool nextLevelCondition(double& lastLevelEvaluation, int kBest, uint8_t pAverage, VectorC& combinations,
-							    const Criterion& criterion, SplittedData& data) override;
+							    const Criterion& criterion, SplittedData& data, double limit) override;
 	public:
 		GMDH& fit(MatrixXd x, VectorXd y, Criterion& criterion, int _kBest, 
-				  PolynomialType _polynomialType = PolynomialType::quadratic, double testSize = 0.5, 
-				  bool shuffle = false, int randomSeed = 0, uint8_t pAverage = 1, int threads = 1, int verbose = 0);
+				  PolynomialType _polynomialType = PolynomialType::quadratic, double testSize = 0.5, bool shuffle = false, 
+				  int randomSeed = 0, uint8_t pAverage = 1, int threads = 1, int verbose = 0, double limit = 0);
 
 		int save(const std::string& path) const override;
 		int load(const std::string& path) override;

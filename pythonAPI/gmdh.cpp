@@ -70,7 +70,7 @@ PYBIND11_MODULE(gmdhpy, m)
         .def("fit", &GMDH::MULTI::fit, py::call_guard<py::scoped_ostream_redirect, py::scoped_estream_redirect>(), 
             "This method used for training model",
             "x"_a, "y"_a, "criterion"_a, "kBest"_a, "testSize"_a = 0.5, "shuffle"_a = false, "randomSeed"_a = 0,
-            "pAverage"_a = 1, "threads"_a = 1, "verbose"_a = 0)
+            "pAverage"_a = 1, "threads"_a = 1, "verbose"_a = 0, "limit"_a = 0)
         .def("getBestPolynomial", &GMDH::MULTI::getBestPolynomial);
 
     py::class_<GMDH::COMBI, GMDH::MULTI>(m, "COMBI")
@@ -82,7 +82,7 @@ PYBIND11_MODULE(gmdhpy, m)
         .def("fit", &GMDH::COMBI::fit, py::call_guard<py::scoped_ostream_redirect, py::scoped_estream_redirect>(), 
             "This method used for training model",
             "x"_a, "y"_a, "criterion"_a, "testSize"_a = 0.5, "shuffle"_a = false, "randomSeed"_a = 0, 
-            "pAverage"_a = 1, "threads"_a = 1, "verbose"_a = 0)
+            "pAverage"_a = 1, "threads"_a = 1, "verbose"_a = 0, "limit"_a = 0)
         .def("getBestPolynomial", &GMDH::COMBI::getBestPolynomial);
 
     py::class_<GMDH::MIA, GMDH::GMDH>(m, "MIA")
@@ -94,7 +94,8 @@ PYBIND11_MODULE(gmdhpy, m)
         .def("fit", &GMDH::MIA::fit, py::call_guard<py::scoped_ostream_redirect, py::scoped_estream_redirect>(), 
             "This method used for training model",
             "x"_a, "y"_a, "criterion"_a, "kBest"_a, "polynomialType"_a = GMDH::PolynomialType::quadratic, 
-            "testSize"_a = 0.5, "shuffle"_a = false, "randomSeed"_a = 0, "pAverage"_a = 1, "threads"_a = 1, "verbose"_a = 0)
+            "testSize"_a = 0.5, "shuffle"_a = false, "randomSeed"_a = 0, "pAverage"_a = 1, "threads"_a = 1, 
+            "verbose"_a = 0, "limit"_a = 0)
         .def("getBestPolynomial", &GMDH::MIA::getBestPolynomial);
 
     //m.def("polynomailFeatures", &polynomailFeatures);

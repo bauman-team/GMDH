@@ -38,7 +38,7 @@ namespace GMDH {
     }
 
     bool MIA::nextLevelCondition(double& lastLevelEvaluation, int kBest, uint8_t pAverage, VectorC& combinations,
-                                 const Criterion& criterion, SplittedData& data) {
+                                 const Criterion& criterion, SplittedData& data, double limit) {
         VectorC _bestCombinations = getBestCombinations(combinations, kBest);
         if (criterion.getClassName() == "SequentialCriterion") {
             // TODO: add threads or kBest value will be always small?
@@ -53,8 +53,9 @@ namespace GMDH {
             std::sort(std::begin(_bestCombinations), std::end(_bestCombinations));
         }
         double currLevelEvaluation = getMeanCriterionValue(_bestCombinations, pAverage);
+        //std::cout << "\n" << currLevelEvaluation << "\n";
 
-        if (lastLevelEvaluation > currLevelEvaluation) {
+        if (lastLevelEvaluation - currLevelEvaluation > limit) {
             bestCombinations.push_back(std::move(_bestCombinations));
             lastLevelEvaluation = currLevelEvaluation;
 
@@ -133,9 +134,9 @@ namespace GMDH {
     }
 
     GMDH& MIA::fit(MatrixXd x, VectorXd y, Criterion& criterion, int kBest, PolynomialType _polynomialType, 
-                   double testSize, bool shuffle, int randomSeed, uint8_t pAverage, int threads, int verbose) {
+                   double testSize, bool shuffle, int randomSeed, uint8_t pAverage, int threads, int verbose, double limit) {
         polynomialType = _polynomialType;
-        return GMDH::fit(x, y, criterion, kBest, testSize, shuffle, randomSeed, pAverage, threads, verbose);
+        return GMDH::fit(x, y, criterion, kBest, testSize, shuffle, randomSeed, pAverage, threads, verbose, limit);
     }
 
     int MIA::save(const std::string& path) const {

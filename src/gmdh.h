@@ -55,10 +55,11 @@ protected:
                                        IterC endCoeffsVec, std::atomic<int>* leftTasks, bool verbose) const;
 
     virtual bool nextLevelCondition(double& lastLevelEvaluation, int kBest, uint8_t pAverage, VectorC& combinations,
-                                    const Criterion& criterion, SplittedData& data);
+                                    const Criterion& criterion, SplittedData& data, double limit);
    
-    GMDH& fit(const MatrixXd& x, const VectorXd& y, const Criterion& criterion, int kBest, double testSize = 0.5, 
-              bool shuffle = false, int randomSeed = 0, uint8_t pAverage = 1, int threads = 1, int verbose = 0);
+    GMDH& fit(const MatrixXd& x, const VectorXd& y, const Criterion& criterion, int kBest, 
+              double testSize = 0.5, bool shuffle = false, int randomSeed = 0, uint8_t pAverage = 1, 
+              int threads = 1, int verbose = 0, double limit = 0);
 
 public:
     GMDH() : level(1) {}

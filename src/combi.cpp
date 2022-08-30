@@ -7,7 +7,7 @@ namespace GMDH
 	}
 
 	GMDH& COMBI::fit(const MatrixXd& x, const VectorXd& y, const Criterion& criterion, double testSize, 
-				     bool shuffle, int randomSeed, uint8_t pAverage, int threads, int verbose) {
-		return GMDH::fit(x, y, criterion, pAverage, testSize, shuffle, randomSeed, pAverage, threads, verbose);
+				     bool shuffle, int randomSeed, uint8_t pAverage, int threads, int verbose, double limit) {
+		return GMDH::fit(x, y, criterion, pAverage, testSize, shuffle, randomSeed, pAverage, threads, verbose, limit);
 	}
 }

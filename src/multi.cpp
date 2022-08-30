@@ -82,8 +82,8 @@ namespace GMDH {
     }
 
     GMDH& MULTI::fit(const MatrixXd& x, const VectorXd& y, const Criterion& criterion, int kBest, double testSize, 
-                     bool shuffle, int randomSeed, uint8_t pAverage, int threads, int verbose) {
-        return GMDH::fit(x, y, criterion, kBest, testSize, shuffle, randomSeed, pAverage, threads, verbose);
+                     bool shuffle, int randomSeed, uint8_t pAverage, int threads, int verbose, double limit) {
+        return GMDH::fit(x, y, criterion, kBest, testSize, shuffle, randomSeed, pAverage, threads, verbose, limit);
     }
 
     double MULTI::predict(const RowVectorXd& x) const {
