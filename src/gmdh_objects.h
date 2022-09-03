@@ -32,6 +32,7 @@ public:
     double evaluation() const { return _evaluation; }
 
     void setCombination(VectorU16&& combination) { _combination = std::move(combination); }
+    void setCombination(const VectorU16& combination) { _combination = combination; }
     void setBestCoeffs(VectorXd&& bestCoeffs) { _bestCoeffs = std::move(bestCoeffs);}
     void setEvaluation(double evaluation) { _evaluation = evaluation; }
 

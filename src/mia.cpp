@@ -70,17 +70,7 @@ namespace GMDH {
             std::cout << "old_y_train_data:\n" << data.yTrain << "\n\n";
             std::cout << "old_y_test_data:\n" << data.yTest << "\n\n";*/
 
-            MatrixXd xTrainNew(data.xTrain.rows(), bestCombinations[level - 1].size() + 1);
-            MatrixXd xTestNew(data.xTest.rows(), bestCombinations[level - 1].size() + 1);
-            for (int i = 0; i < bestCombinations[level - 1].size(); ++i) {
-                auto comb = bestCombinations[level - 1][i].combination();
-                xTrainNew.col(i) = getPolynomialX(data.xTrain(Eigen::all, comb)) * bestCombinations[level - 1][i].bestCoeffs();
-                xTestNew.col(i) = getPolynomialX(data.xTest(Eigen::all, comb)) * bestCombinations[level - 1][i].bestCoeffs();
-            }
-            xTrainNew.col(xTrainNew.cols() - 1) = VectorXd::Ones(xTrainNew.rows());
-            xTestNew.col(xTestNew.cols() - 1) = VectorXd::Ones(xTestNew.rows());
-            data.xTrain = xTrainNew;
-            data.xTest = xTestNew;
+            transformDataForNextLevel(data, bestCombinations[level - 1]);
 
             /*std::cout << "new_x_train_data:\n" << data.xTrain << "\n\n";
             std::cout << "new_x_test_data:\n" << data.xTest << "\n\n";
@@ -100,6 +90,35 @@ namespace GMDH {
             }
         }*/
 
+        removeExtraCombinations();
+
+        /*for (int l = 0; l < bestCombinations.size(); ++l) {
+            std::cout << "LEVEL " << l + 1 << "\n\n";
+            for (int i = 0; i < bestCombinations[l].size(); ++i) {
+                for (int j = 0; j < bestCombinations[l][i].combination().size(); ++j)
+                    std::cout << bestCombinations[l][i].combination()[j] << " ";
+                std::cout << "\n" << bestCombinations[l][i].bestCoeffs() << "\n\n";
+            }
+        }*/
+       
+        return false;
+    }
+
+    void MIA::transformDataForNextLevel(SplittedData& data, const VectorC& bestCombinations) {
+        MatrixXd xTrainNew(data.xTrain.rows(), bestCombinations.size() + 1);
+        MatrixXd xTestNew(data.xTest.rows(), bestCombinations.size() + 1);
+        for (int i = 0; i < bestCombinations.size(); ++i) {
+            auto comb = bestCombinations[i].combination();
+            xTrainNew.col(i) = getPolynomialX(data.xTrain(Eigen::all, comb)) * bestCombinations[i].bestCoeffs();
+            xTestNew.col(i) = getPolynomialX(data.xTest(Eigen::all, comb)) * bestCombinations[i].bestCoeffs();
+        }
+        xTrainNew.col(xTrainNew.cols() - 1) = VectorXd::Ones(xTrainNew.rows());
+        xTestNew.col(xTestNew.cols() - 1) = VectorXd::Ones(xTestNew.rows());
+        data.xTrain = xTrainNew;
+        data.xTest = xTestNew;
+    }
+
+    void MIA::removeExtraCombinations() {
         std::vector<VectorC> realBestCombinations(bestCombinations.size());
         realBestCombinations[realBestCombinations.size() - 1] = VectorC(1, bestCombinations[level - 2][0]);
         for (int i = realBestCombinations.size() - 1; i > 0; --i) {
@@ -120,17 +139,6 @@ namespace GMDH {
             }
         }
         bestCombinations = realBestCombinations;
-
-        /*for (int l = 0; l < bestCombinations.size(); ++l) {
-            std::cout << "LEVEL " << l + 1 << "\n\n";
-            for (int i = 0; i < bestCombinations[l].size(); ++i) {
-                for (int j = 0; j < bestCombinations[l][i].combination().size(); ++j)
-                    std::cout << bestCombinations[l][i].combination()[j] << " ";
-                std::cout << "\n" << bestCombinations[l][i].bestCoeffs() << "\n\n";
-            }
-        }*/
-       
-        return false;
     }
 
     GMDH& MIA::fit(MatrixXd x, VectorXd y, Criterion& criterion, int kBest, PolynomialType _polynomialType, 
@@ -234,7 +242,6 @@ namespace GMDH {
         std::string polynomialStr = "";
 
         for (int i = 0; i < bestCombinations.size(); ++i) {
-            //polynomialStr += "LEVEL " + std::to_string(i + 1) + ":\n";
             for (int j = 0; j < bestCombinations[i].size(); ++j) {
 
                 if (i < bestCombinations.size() - 1)
