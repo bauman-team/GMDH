@@ -40,6 +40,7 @@ namespace GMDH {
             if (++level < data.xTrain.cols())
                 return true;
         }
+        bestCombinations[0] = VectorC(1, bestCombinations[0][0]); // TODO: add removeExtraCombinations() method
         return false;
     }
 
@@ -221,6 +222,30 @@ namespace GMDH {
         } while (nextLevelCondition(lastLevelEvaluation, kBest, pAverage, evaluationCoeffsVec, criterion, data, limit));
         show_console_cursor(true);
         return *this;   
+    }
+
+    std::string GMDH::getPolynomialCoeff(double coeff, int coeffIndex) const {
+        return ((coeff > 0) ? ((coeffIndex > 0) ? " + " : " ") : " - ") + std::to_string(abs(coeff));
+    }
+
+    std::string GMDH::getBestPolynomial() const {
+        std::string polynomialStr = "";
+        for (int i = 0; i < bestCombinations.size(); ++i) {
+            for (int j = 0; j < bestCombinations[i].size(); ++j) {
+                auto bestColsIndexes = bestCombinations[i][j].combination();
+                auto bestCoeffs = bestCombinations[i][j].bestCoeffs();
+                polynomialStr += getPolynomialPrefix(i, j);
+                for (int k = 0; k < bestCoeffs.size(); ++k) {
+                    polynomialStr += getPolynomialCoeff(bestCoeffs[k], k);
+                    polynomialStr += getPolynomialVariable(i, k, bestCoeffs.size(), bestColsIndexes);
+                }
+                if (i < bestCombinations.size() - 1 || j < bestCombinations[i].size() - 1)
+                    polynomialStr += "\n";
+            }
+            if (i < bestCombinations.size() - 1)
+                polynomialStr += "\n";
+        }
+        return polynomialStr;
     }
 
     PairMVXd timeSeriesTransformation(VectorXd x, int lags) {

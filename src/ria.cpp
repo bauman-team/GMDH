@@ -47,25 +47,45 @@ namespace GMDH {
 		bestCombinations = realBestCombinations;
 	}
 
+	std::string RIA::getPolynomialPrefix(int levelIndex, int combIndex) const {
+		return ((levelIndex < bestCombinations.size() - 1) ? "f" + std::to_string(levelIndex + 1) : "y") + " =";
+	}
+
+	std::string RIA::getPolynomialVariable(int levelIndex, int coeffIndex, int coeffsNumber, const VectorU16& bestColsIndexes) const {
+		if (levelIndex == 0) {
+			if (coeffIndex < 2)
+				return "*x" + std::to_string(bestColsIndexes[coeffIndex] + 1);
+			else if (coeffIndex == 2 && coeffsNumber > 3)
+				return "*x" + std::to_string(bestColsIndexes[0] + 1) +
+				"*x" + std::to_string(bestColsIndexes[1] + 1);
+			else if (coeffIndex < 5 && coeffsNumber > 4)
+				return "*x" + std::to_string(bestColsIndexes[coeffIndex - 3] + 1) + "^2";
+			else return "";
+		}
+		else {
+			if (coeffIndex == 0)
+				return "*x" + std::to_string(bestColsIndexes[coeffIndex] + 1);
+			else if (coeffIndex == 1)
+				return "*f" + std::to_string(levelIndex);
+			else if (coeffIndex == 2 && coeffsNumber > 3)
+				return "*x" + std::to_string(bestColsIndexes[0] + 1) + "*f" + std::to_string(levelIndex);
+			else if (coeffIndex == 3 && coeffsNumber > 4)
+				return "*x" + std::to_string(bestColsIndexes[coeffIndex - 3] + 1) + "^2";
+			else if (coeffIndex == 4 && coeffsNumber > 4)
+				return "*f" + std::to_string(levelIndex) + "^2";
+			else return "";
+		}
+	}
+
 	VectorXd RIA::predict(const MatrixXd& x) const {
 		MatrixXd modifiedX(x.rows(), x.cols() + 2);
 		modifiedX.col(x.cols()).setOnes();
 		modifiedX.col(x.cols() + 1).setOnes();
 		modifiedX.leftCols(x.cols()) = x;
 		for (int i = 0; i < bestCombinations.size(); ++i) {
-			//std::cout << modifiedX << std::endl;
-			//std::cout << bestCombinations[i][0].bestCoeffs() << std::endl;
 			auto comb = bestCombinations[i][0].combination();
-			auto coeffs = bestCombinations[i][0].bestCoeffs();
-			auto poly = getPolynomialX(modifiedX(Eigen::all, comb));
-			//std::cout << poly << std::endl;
-			modifiedX.col(x.cols()) = poly * coeffs;
-			//std::cout << modifiedX.col(x.cols()) << std::endl;
+			modifiedX.col(x.cols()) = getPolynomialX(modifiedX(Eigen::all, comb)) * bestCombinations[i][0].bestCoeffs();
 		}
 		return modifiedX.col(x.cols());
-	}
-
-	std::string RIA::getBestPolynomial() const {
-		return std::string();
 	}
 }

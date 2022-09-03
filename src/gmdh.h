@@ -61,6 +61,10 @@ protected:
               double testSize = 0.5, bool shuffle = false, int randomSeed = 0, uint8_t pAverage = 1, 
               int threads = 1, int verbose = 0, double limit = 0);
 
+    virtual std::string getPolynomialPrefix(int levelIndex, int combIndex) const = 0;
+    virtual std::string getPolynomialCoeff(double coeff, int coeffIndex) const;
+    virtual std::string getPolynomialVariable(int levelIndex, int coeffIndex, int coeffsNumber, const VectorU16& bestColsIndexes) const = 0;
+
 public:
     GMDH() : level(1) {}
     virtual int save(const std::string& path) const = 0;
@@ -68,7 +72,7 @@ public:
 
     virtual double predict(const RowVectorXd& x) const = 0;
     virtual VectorXd predict(const MatrixXd& x) const = 0;
-    virtual std::string getBestPolynomial() const = 0;
+    std::string getBestPolynomial() const;
 };
 
 PairMVXd GMDH_API timeSeriesTransformation(VectorXd x, int lags);

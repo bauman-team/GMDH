@@ -5,6 +5,8 @@ namespace GMDH {
     class GMDH_API MULTI : public GMDH {
     protected:
         VectorVu16 generateCombinations(int n_cols) const override;
+        std::string getPolynomialPrefix(int levelIndex, int combIndex) const override;
+        std::string getPolynomialVariable(int levelIndex, int coeffIndex, int coeffsNumber, const VectorU16& bestColsIndexes) const override;
     public:
         MULTI();
         int save(const std::string& path) const override;
@@ -16,6 +18,5 @@ namespace GMDH {
 
         double predict(const RowVectorXd& x) const override;
         VectorXd predict(const MatrixXd& x) const override;
-        std::string getBestPolynomial() const override;
     };
 }
