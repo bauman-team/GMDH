@@ -1,4 +1,5 @@
 #include <iostream>
+#include <combi.h>
 #include <mia.h>
 
 
@@ -95,5 +96,7 @@ int main() {
 
     //(std::cin).get();
 
+    GMDH::COMBI combi;
+    combi.fit(splittedData.xTrain, splittedData.yTrain, criterion, testSize, false, 0, (uint8_t)0, -123, 1);//, 0, 0, 0, -123, 1);
     return 0;
 }

@@ -40,9 +40,9 @@ public:
     Criterion() {};
     Criterion(CriterionType _criterionType, Solver _solver = Solver::balanced);
 
-    std::string getClassName() const;
-
     virtual PairDVXd calculate(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain, const VectorXd& yTest) const;
+    std::string getClassName() const; 
+
 };
 
 

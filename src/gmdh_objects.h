@@ -19,7 +19,7 @@ struct GMDH_API SplittedData {
     VectorXd yTest;
 };
 
-class GMDH_API Combination { // TODO: move to separate file
+class GMDH_API Combination { 
     VectorU16 _combination;
     VectorXd _bestCoeffs;
     double _evaluation;
@@ -35,7 +35,7 @@ public:
     void setBestCoeffs(VectorXd&& bestCoeffs) { _bestCoeffs = std::move(bestCoeffs);}
     void setEvaluation(double evaluation) { _evaluation = evaluation; }
 
-    bool operator<(const Combination& comb) { return _evaluation < comb._evaluation; }
+    bool operator<(const Combination& comb) const { return _evaluation < comb._evaluation; }
 
     std::string getInfoForSaving() const;
 

@@ -35,10 +35,9 @@
 
 namespace GMDH {    
 
-class GMDH_API GMDH {
-    int verifyInputData(uint8_t& p, int& threads) const; // TODO: add verify testSize
+class GMDH_API GMDH { 
     //int calculateLeftTasksForVerbose(const std::vector<std::shared_ptr<std::vector<Combination>::iterator> > beginTasksVec, 
-    //const std::vector<std::shared_ptr<std::vector<Combination>::iterator> > endTasksVec) const;
+    //const std::vector<std::shared_ptr<std::vector<Combination>::iterator> > endTasksVec) const; 
 protected:
 
     int level;
@@ -66,6 +65,7 @@ public:
     virtual std::string getBestPolynomial() const = 0;
 };
 
+int GMDH_API validateInputData(double *testSize, uint8_t *p = nullptr, int *threads = nullptr);
 PairMVXd GMDH_API convertToTimeSeries(VectorXd x, int lags);
 SplittedData GMDH_API splitData(const MatrixXd& x, const VectorXd& y, double testSize = 0.2, bool shuffle = false, int randomSeed = 0);
 }
