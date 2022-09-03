@@ -1,7 +1,6 @@
 #include <pybind11/eigen.h>
 // to convert C++ STL containers to python list
 #include <pybind11/stl.h>
-#include <pybind11/iostream.h>
 #include "../src/combi.h"
 #include "../src/mia.h"
 
@@ -42,63 +41,87 @@ PYBIND11_MODULE(gmdhpy, m)
 
     py::class_<GMDH::Criterion>(m, "Criterion")
         .def(py::init<>())
-        .def(py::init<GMDH::CriterionType, GMDH::Solver>(), "", "criterionType"_a, "solver"_a = GMDH::Solver::balanced)
-        .def("getClassName", &GMDH::Criterion::getClassName)
-        .def("calculate", &GMDH::Criterion::calculate);
+        .def(py::init<GMDH::CriterionType, GMDH::Solver>(), 
+            "", 
+            "criterionType"_a, "solver"_a = GMDH::Solver::balanced);
 
     py::class_<GMDH::ParallelCriterion, GMDH::Criterion>(m, "ParallelCriterion")
-        .def(py::init<GMDH::CriterionType, GMDH::CriterionType, double, GMDH::Solver>(), "", 
-            "criterionType"_a, "secondCriterionType"_a, "alpha"_a = 0.5, "solver"_a = GMDH::Solver::balanced)
-        .def("getClassName", &GMDH::ParallelCriterion::getClassName)
-        .def("calculate", &GMDH::ParallelCriterion::calculate);
+        .def(py::init<GMDH::CriterionType, GMDH::CriterionType, double, GMDH::Solver>(), 
+            "", 
+            "criterionType"_a, "secondCriterionType"_a, "alpha"_a = 0.5, "solver"_a = GMDH::Solver::balanced);
 
     py::class_<GMDH::SequentialCriterion, GMDH::Criterion>(m, "SequentialCriterion")
-        .def(py::init<GMDH::CriterionType, GMDH::CriterionType, GMDH::Solver>(), "", 
-            "criterionType"_a, "secondCriterionType"_a, "solver"_a = GMDH::Solver::balanced)
-        .def("getClassName", &GMDH::SequentialCriterion::getClassName)
-        .def("calculate", &GMDH::SequentialCriterion::calculate)
-        .def("recalculate", &GMDH::SequentialCriterion::recalculate);
+        .def(py::init<GMDH::CriterionType, GMDH::CriterionType, GMDH::Solver>(), 
+            "", 
+            "criterionType"_a, "secondCriterionType"_a, "solver"_a = GMDH::Solver::balanced);
 
     py::class_<GMDH::GMDH>(m, "GMDH");
 
     py::class_<GMDH::MULTI, GMDH::GMDH>(m, "MULTI")
         .def(py::init<>())
-        .def("save", &GMDH::MULTI::save)
-        .def("load", &GMDH::MULTI::load)
-        .def("predict", static_cast<double (GMDH::MULTI::*) (const Eigen::RowVectorXd&) const>(&GMDH::MULTI::predict))
-        .def("predict", static_cast<Eigen::VectorXd(GMDH::MULTI::*) (const Eigen::MatrixXd&) const>(&GMDH::MULTI::predict))
+        .def("save", &GMDH::MULTI::save,
+            "",
+            "path"_a)
+        .def("load", &GMDH::MULTI::load,
+            "",
+            "path"_a)
+        .def("predict", static_cast<double (GMDH::MULTI::*) (const Eigen::RowVectorXd&) const>(&GMDH::MULTI::predict),
+            "",
+            "x"_a)
+        .def("predict", static_cast<Eigen::VectorXd(GMDH::MULTI::*) (const Eigen::MatrixXd&) const>(&GMDH::MULTI::predict),
+            "",
+            "x"_a)
         .def("fit", &GMDH::MULTI::fit, py::call_guard<py::scoped_ostream_redirect, py::scoped_estream_redirect>(), 
             "This method used for training model",
-            "x"_a, "y"_a, "criterion"_a, "kBest"_a, "testSize"_a = 0.5, "shuffle"_a = false, "randomSeed"_a = 0,
-            "pAverage"_a = 1, "threads"_a = 1, "verbose"_a = 0, "limit"_a = 0)
+            "x"_a, "y"_a, "criterion"_a, "kBest"_a, "testSize"_a = 0.5, "shuffle"_a = false, "randomSeed"_a = 0, 
+            "pAverage"_a = 1, "threads"_a = 1, "verbose"_a = 0,  "limit"_a = 0)
         .def("getBestPolynomial", &GMDH::MULTI::getBestPolynomial);
 
     py::class_<GMDH::COMBI, GMDH::MULTI>(m, "COMBI")
         .def(py::init<>())
-        .def("save", &GMDH::COMBI::save)
-        .def("load", &GMDH::COMBI::load)
-        .def("predict", static_cast<double (GMDH::COMBI::*) (const Eigen::RowVectorXd&) const>(&GMDH::COMBI::predict))
-        .def("predict", static_cast<Eigen::VectorXd (GMDH::COMBI::*) (const Eigen::MatrixXd&) const>(&GMDH::COMBI::predict))
+        .def("save", &GMDH::COMBI::save,
+            "",
+            "path"_a)
+        .def("load", &GMDH::COMBI::load,
+            "",
+            "path"_a)
+        .def("predict", static_cast<double (GMDH::COMBI::*) (const Eigen::RowVectorXd&) const>(&GMDH::COMBI::predict),
+            "",
+            "x"_a)
+        .def("predict", static_cast<Eigen::VectorXd (GMDH::COMBI::*) (const Eigen::MatrixXd&) const>(&GMDH::COMBI::predict),
+            "",
+            "x"_a)
         .def("fit", &GMDH::COMBI::fit, py::call_guard<py::scoped_ostream_redirect, py::scoped_estream_redirect>(), 
             "This method used for training model",
             "x"_a, "y"_a, "criterion"_a, "testSize"_a = 0.5, "shuffle"_a = false, "randomSeed"_a = 0, 
-            "pAverage"_a = 1, "threads"_a = 1, "verbose"_a = 0, "limit"_a = 0)
+            "pAverage"_a = 1, "threads"_a = 1, "verbose"_a = 0,  "limit"_a = 0)
         .def("getBestPolynomial", &GMDH::COMBI::getBestPolynomial);
 
     py::class_<GMDH::MIA, GMDH::GMDH>(m, "MIA")
         .def(py::init<>())
-        .def("save", &GMDH::MIA::save)
-        .def("load", &GMDH::MIA::load)
-        .def("predict", static_cast<double (GMDH::MIA::*) (const Eigen::RowVectorXd&) const>(&GMDH::MIA::predict))
-        .def("predict", static_cast<Eigen::VectorXd(GMDH::MIA::*) (const Eigen::MatrixXd&) const>(&GMDH::MIA::predict))
+        .def("save", &GMDH::MIA::save,
+            "",
+            "path"_a)
+        .def("load", &GMDH::MIA::load,
+            "",
+            "path"_a)
+        .def("predict", static_cast<double (GMDH::MIA::*) (const Eigen::RowVectorXd&) const>(&GMDH::MIA::predict),
+            "",
+            "x"_a)
+        .def("predict", static_cast<Eigen::VectorXd(GMDH::MIA::*) (const Eigen::MatrixXd&) const>(&GMDH::MIA::predict),
+            "",
+            "x"_a)
         .def("fit", &GMDH::MIA::fit, py::call_guard<py::scoped_ostream_redirect, py::scoped_estream_redirect>(), 
             "This method used for training model",
-            "x"_a, "y"_a, "criterion"_a, "kBest"_a, "polynomialType"_a = GMDH::PolynomialType::quadratic, 
-            "testSize"_a = 0.5, "shuffle"_a = false, "randomSeed"_a = 0, "pAverage"_a = 1, "threads"_a = 1, 
-            "verbose"_a = 0, "limit"_a = 0)
+            "x"_a, "y"_a, "criterion"_a, "kBest"_a, "polynomialType"_a = GMDH::PolynomialType::quadratic, "testSize"_a = 0.5, 
+            "shuffle"_a = false, "randomSeed"_a = 0, "pAverage"_a = 1, "threads"_a = 1, "verbose"_a = 0, "limit"_a = 0)
         .def("getBestPolynomial", &GMDH::MIA::getBestPolynomial);
 
     //m.def("polynomailFeatures", &polynomailFeatures);
-    m.def("timeSeriesTransformation", &GMDH::timeSeriesTransformation);
-    m.def("splitData", &GMDH::splitData);
+    m.def("timeSeriesTransformation", &GMDH::timeSeriesTransformation,
+        "",
+        "x"_a, "lags"_a);
+    m.def("splitData", &GMDH::splitData,
+        "",
+        "x"_a, "y"_a, "testSize"_a = 0.2, "shuffle"_a = false, "randomSeed"_a = 0);
 }

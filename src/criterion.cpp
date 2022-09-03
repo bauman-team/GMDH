@@ -175,7 +175,7 @@ namespace GMDH {
         case CriterionType::absoluteStability:
             return absoluteStability(xTrain, xTest, yTrain, yTest, bufferValues);
         case CriterionType::symAbsoluteStability:
-            return symAbsoluteStability(xTrain, xTest, yTrain, yTest, bufferValues);
+            return symAbsoluteStability(xTrain, xTest, yTrain, yTest, bufferValues); // TODO: default return (because compilation warning)
         }
     }
 
