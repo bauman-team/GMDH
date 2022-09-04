@@ -242,7 +242,7 @@ namespace GMDH {
                 if (i < bestCombinations.size() - 1 || j < bestCombinations[i].size() - 1)
                     polynomialStr += "\n";
             }
-            if (i < bestCombinations.size() - 1)
+            if (i < bestCombinations.size() - 1 && bestCombinations[i].size() > 1)
                 polynomialStr += "\n";
         }
         return polynomialStr;
