@@ -35,7 +35,7 @@
 
 namespace GMDH {    
 
-class GMDH_API GMDH { 
+class GMDH_API GmdhModel { 
     //int calculateLeftTasksForVerbose(const std::vector<std::shared_ptr<std::vector<Combination>::iterator> > beginTasksVec, 
     //const std::vector<std::shared_ptr<std::vector<Combination>::iterator> > endTasksVec) const; 
 protected:
@@ -56,7 +56,7 @@ protected:
     virtual bool nextLevelCondition(double& lastLevelEvaluation, int kBest, uint8_t pAverage, VectorC& combinations,
                                     const Criterion& criterion, SplittedData& data, double limit);
    
-    GMDH& fit(const MatrixXd& x, const VectorXd& y, const Criterion& criterion, int kBest, 
+    GmdhModel& fit(const MatrixXd& x, const VectorXd& y, const Criterion& criterion, int kBest,
               double testSize = 0.5, bool shuffle = false, int randomSeed = 0, uint8_t pAverage = 1, 
               int threads = 1, int verbose = 0, double limit = 0);
 
@@ -65,7 +65,7 @@ protected:
     virtual std::string getPolynomialVariable(int levelIndex, int coeffIndex, int coeffsNumber, const VectorU16& bestColsIndexes) const = 0;
 
 public:
-    GMDH() : level(1) {}
+    GmdhModel() : level(1) {}
     virtual int save(const std::string& path) const = 0;
     virtual int load(const std::string& path) = 0;
 

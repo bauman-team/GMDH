@@ -4,7 +4,7 @@ namespace GMDH {
 
 	enum class PolynomialType {linear, linear_cov, quadratic};
 
-	class GMDH_API MIA : public GMDH {
+	class GMDH_API MIA : public GmdhModel {
 	protected:
 		PolynomialType polynomialType;
 
@@ -23,7 +23,7 @@ namespace GMDH {
 		std::string getPolynomialVariable(int levelIndex, int coeffIndex, int coeffsNumber, const VectorU16& bestColsIndexes) const override;
 
 	public:
-		GMDH& fit(MatrixXd x, VectorXd y, Criterion& criterion, int _kBest, 
+		GmdhModel& fit(MatrixXd x, VectorXd y, Criterion& criterion, int _kBest,
 				  PolynomialType _polynomialType = PolynomialType::quadratic, double testSize = 0.5, bool shuffle = false, 
 				  int randomSeed = 0, uint8_t pAverage = 1, int threads = 1, int verbose = 0, double limit = 0);
 

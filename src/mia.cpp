@@ -130,10 +130,10 @@ namespace GMDH {
         }
     }
 
-    GMDH& MIA::fit(MatrixXd x, VectorXd y, Criterion& criterion, int kBest, PolynomialType _polynomialType, 
+    GmdhModel& MIA::fit(MatrixXd x, VectorXd y, Criterion& criterion, int kBest, PolynomialType _polynomialType,
                    double testSize, bool shuffle, int randomSeed, uint8_t pAverage, int threads, int verbose, double limit) {
         polynomialType = _polynomialType;
-        return GMDH::fit(x, y, criterion, kBest, testSize, shuffle, randomSeed, pAverage, threads, verbose, limit);
+        return GmdhModel::fit(x, y, criterion, kBest, testSize, shuffle, randomSeed, pAverage, threads, verbose, limit);
     }
 
     int MIA::save(const std::string& path) const {

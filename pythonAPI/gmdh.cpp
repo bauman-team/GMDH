@@ -55,9 +55,9 @@ PYBIND11_MODULE(gmdhpy, m)
             "", 
             "criterionType"_a, "secondCriterionType"_a, "solver"_a = GMDH::Solver::balanced);
 
-    py::class_<GMDH::GMDH>(m, "GMDH");
+    py::class_<GMDH::GmdhModel>(m, "GmdhModel");
 
-    py::class_<GMDH::MULTI, GMDH::GMDH>(m, "MULTI")
+    py::class_<GMDH::MULTI, GMDH::GmdhModel>(m, "MULTI")
         .def(py::init<>())
         .def("save", &GMDH::MULTI::save,
             "",
@@ -97,7 +97,7 @@ PYBIND11_MODULE(gmdhpy, m)
             "pAverage"_a = 1, "threads"_a = 1, "verbose"_a = 0,  "limit"_a = 0)
         .def("getBestPolynomial", &GMDH::COMBI::getBestPolynomial);
 
-    py::class_<GMDH::MIA, GMDH::GMDH>(m, "MIA")
+    py::class_<GMDH::MIA, GMDH::GmdhModel>(m, "MIA")
         .def(py::init<>())
         .def("save", &GMDH::MIA::save,
             "",
