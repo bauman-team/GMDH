@@ -21,6 +21,14 @@ namespace GMDH {
         return combs;
     }
 
+    std::string MULTI::getPolynomialPrefix(int levelIndex, int combIndex) const {
+        return "y =";
+    }
+
+    std::string MULTI::getPolynomialVariable(int levelIndex, int coeffIndex, int coeffsNumber, const VectorU16& bestColsIndexes) const {
+        return ((coeffIndex != coeffsNumber - 1) ? "*x" + std::to_string(bestColsIndexes[coeffIndex] + 1) : "");
+    }
+
     MULTI::MULTI() {
         bestCombinations.resize(1);
     }
@@ -80,8 +88,12 @@ namespace GMDH {
         return 0;
     }
 
-    double MULTI::predict(const RowVectorXd& x) const
-    {
+    GMDH& MULTI::fit(const MatrixXd& x, const VectorXd& y, const Criterion& criterion, int _kBest, double testSize, 
+                     bool shuffle, int randomSeed, uint8_t pAverage, int threads, int verbose, double limit) {
+        return GMDH::fit(x, y, criterion, _kBest, testSize, shuffle, randomSeed, pAverage, threads, verbose, limit);
+    }
+
+    double MULTI::predict(const RowVectorXd& x) const {
         return predict(MatrixXd(x))[0];
     }
 
@@ -92,25 +104,5 @@ namespace GMDH {
         modifiedX.col(x.cols()).setOnes();
         modifiedX.leftCols(x.cols()) = x;
         return modifiedX(Eigen::all, bestCombinations[0][0].combination()) * bestCombinations[0][0].bestCoeffs();
-    }
-
-    std::string MULTI::getBestPolynomial() const {
-        std::string polynomialStr{ "y =" };
-        auto bestColsIndexes{ bestCombinations[0][0].combination() };
-        auto bestCoeffs{ bestCombinations[0][0].bestCoeffs() };
-        for (auto i = 0; i < bestColsIndexes.size(); ++i) {
-            if (bestCoeffs[i] > 0) {
-                if (i > 0)
-                    polynomialStr += " + ";
-                else
-                    polynomialStr += " ";
-            }
-            else
-                polynomialStr += " - ";
-            polynomialStr += std::to_string(abs(bestCoeffs[i]));
-            if (i != bestColsIndexes.size() - 1)
-                polynomialStr += "*x" + std::to_string(bestColsIndexes[i] + 1);
-        }
-        return polynomialStr;
     }
 }

@@ -2,7 +2,7 @@
 // to convert C++ STL containers to python list
 #include <pybind11/stl.h>
 #include "../src/combi.h"
-#include "../src/mia.h"
+#include "../src/ria.h"
 
 namespace py = pybind11;
 
@@ -117,7 +117,19 @@ PYBIND11_MODULE(gmdhpy, m)
             "shuffle"_a = false, "randomSeed"_a = 0, "pAverage"_a = 1, "threads"_a = 1, "verbose"_a = 0, "limit"_a = 0)
         .def("getBestPolynomial", &GMDH::MIA::getBestPolynomial);
 
-    //m.def("polynomailFeatures", &polynomailFeatures);
+    py::class_<GMDH::RIA, GMDH::MIA>(m, "RIA")
+        .def(py::init<>())
+        .def("save", &GMDH::RIA::save)
+        .def("load", &GMDH::RIA::load)
+        .def("predict", static_cast<double (GMDH::RIA::*) (const Eigen::RowVectorXd&) const>(&GMDH::MIA::predict))
+        .def("predict", static_cast<Eigen::VectorXd(GMDH::RIA::*) (const Eigen::MatrixXd&) const>(&GMDH::RIA::predict))
+        .def("fit", &GMDH::RIA::fit, py::call_guard<py::scoped_ostream_redirect, py::scoped_estream_redirect>(),
+            "This method used for training model",
+            "x"_a, "y"_a, "criterion"_a, "kBest"_a, "polynomialType"_a = GMDH::PolynomialType::quadratic,
+            "testSize"_a = 0.5, "shuffle"_a = false, "randomSeed"_a = 0, "pAverage"_a = 1, "threads"_a = 1,
+            "verbose"_a = 0, "limit"_a = 0)
+        .def("getBestPolynomial", &GMDH::RIA::getBestPolynomial);
+
     m.def("timeSeriesTransformation", &GMDH::timeSeriesTransformation,
         "",
         "x"_a, "lags"_a);

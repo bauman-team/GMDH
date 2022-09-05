@@ -9,7 +9,6 @@ namespace GMDH {
 		PolynomialType polynomialType;
 
 		VectorVu16 generateCombinations(int n_cols) const override;
-		//MatrixXd polynomailFeatures(const MatrixXd& X, int max_degree);
 		MatrixXd getPolynomialX(const MatrixXd& x) const;
 
 		void polynomialsEvaluation(const SplittedData& data, const Criterion& criterion, IterC beginCoeffsVec, 
@@ -17,6 +16,12 @@ namespace GMDH {
 
 		bool nextLevelCondition(double& lastLevelEvaluation, int kBest, uint8_t pAverage, VectorC& combinations,
 							    const Criterion& criterion, SplittedData& data, double limit) override;
+
+		virtual void transformDataForNextLevel(SplittedData& data, const VectorC& bestCombinations);
+		virtual void removeExtraCombinations();
+		std::string getPolynomialPrefix(int levelIndex, int combIndex) const override;
+		std::string getPolynomialVariable(int levelIndex, int coeffIndex, int coeffsNumber, const VectorU16& bestColsIndexes) const override;
+
 	public:
 		GMDH& fit(MatrixXd x, VectorXd y, Criterion& criterion, int _kBest, 
 				  PolynomialType _polynomialType = PolynomialType::quadratic, double testSize = 0.5, bool shuffle = false, 
@@ -26,7 +31,6 @@ namespace GMDH {
 		int load(const std::string& path) override;
 
 		double predict(const RowVectorXd& x) const override;
-		VectorXd predict(const MatrixXd& x) const override;
-		std::string getBestPolynomial() const override;
+		virtual VectorXd predict(const MatrixXd& x) const override;
 	};
 }

@@ -1,6 +1,6 @@
 #include <iostream>
 #include <combi.h>
-#include <mia.h>
+#include <ria.h>
 
 
 int main() {
@@ -22,7 +22,7 @@ int main() {
 
     //VectorXd data(10); data << 1, 2, 3, 4, 5, 6, 7, 8, 9, 10;
 	
-    int lags = 50;
+    int lags = 20;
     double validateSize = 0.2;
     double testSize = 0.33;
     auto timeSeries = GMDH::timeSeriesTransformation(data, lags);
@@ -73,11 +73,11 @@ int main() {
 
     */
 
-   //std::cout << "Original time series:\n" << data << "\n\n";
+    //std::cout << "Original time series:\n" << data << "\n\n";
     auto criterion = GMDH::Criterion(GMDH::CriterionType::regularity);
-    GMDH::MIA mia;
-    mia.fit(splittedData.xTrain, splittedData.yTrain, criterion, 5,
-        GMDH::PolynomialType::quadratic, testSize, 0, 0, 0, -10, 1, 0);
+    GMDH::RIA mia;
+    mia.fit(splittedData.xTrain, splittedData.yTrain, criterion, 3,
+             GMDH::PolynomialType::quadratic, testSize, 0, 0, 2, 1, 1, 0);
 
     std::cout << "\nThe best polynomial:\n\n" << mia.getBestPolynomial() << std::endl;
 
@@ -97,6 +97,6 @@ int main() {
     //(std::cin).get();
 
     GMDH::COMBI combi;
-    combi.fit(splittedData.xTrain, splittedData.yTrain, criterion, testSize, false, 0, (uint8_t)0, -123, 1);//, 0, 0, 0, -123, 1);
+    combi.fit(splittedData.xTrain, splittedData.yTrain, criterion, testSize, false, 0, (uint8_t)1, -123, 1);//, 0, 0, 0, -123, 1);
     return 0;
 }
