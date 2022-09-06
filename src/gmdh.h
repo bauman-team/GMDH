@@ -74,7 +74,7 @@ public:
     std::string getBestPolynomial() const;
 };
 
-int GMDH_API validateInputData(double *testSize, uint8_t *pAverage = nullptr, int *threads = nullptr);
+int GMDH_API validateInputData(double *testSize, uint8_t *pAverage = nullptr, int *threads = nullptr, int *kBest = nullptr);
 PairMVXd GMDH_API timeSeriesTransformation(VectorXd x, int lags);
 SplittedData GMDH_API splitData(const MatrixXd& x, const VectorXd& y, double testSize = 0.2, 
                                 bool shuffle = false, int randomSeed = 0);

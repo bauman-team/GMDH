@@ -2,6 +2,7 @@
 #ifdef GMDH_MODULE
     #include <pybind11/pybind11.h>
     #include <pybind11/iostream.h>
+    #include <csignal>
 #endif
 
 #ifdef __GNUC__
@@ -58,5 +59,4 @@ protected:
      */
     std::string msg_;
 };
-
 }

@@ -1,7 +1,16 @@
 #include "gmdh.h"
-#include <stdio.h>
+
 
 namespace GMDH {
+
+#ifdef GMDH_MODULE
+    void catch_signals() {
+        auto handler = [](int code) { throw std::runtime_error("SIGNAL " + std::to_string(code)); };
+        signal(SIGINT, handler);
+        signal(SIGTERM, handler);
+        signal(SIGKILL, handler);
+    }
+#endif
 /*
     int GmdhModel::calculateLeftTasksForVerbose(const std::vector<std::shared_ptr<std::vector<Combination>::iterator >> beginTasksVec, 
     const std::vector<std::shared_ptr<std::vector<Combination>::iterator >> endTasksVec) const {
@@ -70,6 +79,9 @@ namespace GMDH {
 
     void GmdhModel::polynomialsEvaluation(const SplittedData& data, const Criterion& criterion,
         IterC beginCoeffsVec, IterC endCoeffsVec, std::atomic<int> *leftTasks, bool verbose) const {
+            #ifdef GMDH_MODULE                
+                catch_signals();
+        #endif
         for (; beginCoeffsVec < endCoeffsVec; ++beginCoeffsVec) {
             auto pairCoeffsEvaluation{ criterion.calculate(data.xTrain(Eigen::all, (*beginCoeffsVec).combination()),
                                                             data.xTest(Eigen::all, (*beginCoeffsVec).combination()),
@@ -77,7 +89,7 @@ namespace GMDH {
             (*beginCoeffsVec).setEvaluation(pairCoeffsEvaluation.first);
             (*beginCoeffsVec).setBestCoeffs(std::move(pairCoeffsEvaluation.second));
             if (unlikely(verbose))
-                --(*leftTasks); 
+                --(*leftTasks);                
         }      
     }
 
@@ -114,7 +126,6 @@ namespace GMDH {
         using namespace indicators;
         using T = boost::packaged_task<void>;
         std::unique_ptr<ProgressBar> progressBar;
-        validateInputData(&testSize, &pAverage, &threads);
         
         level = 1;
         if (threads == -1)
@@ -179,6 +190,9 @@ namespace GMDH {
             }
 
             if (verbose) {
+#ifdef GMDH_MODULE
+                std::cout << std::nounitbuf;
+#endif
                 while (leftTasks) {
                     if (progressBar->current() < 100.0 * (evaluationCoeffsVec.size() - leftTasks) / evaluationCoeffsVec.size())
                         progressBar->set_progress(100.0 * (evaluationCoeffsVec.size() - leftTasks) / evaluationCoeffsVec.size());
@@ -187,22 +201,19 @@ namespace GMDH {
                 progressBar->set_progress(100);
             }
             else
-                boost::when_all(std::begin(futures), std::end(futures)).get();
+                boost::when_all(std::begin(futures), std::end(futures)).get();    
         } while (nextLevelCondition(lastLevelEvaluation, kBest, pAverage, evaluationCoeffsVec, criterion, data, limit));
         if (verbose)
             show_console_cursor(true);
         return *this;   
     }
 
-    int validateInputData(double *testSize, uint8_t *pAverage, int *threads) {
+    int validateInputData(double *testSize, uint8_t *pAverage, int *threads, int *kBest) {
         auto errorCode{ 0 };
 #ifdef GMDH_LIB
         std::cout << DISPLAYEDCOLORWARNING;
 #elif GMDH_MODULE
-        pybind11::scoped_ostream_redirect stream(
-            std::cout,                               // std::ostream&
-            pybind11::module_::import("sys").attr("stdout") // Python output
-        );
+        std::cout << std::unitbuf;
 #endif
         if (*testSize <= 0) { // TODO: add range 
 #ifdef GMDH_LIB
@@ -231,6 +242,15 @@ namespace GMDH {
 #endif
             *pAverage = 1;
             errorCode |= 4;
+        }
+        if (kBest && !(*kBest)) {
+#ifdef GMDH_LIB
+            std::cout << DISPLAYEDWARNINGMSG("number of kBest","kBest = 1");
+#elif GMDH_MODULE
+            PyErr_WarnEx(PyExc_Warning, DISPLAYEDWARNINGMSG("number of kBest","kBest = 1"), 1);
+#endif
+            *kBest = 1;
+            errorCode |= 8;
         }
 #ifdef GMDH_LIB
             std::cout << DISPLAYEDCOLORINFO;

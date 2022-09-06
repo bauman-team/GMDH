@@ -88,8 +88,9 @@ namespace GMDH {
         return 0;
     }
 
-    GmdhModel& MULTI::fit(const MatrixXd& x, const VectorXd& y, const Criterion& criterion, int _kBest, double testSize,
+    GmdhModel& MULTI::fit(const MatrixXd& x, const VectorXd& y, const Criterion& criterion, int _kBest, double testSize, // TODO: whaaat? why not kBest without '_'
                      bool shuffle, int randomSeed, uint8_t pAverage, int threads, int verbose, double limit) {
+        validateInputData(&testSize, &pAverage, &threads, &_kBest);
         return GmdhModel::fit(x, y, criterion, _kBest, testSize, shuffle, randomSeed, pAverage, threads, verbose, limit);
     }
 
