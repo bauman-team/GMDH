@@ -4,12 +4,12 @@
 namespace GMDH {
 
 #ifdef GMDH_MODULE
-    void catch_signals() {
+    /*void catch_signals() {
         auto handler = [](int code) { throw std::runtime_error("SIGNAL " + std::to_string(code)); };
         signal(SIGINT, handler);
         signal(SIGTERM, handler);
         signal(SIGKILL, handler);
-    }
+    }*/
 #endif
 /*
     int GmdhModel::calculateLeftTasksForVerbose(const std::vector<std::shared_ptr<std::vector<Combination>::iterator >> beginTasksVec, 
@@ -80,7 +80,7 @@ namespace GMDH {
     void GmdhModel::polynomialsEvaluation(const SplittedData& data, const Criterion& criterion,
         IterC beginCoeffsVec, IterC endCoeffsVec, std::atomic<int> *leftTasks, bool verbose) const {
             #ifdef GMDH_MODULE                
-                catch_signals();
+                //catch_signals();
         #endif
         for (; beginCoeffsVec < endCoeffsVec; ++beginCoeffsVec) {
             auto pairCoeffsEvaluation{ criterion.calculate(data.xTrain(Eigen::all, (*beginCoeffsVec).combination()),
