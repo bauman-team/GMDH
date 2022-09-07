@@ -24,6 +24,7 @@
 #include <boost/thread/future.hpp>
 #include <boost/type_index.hpp>
 #include <boost/chrono.hpp>
+#include <boost/algorithm/string.hpp>
 
 #include <indicators/progress_bar.hpp>
 #include <indicators/cursor_control.hpp>
@@ -66,10 +67,10 @@ protected:
 
 public:
     GmdhModel() : level(1) {}
-    virtual int save(const std::string& path) const = 0;
-    virtual int load(const std::string& path) = 0;
+    int save(const std::string& path) const;
+    int load(const std::string& path);
 
-    virtual double predict(const RowVectorXd& x) const = 0;
+    double predict(const RowVectorXd& x) const;
     virtual VectorXd predict(const MatrixXd& x) const = 0;
     std::string getBestPolynomial() const;
 };

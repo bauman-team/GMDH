@@ -259,7 +259,89 @@ namespace GMDH {
     }
 
     std::string GmdhModel::getPolynomialCoeff(double coeff, int coeffIndex) const {
-        return ((coeff > 0) ? ((coeffIndex > 0) ? " + " : " ") : " - ") + std::to_string(abs(coeff));
+        std::string stringCoeff;
+        if (coeff == 0)
+            stringCoeff = "0";
+        else {
+            std::ostringstream stream;
+            if (abs(coeff) >= 1e-4 && abs(coeff) < 1e6)
+                stream << std::fixed << std::setprecision(4);
+            stream << abs(coeff);
+            stringCoeff = stream.str();
+            boost::trim_right_if(stringCoeff, boost::is_any_of("0"));
+            boost::trim_right_if(stringCoeff, boost::is_any_of("."));
+        }
+        return ((coeff >= 0) ? ((coeffIndex > 0) ? " + " : " ") : " - ") + stringCoeff;
+    }
+
+    int GmdhModel::save(const std::string& path) const {
+        std::ofstream modelFile(path);
+        if (!modelFile.is_open())
+            return -1; // TODO: throw exception for Python???
+        else {
+            modelFile << getModelName() << "\n" << inputColsNumber << "\n";
+            for (int i = 0; i < bestCombinations.size(); ++i) {
+                modelFile << "~\n";
+                for (int j = 0; j < bestCombinations[i].size(); ++j)
+                    modelFile << bestCombinations[i][j].getInfoForSaving();
+            }
+            modelFile.close();
+        }
+        return 0;
+    }
+
+    int GmdhModel::load(const std::string& path) {
+        inputColsNumber = 0;
+        bestCombinations.clear();
+
+        std::ifstream modelFile(path);
+        if (!modelFile.is_open())
+            return -1; // TODO: throw exception for Python???
+        else {
+            std::string modelName;
+            modelFile >> modelName;
+            if (modelName != getModelName())
+                return -2; // TODO: throw exception for Python???
+            else {
+                (modelFile >> inputColsNumber).get();
+
+                int currLevel = -1;
+                while (modelFile.peek() != EOF) {
+
+                    if (modelFile.peek() == '~') {
+                        std::string buffer;
+                        std::getline(modelFile, buffer);
+                        ++currLevel;
+                        bestCombinations.push_back(VectorC());
+                    }
+
+                    std::string colsIndexesLine;
+                    VectorU16 bestColsIndexes;
+                    std::getline(modelFile, colsIndexesLine);
+                    std::stringstream indexStream{ colsIndexesLine };
+                    uint16_t index;
+                    while (indexStream >> index)
+                        bestColsIndexes.push_back(index);
+
+                    std::string coeffsLine;
+                    std::vector<double> coeffs;
+                    std::getline(modelFile, coeffsLine);
+                    std::stringstream coeffsStream{ coeffsLine };
+                    double coeff;
+                    while (coeffsStream >> coeff)
+                        coeffs.push_back(coeff);
+
+                    bestCombinations[currLevel].push_back({ std::move(bestColsIndexes), 
+                                                            Map<VectorXd>(coeffs.data(), coeffs.size()) });
+                }
+            }
+            modelFile.close();
+        }
+        return 0;
+    }
+
+    double GmdhModel::predict(const RowVectorXd& x) const {
+        return predict(MatrixXd(x))[0];
     }
 
     std::string GmdhModel::getBestPolynomial() const {
@@ -327,4 +409,3 @@ namespace GMDH {
         return info.str();
     }
 }
-
