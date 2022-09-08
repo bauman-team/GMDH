@@ -37,7 +37,7 @@ namespace GMDH {
         }
     }
 
-    bool MIA::nextLevelCondition(double& lastLevelEvaluation, int kBest, uint8_t pAverage, VectorC& combinations,
+    bool MIA::nextLevelCondition(int kBest, uint8_t pAverage, VectorC& combinations,
                                  const Criterion& criterion, SplittedData& data, double limit) {
         VectorC _bestCombinations = getBestCombinations(combinations, kBest);
         if (criterion.getClassName() == "SequentialCriterion") {
@@ -52,12 +52,12 @@ namespace GMDH {
             }
             std::sort(std::begin(_bestCombinations), std::end(_bestCombinations));
         }
-        double currLevelEvaluation = getMeanCriterionValue(_bestCombinations, pAverage);
+        currentLevelEvaluation = getMeanCriterionValue(_bestCombinations, pAverage);
         //std::cout << "\n" << currLevelEvaluation << "\n";
 
-        if (lastLevelEvaluation - currLevelEvaluation > limit) {
+        if (lastLevelEvaluation - currentLevelEvaluation > limit) {
             bestCombinations.push_back(std::move(_bestCombinations));
-            lastLevelEvaluation = currLevelEvaluation;
+            lastLevelEvaluation = currentLevelEvaluation;
             transformDataForNextLevel(data, bestCombinations[level - 1]);
             ++level;
             return true;

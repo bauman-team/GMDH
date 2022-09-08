@@ -14,7 +14,7 @@ namespace GMDH {
 		void polynomialsEvaluation(const SplittedData& data, const Criterion& criterion, IterC beginCoeffsVec, 
 								   IterC endCoeffsVec, std::atomic<int>* leftTasks, bool verbose) const override;
 
-		bool nextLevelCondition(double& lastLevelEvaluation, int kBest, uint8_t pAverage, VectorC& combinations,
+		bool nextLevelCondition(int kBest, uint8_t pAverage, VectorC& combinations,
 							    const Criterion& criterion, SplittedData& data, double limit) override;
 
 		virtual void transformDataForNextLevel(SplittedData& data, const VectorC& bestCombinations);

@@ -45,6 +45,9 @@ protected:
     int inputColsNumber;
     std::vector<VectorC> bestCombinations;
 
+    double lastLevelEvaluation;
+    double currentLevelEvaluation;
+
     std::string getModelName() const;
     VectorVu16 nChooseK(int n, int k) const;
     virtual VectorVu16 generateCombinations(int n_cols) const = 0;
@@ -54,7 +57,7 @@ protected:
     virtual void polynomialsEvaluation(const SplittedData& data, const Criterion& criterion, IterC beginCoeffsVec, 
                                        IterC endCoeffsVec, std::atomic<int>* leftTasks, bool verbose) const;
 
-    virtual bool nextLevelCondition(double& lastLevelEvaluation, int kBest, uint8_t pAverage, VectorC& combinations,
+    virtual bool nextLevelCondition(int kBest, uint8_t pAverage, VectorC& combinations,
                                     const Criterion& criterion, SplittedData& data, double limit);
    
     GmdhModel& fit(const MatrixXd& x, const VectorXd& y, const Criterion& criterion, int kBest,
@@ -66,7 +69,7 @@ protected:
     virtual std::string getPolynomialVariable(int levelIndex, int coeffIndex, int coeffsNumber, const VectorU16& bestColsIndexes) const = 0;
 
 public:
-    GmdhModel() : level(1) {}
+    GmdhModel() : level(1), lastLevelEvaluation(0) {}
     int save(const std::string& path) const;
     int load(const std::string& path);
 

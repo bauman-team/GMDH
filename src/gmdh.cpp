@@ -93,7 +93,7 @@ namespace GMDH {
         }      
     }
 
-    bool GmdhModel::nextLevelCondition(double &lastLevelEvaluation, int kBest, uint8_t pAverage, VectorC& combinations,
+    bool GmdhModel::nextLevelCondition(int kBest, uint8_t pAverage, VectorC& combinations,
                                   const Criterion& criterion, SplittedData& data, double limit) {
         auto _bestCombinations{ getBestCombinations(combinations, kBest) };
         if (criterion.getClassName() == "SequentialCriterion") { 
@@ -107,12 +107,12 @@ namespace GMDH {
             }
             std::sort(std::begin(_bestCombinations), std::end(_bestCombinations));
         }
-        auto currLevelEvaluation{ getMeanCriterionValue(_bestCombinations, pAverage) };
+        currentLevelEvaluation = getMeanCriterionValue(_bestCombinations, pAverage);
         //std::cout << "\n" << currLevelEvaluation << "\n";
 
-        if (lastLevelEvaluation - currLevelEvaluation > limit) {
+        if (lastLevelEvaluation - currentLevelEvaluation > limit) {
             bestCombinations[0] = std::move(_bestCombinations);
-            lastLevelEvaluation = currLevelEvaluation;
+            lastLevelEvaluation = currentLevelEvaluation;
             if (++level < data.xTrain.cols())
                 return true;
         }
@@ -139,7 +139,7 @@ namespace GMDH {
         std::atomic<int> leftTasks; // TODO: change to volatile structure
 
         inputColsNumber = x.cols();
-        auto lastLevelEvaluation{ std::numeric_limits<double>::max() };
+        lastLevelEvaluation = std::numeric_limits<double>::max();
 
         MatrixXd modifiedX{ x.rows(), x.cols() + 1 };
         modifiedX.col(x.cols()).setOnes();
@@ -151,7 +151,7 @@ namespace GMDH {
         std::cout << data.xTest << "\n\n";
         std::cout << data.yTrain << "\n\n";
         std::cout << data.yTest << "\n\n";*/
-
+        bool goToTheNextLevel;
         VectorC evaluationCoeffsVec;
         do {
             futures.clear();
@@ -165,7 +165,7 @@ namespace GMDH {
             leftTasks = static_cast<int>(evaluationCoeffsVec.size());
             if (verbose) {
                 progressBar = std::make_unique<ProgressBar>(
-                    option::BarWidth{ 30 },
+                    option::BarWidth{ 25 },
                     option::Start{ "LEVEL " + std::to_string(level) + ((std::to_string(level).size() == 1) ? "  [" : " [")},
                     option::End{ "]" },
                     option::Lead{ ">" },
@@ -198,11 +198,18 @@ namespace GMDH {
                         progressBar->set_progress(100.0 * (evaluationCoeffsVec.size() - leftTasks) / evaluationCoeffsVec.size());
                     boost::this_thread::sleep_for(boost::chrono::milliseconds(20));
                 }
-                progressBar->set_progress(100);
+                //progressBar->set_progress(100);
             }
             else
                 boost::when_all(std::begin(futures), std::end(futures)).get();    
-        } while (nextLevelCondition(lastLevelEvaluation, kBest, pAverage, evaluationCoeffsVec, criterion, data, limit));
+            goToTheNextLevel = nextLevelCondition(kBest, pAverage, evaluationCoeffsVec, criterion, data, limit);
+
+            if (verbose)
+            {
+                progressBar->set_option(option::PostfixText("(" + std::to_string(evaluationCoeffsVec.size()) + " combinations) error=" + std::to_string(currentLevelEvaluation)));
+                progressBar->set_progress(100);
+            }
+        } while (goToTheNextLevel);
         if (verbose)
             show_console_cursor(true);
         return *this;   
