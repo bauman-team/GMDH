@@ -213,12 +213,13 @@ namespace GMDH {
 #ifdef GMDH_LIB
         std::cout << DISPLAYEDCOLORWARNING;
 #elif GMDH_MODULE
-        std::cout << std::unitbuf;
+        
 #endif
         if (*testSize <= 0) { // TODO: add range 
 #ifdef GMDH_LIB
             std::cout << DISPLAYEDWARNINGMSG("value of testSize","testSize = 0.5");
 #elif GMDH_MODULE
+            std::cout << std::unitbuf;
             PyErr_WarnEx(PyExc_Warning, DISPLAYEDWARNINGMSG("value of testSize","testSize = 0.5"), 1);
 #endif
             *testSize = 0.5;
@@ -229,6 +230,7 @@ namespace GMDH {
 #ifdef GMDH_LIB
             std::cout << DISPLAYEDWARNINGMSG("number of threads","threads = 1");
 #elif GMDH_MODULE
+            std::cout << std::unitbuf;
             PyErr_WarnEx(PyExc_Warning, DISPLAYEDWARNINGMSG("number of threads","threads = 1"), 1);
 #endif
             *threads = 1;
@@ -238,6 +240,7 @@ namespace GMDH {
 #ifdef GMDH_LIB
             std::cout << DISPLAYEDWARNINGMSG("number of pAverage","pAverage = 1");
 #elif GMDH_MODULE
+            std::cout << std::unitbuf;
             PyErr_WarnEx(PyExc_Warning, DISPLAYEDWARNINGMSG("number of pAverage","pAverage = 1"), 1);
 #endif
             *pAverage = 1;
@@ -247,6 +250,7 @@ namespace GMDH {
 #ifdef GMDH_LIB
             std::cout << DISPLAYEDWARNINGMSG("number of kBest","kBest = 1");
 #elif GMDH_MODULE
+            std::cout << std::unitbuf;
             PyErr_WarnEx(PyExc_Warning, DISPLAYEDWARNINGMSG("number of kBest","kBest = 1"), 1);
 #endif
             *kBest = 1;
