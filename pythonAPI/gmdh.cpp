@@ -114,7 +114,7 @@ PYBIND11_MODULE(gmdhpy, m)
         .def("fit", &GMDH::MIA::fit, py::call_guard<py::scoped_ostream_redirect, py::scoped_estream_redirect>(), 
             "This method used for training model",
             "x"_a, "y"_a, "criterion"_a, "k_best"_a, "polynomial_type"_a = GMDH::PolynomialType::quadratic, "test_size"_a = 0.5, 
-            "shuffle"_a = false, "random_seed"_a = 0, "p_average"_a = 1, "n_jobs"_a = 1, "verbose"_a = 0, "limit"_a = 0)
+            "shuffle"_a = false, "random_state"_a = 0, "p_average"_a = 1, "n_jobs"_a = 1, "verbose"_a = 0, "limit"_a = 0)
         .def("get_best_polynomial", &GMDH::MIA::getBestPolynomial);
 
     py::class_<GMDH::RIA, GMDH::MIA>(m, "Ria")

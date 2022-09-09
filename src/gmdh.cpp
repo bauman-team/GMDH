@@ -190,6 +190,9 @@ namespace GMDH {
             }
 
             if (verbose) {
+#ifdef GMDH_MODULE
+                std::cout << std::nounitbuf;
+#endif
                 while (leftTasks) {
                     if (progressBar->current() < 100.0 * (evaluationCoeffsVec.size() - leftTasks) / evaluationCoeffsVec.size())
                         progressBar->set_progress(100.0 * (evaluationCoeffsVec.size() - leftTasks) / evaluationCoeffsVec.size());
@@ -212,50 +215,50 @@ namespace GMDH {
         return *this;   
     }
 
-    int validateInputData(double *testSize, uint8_t *pAverage, int *threads, int *kBest) {
+    int validateInputData(double* testSize, uint8_t* pAverage, int* threads, int* kBest) {
         auto errorCode{ 0 };
 #ifdef GMDH_LIB
         std::cout << DISPLAYEDCOLORWARNING;
 #elif GMDH_MODULE
         //auto warnings = pybind11::module::import("warnings");
-        auto sys = pybind11::module::import("sys");       
+        auto sys = pybind11::module::import("sys");
 #endif
         if (*testSize <= 0) { // TODO: add range 
 #ifdef GMDH_LIB
-            std::cout << DISPLAYEDWARNINGMSG("value of testSize","testSize = 0.5");
+            std::cout << DISPLAYEDWARNINGMSG("value of testSize", "testSize = 0.5");
 #elif GMDH_MODULE
-            PyErr_WarnEx(PyExc_Warning, DISPLAYEDWARNINGMSG("value of testSize","testSize = 0.5"), 1);
+            PyErr_WarnEx(PyExc_Warning, DISPLAYEDWARNINGMSG("value of test_size", "test_size = 0.5"), 1);
 #endif
-            *testSize = 0.5;
+            * testSize = 0.5;
             errorCode |= 1;
         }
         if (threads && (*threads < -1 || !*threads))
         {
 #ifdef GMDH_LIB
-            std::cout << DISPLAYEDWARNINGMSG("number of threads","threads = 1");
+            std::cout << DISPLAYEDWARNINGMSG("number of threads", "threads = 1");
 #elif GMDH_MODULE
             //warnings.attr("warn")("old_foo() is deprecated, use new_foo() instead.");                
-            PyErr_WarnEx(PyExc_Warning, DISPLAYEDWARNINGMSG("number of threads","threads = 1"), 1);
+            PyErr_WarnEx(PyExc_Warning, DISPLAYEDWARNINGMSG("number of n_jobs", "n_jobs = 1"), 1);
 #endif
-            *threads = 1;
+            * threads = 1;
             errorCode |= 2;
         }
         if (pAverage && !(*pAverage)) {
 #ifdef GMDH_LIB
-            std::cout << DISPLAYEDWARNINGMSG("number of pAverage","pAverage = 1");
+            std::cout << DISPLAYEDWARNINGMSG("number of pAverage", "pAverage = 1");
 #elif GMDH_MODULE
-            PyErr_WarnEx(PyExc_Warning, DISPLAYEDWARNINGMSG("number of pAverage","pAverage = 1"), 1);
+            PyErr_WarnEx(PyExc_Warning, DISPLAYEDWARNINGMSG("number of p_average", "p_average = 1"), 1);
 #endif
-            *pAverage = 1;
+            * pAverage = 1;
             errorCode |= 4;
         }
         if (kBest && !(*kBest)) {
 #ifdef GMDH_LIB
-            std::cout << DISPLAYEDWARNINGMSG("number of kBest","kBest = 1");
+            std::cout << DISPLAYEDWARNINGMSG("number of kBest", "kBest = 1");
 #elif GMDH_MODULE
-            PyErr_WarnEx(PyExc_Warning, DISPLAYEDWARNINGMSG("number of kBest","kBest = 1"), 1);
+            PyErr_WarnEx(PyExc_Warning, DISPLAYEDWARNINGMSG("number of k_best", "k_best = 1"), 1);
 #endif
-            *kBest = 1;
+            * kBest = 1;
             errorCode |= 8;
         }
 #ifdef GMDH_LIB
