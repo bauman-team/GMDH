@@ -65,9 +65,9 @@ PYBIND11_MODULE(gmdhpy, m)
         .def("load", &GMDH::MULTI::load,
             "",
             "path"_a)
-        /*.def("predict", static_cast<double (GMDH::MULTI::*) (const Eigen::RowVectorXd&) const>(&GMDH::MULTI::predict),
+        .def("predict", static_cast<double (GMDH::MULTI::*) (const Eigen::RowVectorXd&) const>(&GMDH::GmdhModel::predict),
             "",
-            "x"_a)*/
+            "x"_a)
         .def("predict", static_cast<Eigen::VectorXd(GMDH::MULTI::*) (const Eigen::MatrixXd&) const>(&GMDH::MULTI::predict),
             "",
             "x"_a)
@@ -85,9 +85,9 @@ PYBIND11_MODULE(gmdhpy, m)
         .def("load", &GMDH::COMBI::load,
             "",
             "path"_a)
-        /*.def("predict", static_cast<double (GMDH::COMBI::*) (const Eigen::RowVectorXd&) const>(&GMDH::COMBI::predict),
+        .def("predict", static_cast<double (GMDH::COMBI::*) (const Eigen::RowVectorXd&) const>(&GMDH::GmdhModel::predict),
             "",
-            "x"_a)*/
+            "x"_a)
         .def("predict", static_cast<Eigen::VectorXd (GMDH::COMBI::*) (const Eigen::MatrixXd&) const>(&GMDH::COMBI::predict),
             "",
             "x"_a)
@@ -105,9 +105,9 @@ PYBIND11_MODULE(gmdhpy, m)
         .def("load", &GMDH::MIA::load,
             "",
             "path"_a)
-        /*.def("predict", static_cast<double (GMDH::MIA::*) (const Eigen::RowVectorXd&) const>(&GMDH::MIA::predict),
+        .def("predict", static_cast<double (GMDH::MIA::*) (const Eigen::RowVectorXd&) const>(&GMDH::GmdhModel::predict),
             "",
-            "x"_a)*/
+            "x"_a)
         .def("predict", static_cast<Eigen::VectorXd(GMDH::MIA::*) (const Eigen::MatrixXd&) const>(&GMDH::MIA::predict),
             "",
             "x"_a)
@@ -121,7 +121,7 @@ PYBIND11_MODULE(gmdhpy, m)
         .def(py::init<>())
         .def("save", &GMDH::RIA::save)
         .def("load", &GMDH::RIA::load)
-        /*.def("predict", static_cast<double (GMDH::RIA::*) (const Eigen::RowVectorXd&) const>(&GMDH::MIA::predict))*/
+        .def("predict", static_cast<double (GMDH::RIA::*) (const Eigen::RowVectorXd&) const>(&GMDH::GmdhModel::predict))
         .def("predict", static_cast<Eigen::VectorXd(GMDH::RIA::*) (const Eigen::MatrixXd&) const>(&GMDH::RIA::predict))
         .def("fit", &GMDH::RIA::fit, py::call_guard<py::scoped_ostream_redirect, py::scoped_estream_redirect>(),
             "This method used for training model",

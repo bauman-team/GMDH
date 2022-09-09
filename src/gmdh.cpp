@@ -96,21 +96,22 @@ namespace GMDH {
     bool GmdhModel::nextLevelCondition(int kBest, uint8_t pAverage, VectorC& combinations,
                                   const Criterion& criterion, SplittedData& data, double limit) {
         auto _bestCombinations{ getBestCombinations(combinations, kBest) };
-        if (criterion.getClassName() == "SequentialCriterion") { 
+        if (criterion.getClassName() == "SequentialCriterion") { // TODO: THE WORST code style 
             // TODO: add threads or kBest value will be always small?
-            for (auto comb : _bestCombinations) {
-                auto pairCoeffsEvaluation{ static_cast<const SequentialCriterion&>(criterion).recalculate( // TODO: THE WORST code style 
-                                            data.xTrain(Eigen::all, comb.combination()),
-                                            data.xTest(Eigen::all, comb.combination()),
-                                            data.yTrain, data.yTest, comb.bestCoeffs()) };
-                comb.setEvaluation(pairCoeffsEvaluation.first);
+            for (auto combBegin = std::begin(_bestCombinations),
+                combEnd = std::end(_bestCombinations); combBegin != combEnd; ++combBegin) {
+                auto pairCoeffsEvaluation = static_cast<const SequentialCriterion&>(criterion).recalculate(
+                    data.xTrain(Eigen::all, (*combBegin).combination()),
+                    data.xTest(Eigen::all, (*combBegin).combination()),
+                    data.yTrain, data.yTest, (*combBegin).bestCoeffs());
+                (*combBegin).setEvaluation(pairCoeffsEvaluation.first);
             }
             std::sort(std::begin(_bestCombinations), std::end(_bestCombinations));
         }
         currentLevelEvaluation = getMeanCriterionValue(_bestCombinations, pAverage);
         //std::cout << "\n" << currLevelEvaluation << "\n";
 
-        if (lastLevelEvaluation - currentLevelEvaluation > limit) {
+        if ((lastLevelEvaluation - currentLevelEvaluation > limit)) {
             bestCombinations[0] = std::move(_bestCombinations);
             lastLevelEvaluation = currentLevelEvaluation;
             if (++level < data.xTrain.cols())
@@ -198,7 +199,6 @@ namespace GMDH {
                         progressBar->set_progress(100.0 * (evaluationCoeffsVec.size() - leftTasks) / evaluationCoeffsVec.size());
                     boost::this_thread::sleep_for(boost::chrono::milliseconds(20));
                 }
-                //progressBar->set_progress(100);
             }
             else
                 boost::when_all(std::begin(futures), std::end(futures)).get();    
@@ -206,7 +206,19 @@ namespace GMDH {
 
             if (verbose)
             {
-                progressBar->set_option(option::PostfixText("(" + std::to_string(evaluationCoeffsVec.size()) + " combinations) error=" + std::to_string(currentLevelEvaluation)));
+                std::string stringError;
+                std::ostringstream stream;
+                if (currentLevelEvaluation == 0)
+                    stringError = "0";
+                else {
+                    if (currentLevelEvaluation >= 1e-6 && currentLevelEvaluation < 1e6)
+                        stream << std::fixed << std::setprecision(6);
+                    stream << currentLevelEvaluation;
+                    stringError = stream.str();
+                    boost::trim_right_if(stringError, boost::is_any_of("0"));
+                    boost::trim_right_if(stringError, boost::is_any_of("."));
+                }
+                progressBar->set_option(option::PostfixText("(" + std::to_string(evaluationCoeffsVec.size()) + " combinations) error=" + stringError));
                 progressBar->set_progress(100);
             }
         } while (goToTheNextLevel);
