@@ -98,13 +98,12 @@ namespace GMDH {
         auto _bestCombinations{ getBestCombinations(combinations, kBest) };
         if (criterion.getClassName() == "SequentialCriterion") { // TODO: THE WORST code style 
             // TODO: add threads or kBest value will be always small?
-            for (auto combBegin = std::begin(_bestCombinations),
-                combEnd = std::end(_bestCombinations); combBegin != combEnd; ++combBegin) {
+            for (auto &combBegin : _bestCombinations) {
                 auto pairCoeffsEvaluation = static_cast<const SequentialCriterion&>(criterion).recalculate(
-                    data.xTrain(Eigen::all, (*combBegin).combination()),
-                    data.xTest(Eigen::all, (*combBegin).combination()),
-                    data.yTrain, data.yTest, (*combBegin).bestCoeffs());
-                (*combBegin).setEvaluation(pairCoeffsEvaluation.first);
+                    data.xTrain(Eigen::all, combBegin.combination()),
+                    data.xTest(Eigen::all, combBegin.combination()),
+                    data.yTrain, data.yTest, combBegin.bestCoeffs());
+                combBegin.setEvaluation(pairCoeffsEvaluation.first);
             }
             std::sort(std::begin(_bestCombinations), std::end(_bestCombinations));
         }
