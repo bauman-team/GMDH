@@ -131,7 +131,7 @@ namespace GMDH {
     }
 
     GmdhModel& MIA::fit(MatrixXd x, VectorXd y, Criterion& criterion, int kBest, PolynomialType _polynomialType,
-                   double testSize, bool shuffle, int randomSeed, uint8_t pAverage, int threads, int verbose, double limit) {
+                   double testSize, uint8_t pAverage, int threads, int verbose, double limit) {
         validateInputData(&testSize, &pAverage, &threads, &kBest);
         polynomialType = _polynomialType;
         return GmdhModel::fit(x, y, criterion, kBest, testSize, shuffle, randomSeed, pAverage, threads, verbose, limit);

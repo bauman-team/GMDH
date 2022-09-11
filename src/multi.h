@@ -11,8 +11,7 @@ namespace GMDH {
         MULTI();
 
         GmdhModel& fit(const MatrixXd& x, const VectorXd& y, const Criterion& criterion, int _kBest,
-                  double testSize = 0.5, bool shuffle = false, int randomSeed = 0, uint8_t pAverage = 1, 
-                  int threads = 1, int verbose = 0, double limit = 0);
+                  double testSize = 0.5, uint8_t pAverage = 1, int threads = 1, int verbose = 0, double limit = 0);
 
         VectorXd predict(const MatrixXd& x) const override;
     };

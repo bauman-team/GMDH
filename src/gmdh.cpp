@@ -121,8 +121,8 @@ namespace GMDH {
         return false;
     }
 
-    GmdhModel& GmdhModel::fit(const MatrixXd& x, const VectorXd& y, const Criterion& criterion, int kBest, double testSize,
-                    bool shuffle, int randomSeed, uint8_t pAverage, int threads, int verbose, double limit) {
+    GmdhModel& GmdhModel::fit(const MatrixXd& x, const VectorXd& y, const Criterion& criterion, int kBest, 
+                              double testSize, uint8_t pAverage, int threads, int verbose, double limit) {
 
         using namespace indicators;
         using T = boost::packaged_task<void>;
@@ -145,7 +145,7 @@ namespace GMDH {
         MatrixXd modifiedX{ x.rows(), x.cols() + 1 };
         modifiedX.col(x.cols()).setOnes();
         modifiedX.leftCols(x.cols()) = x;
-        auto data{ splitData(modifiedX, y, testSize, shuffle, randomSeed) };
+        auto data{ splitData(modifiedX, y, testSize) };
         modifiedX.resize(0, 0); // TODO: clear???
 
         /*std::cout << data.xTrain << "\n\n";
@@ -300,7 +300,7 @@ namespace GMDH {
     int GmdhModel::save(const std::string& path) const {
         std::ofstream modelFile(path);
         if (!modelFile.is_open())
-            return -1; // TODO: throw exception for Python???
+            return -1; // TODO: throw exception for Python
         else {
             modelFile << getModelName() << "\n" << inputColsNumber << "\n";
             for (int i = 0; i < bestCombinations.size(); ++i) {
@@ -319,12 +319,12 @@ namespace GMDH {
 
         std::ifstream modelFile(path);
         if (!modelFile.is_open())
-            return -1; // TODO: throw exception for Python???
+            return -1; // TODO: throw exception for Python
         else {
             std::string modelName;
             modelFile >> modelName;
             if (modelName != getModelName())
-                return -2; // TODO: throw exception for Python???
+                return -2; // TODO: throw exception for Python
             else {
                 (modelFile >> inputColsNumber).get();
 

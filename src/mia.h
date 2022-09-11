@@ -24,8 +24,8 @@ namespace GMDH {
 
 	public:
 		GmdhModel& fit(MatrixXd x, VectorXd y, Criterion& criterion, int _kBest,
-				  PolynomialType _polynomialType = PolynomialType::quadratic, double testSize = 0.5, bool shuffle = false, 
-				  int randomSeed = 0, uint8_t pAverage = 1, int threads = 1, int verbose = 0, double limit = 0);
+				  PolynomialType _polynomialType = PolynomialType::quadratic, double testSize = 0.5,
+				  uint8_t pAverage = 1, int threads = 1, int verbose = 0, double limit = 0);
 
 		virtual VectorXd predict(const MatrixXd& x) const override;
 	};

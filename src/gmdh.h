@@ -61,8 +61,7 @@ protected:
                                     const Criterion& criterion, SplittedData& data, double limit);
    
     GmdhModel& fit(const MatrixXd& x, const VectorXd& y, const Criterion& criterion, int kBest,
-              double testSize = 0.5, bool shuffle = false, int randomSeed = 0, uint8_t pAverage = 1, 
-              int threads = 1, int verbose = 0, double limit = 0);
+              double testSize = 0.5, uint8_t pAverage = 1, int threads = 1, int verbose = 0, double limit = 0);
 
     virtual std::string getPolynomialPrefix(int levelIndex, int combIndex) const = 0;
     virtual std::string getPolynomialCoeff(double coeff, int coeffIndex) const;

@@ -34,9 +34,9 @@ namespace GMDH {
     }
 
     GmdhModel& MULTI::fit(const MatrixXd& x, const VectorXd& y, const Criterion& criterion, int _kBest, double testSize, 
-                     bool shuffle, int randomSeed, uint8_t pAverage, int threads, int verbose, double limit) { // TODO: whaaat? why not kBest without '_'
+                          uint8_t pAverage, int threads, int verbose, double limit) { // TODO: whaaat? why not kBest without '_'
         validateInputData(&testSize, &pAverage, &threads, &_kBest);
-        return GmdhModel::fit(x, y, criterion, _kBest, testSize, shuffle, randomSeed, pAverage, threads, verbose, limit);
+        return GmdhModel::fit(x, y, criterion, _kBest, testSize, pAverage, threads, verbose, limit);
     }
 
     VectorXd MULTI::predict(const MatrixXd& x) const {
