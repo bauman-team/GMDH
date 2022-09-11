@@ -134,7 +134,7 @@ namespace GMDH {
                    double testSize, uint8_t pAverage, int threads, int verbose, double limit) {
         validateInputData(&testSize, &pAverage, &threads, &kBest);
         polynomialType = _polynomialType;
-        return GmdhModel::fit(x, y, criterion, kBest, testSize, shuffle, randomSeed, pAverage, threads, verbose, limit);
+        return GmdhModel::fit(x, y, criterion, kBest, testSize, pAverage, threads, verbose, limit);
     }
 
     VectorXd MIA::predict(const MatrixXd& x) const {

@@ -362,8 +362,12 @@ namespace GMDH {
         return 0;
     }
 
-    double GmdhModel::predict(const RowVectorXd& x) const {
-        return predict(MatrixXd(x))[0];
+    VectorXd GmdhModel::predict(const RowVectorXd& x, int lags) const {
+        RowVectorXd expandedX(RowVectorXd::Zero(x.size() + lags));
+        expandedX.leftCols(x.size()) = x;
+        for (int i = 0; i < lags; ++i)
+            expandedX(x.size() + i) = predict(expandedX(seq(i, x.size() + i - 1)))[0];
+        return expandedX.rightCols(lags);
     }
 
     std::string GmdhModel::getBestPolynomial() const {

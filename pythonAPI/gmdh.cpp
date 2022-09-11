@@ -65,9 +65,9 @@ PYBIND11_MODULE(gmdhpy, m)
         .def("load", &GMDH::MULTI::load,
             "",
             "path"_a)
-        .def("predict", static_cast<double (GMDH::MULTI::*) (const Eigen::RowVectorXd&) const>(&GMDH::GmdhModel::predict),
+        .def("predict", static_cast<Eigen::VectorXd(GMDH::MULTI::*) (const Eigen::RowVectorXd&, int) const>(&GMDH::GmdhModel::predict),
             "",
-            "x"_a)
+            "x"_a, "lags"_a = 1)
         .def("predict", static_cast<Eigen::VectorXd(GMDH::MULTI::*) (const Eigen::MatrixXd&) const>(&GMDH::MULTI::predict),
             "",
             "x"_a)
@@ -85,10 +85,10 @@ PYBIND11_MODULE(gmdhpy, m)
         .def("load", &GMDH::COMBI::load,
             "",
             "path"_a)
-        .def("predict", static_cast<double (GMDH::COMBI::*) (const Eigen::RowVectorXd&) const>(&GMDH::GmdhModel::predict),
+        .def("predict", static_cast<Eigen::VectorXd(GMDH::COMBI::*) (const Eigen::RowVectorXd&, int) const>(&GMDH::GmdhModel::predict),
             "",
-            "x"_a)
-        .def("predict", static_cast<Eigen::VectorXd (GMDH::COMBI::*) (const Eigen::MatrixXd&) const>(&GMDH::COMBI::predict),
+            "x"_a, "lags"_a = 1)
+        .def("predict", static_cast<Eigen::VectorXd(GMDH::COMBI::*) (const Eigen::MatrixXd&) const>(&GMDH::COMBI::predict),
             "",
             "x"_a)
         .def("fit", &GMDH::COMBI::fit, py::call_guard<py::scoped_ostream_redirect, py::scoped_estream_redirect>(), 
@@ -105,9 +105,9 @@ PYBIND11_MODULE(gmdhpy, m)
         .def("load", &GMDH::MIA::load,
             "",
             "path"_a)
-        .def("predict", static_cast<double (GMDH::MIA::*) (const Eigen::RowVectorXd&) const>(&GMDH::GmdhModel::predict),
+        .def("predict", static_cast<Eigen::VectorXd(GMDH::MIA::*) (const Eigen::RowVectorXd&, int) const>(&GMDH::GmdhModel::predict),
             "",
-            "x"_a)
+            "x"_a, "lags"_a = 1)
         .def("predict", static_cast<Eigen::VectorXd(GMDH::MIA::*) (const Eigen::MatrixXd&) const>(&GMDH::MIA::predict),
             "",
             "x"_a)
@@ -119,10 +119,18 @@ PYBIND11_MODULE(gmdhpy, m)
 
     py::class_<GMDH::RIA, GMDH::MIA>(m, "Ria")
         .def(py::init<>())
-        .def("save", &GMDH::RIA::save)
-        .def("load", &GMDH::RIA::load)
-        .def("predict", static_cast<double (GMDH::RIA::*) (const Eigen::RowVectorXd&) const>(&GMDH::GmdhModel::predict))
-        .def("predict", static_cast<Eigen::VectorXd(GMDH::RIA::*) (const Eigen::MatrixXd&) const>(&GMDH::RIA::predict))
+        .def("save", &GMDH::RIA::save,
+            "",
+            "path"_a)
+        .def("load", &GMDH::RIA::load,
+            "",
+            "path"_a)
+        .def("predict", static_cast<Eigen::VectorXd(GMDH::RIA::*) (const Eigen::RowVectorXd&, int) const>(&GMDH::GmdhModel::predict),
+            "",
+            "x"_a, "lags"_a = 1)
+        .def("predict", static_cast<Eigen::VectorXd(GMDH::RIA::*) (const Eigen::MatrixXd&) const>(&GMDH::RIA::predict),
+            "",
+            "x"_a)
         .def("fit", &GMDH::RIA::fit, py::call_guard<py::scoped_ostream_redirect, py::scoped_estream_redirect>(),
             "This method used for training model",
             "x"_a, "y"_a, "criterion"_a, "k_best"_a, "polynomial_type"_a = GMDH::PolynomialType::quadratic,

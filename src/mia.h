@@ -27,6 +27,7 @@ namespace GMDH {
 				  PolynomialType _polynomialType = PolynomialType::quadratic, double testSize = 0.5,
 				  uint8_t pAverage = 1, int threads = 1, int verbose = 0, double limit = 0);
 
+		using GmdhModel::predict;
 		virtual VectorXd predict(const MatrixXd& x) const override;
 	};
 }
