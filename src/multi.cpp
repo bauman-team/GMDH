@@ -47,10 +47,10 @@ namespace GMDH {
         bestCombinations.resize(1);
     }
 
-    GmdhModel& MULTI::fit(const MatrixXd& x, const VectorXd& y, const Criterion& criterion, int _kBest, double testSize, 
-                          uint8_t pAverage, int threads, int verbose, double limit) { // TODO: whaaat? why not kBest without '_'
-        validateInputData(&testSize, &pAverage, &threads, &_kBest);
-        return GmdhModel::fit(x, y, criterion, _kBest, testSize, pAverage, threads, verbose, limit);
+    GmdhModel& MULTI::fit(const MatrixXd& x, const VectorXd& y, const Criterion& criterion, int kBest, double testSize, 
+                          uint8_t pAverage, int threads, int verbose, double limit) {
+        validateInputData(&testSize, &pAverage, &threads, &kBest);
+        return GmdhModel::fit(x, y, criterion, kBest, testSize, pAverage, threads, verbose, limit);
     }
 
     VectorXd MULTI::predict(const MatrixXd& x) const {

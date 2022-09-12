@@ -9,7 +9,8 @@ namespace GMDH {
         COMBI() : MULTI() {}
 
         using GmdhModel::predict;
-        GmdhModel& fit(const MatrixXd& x, const VectorXd& y, const Criterion& criterion,
-                  double testSize = 0.5, uint8_t pAverage = 1, int threads = 1, int verbose = 0, double limit = 0);
+        GmdhModel& fit(const MatrixXd& x, const VectorXd& y,
+                       const Criterion& criterion = Criterion(CriterionType::regularity),
+                       double testSize = 0.5, uint8_t pAverage = 1, int threads = 1, int verbose = 0, double limit = 0);
     };
 }

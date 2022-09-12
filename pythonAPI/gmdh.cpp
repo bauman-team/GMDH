@@ -65,15 +65,18 @@ PYBIND11_MODULE(gmdhpy, m)
         .def("load", &GMDH::MULTI::load,
             "",
             "path"_a)
-        .def("predict", static_cast<Eigen::VectorXd(GMDH::MULTI::*) (const Eigen::RowVectorXd&, int) const>(&GMDH::GmdhModel::predict),
+        .def("predict", static_cast<Eigen::VectorXd(GMDH::MULTI::*) (const Eigen::RowVectorXd&, int) const>
+                        (&GMDH::GmdhModel::predict),
             "",
             "x"_a, "lags"_a = 1)
-        .def("predict", static_cast<Eigen::VectorXd(GMDH::MULTI::*) (const Eigen::MatrixXd&) const>(&GMDH::MULTI::predict),
+        .def("predict", static_cast<Eigen::VectorXd(GMDH::MULTI::*) (const Eigen::MatrixXd&) const>
+                        (&GMDH::MULTI::predict),
             "",
             "x"_a)
         .def("fit", &GMDH::MULTI::fit, py::call_guard<py::scoped_ostream_redirect, py::scoped_estream_redirect>(), 
             "This method used for training model",
-            "x"_a, "y"_a, "criterion"_a, "k_best"_a, "test_size"_a = 0.5, "p_average"_a = 1, 
+            "x"_a, "y"_a, "criterion"_a = GMDH::Criterion(GMDH::CriterionType::regularity), 
+            "k_best"_a = 3, "test_size"_a = 0.5, "p_average"_a = 1, 
             "n_jobs"_a = 1, "verbose"_a = 0,  "limit"_a = 0)
         .def("get_best_polynomial", &GMDH::MULTI::getBestPolynomial);
 
@@ -85,15 +88,18 @@ PYBIND11_MODULE(gmdhpy, m)
         .def("load", &GMDH::COMBI::load,
             "",
             "path"_a)
-        .def("predict", static_cast<Eigen::VectorXd(GMDH::COMBI::*) (const Eigen::RowVectorXd&, int) const>(&GMDH::GmdhModel::predict),
+        .def("predict", static_cast<Eigen::VectorXd(GMDH::COMBI::*) (const Eigen::RowVectorXd&, int) const>
+                        (&GMDH::GmdhModel::predict),
             "",
             "x"_a, "lags"_a = 1)
-        .def("predict", static_cast<Eigen::VectorXd(GMDH::COMBI::*) (const Eigen::MatrixXd&) const>(&GMDH::COMBI::predict),
+        .def("predict", static_cast<Eigen::VectorXd(GMDH::COMBI::*) (const Eigen::MatrixXd&) const>
+                        (&GMDH::COMBI::predict),
             "",
             "x"_a)
         .def("fit", &GMDH::COMBI::fit, py::call_guard<py::scoped_ostream_redirect, py::scoped_estream_redirect>(), 
             "This method used for training model",
-            "x"_a, "y"_a, "criterion"_a, "test_size"_a = 0.5, "p_average"_a = 1, 
+            "x"_a, "y"_a, "criterion"_a = GMDH::Criterion(GMDH::CriterionType::regularity), 
+            "test_size"_a = 0.5, "p_average"_a = 1,
             "n_jobs"_a = 1, "verbose"_a = 0,  "limit"_a = 0)
         .def("get_best_polynomial", &GMDH::COMBI::getBestPolynomial);
 
@@ -105,16 +111,20 @@ PYBIND11_MODULE(gmdhpy, m)
         .def("load", &GMDH::MIA::load,
             "",
             "path"_a)
-        .def("predict", static_cast<Eigen::VectorXd(GMDH::MIA::*) (const Eigen::RowVectorXd&, int) const>(&GMDH::GmdhModel::predict),
+        .def("predict", static_cast<Eigen::VectorXd(GMDH::MIA::*) (const Eigen::RowVectorXd&, int) const>
+                        (&GMDH::GmdhModel::predict),
             "",
             "x"_a, "lags"_a = 1)
-        .def("predict", static_cast<Eigen::VectorXd(GMDH::MIA::*) (const Eigen::MatrixXd&) const>(&GMDH::MIA::predict),
+        .def("predict", static_cast<Eigen::VectorXd(GMDH::MIA::*) (const Eigen::MatrixXd&) const>
+                        (&GMDH::MIA::predict),
             "",
             "x"_a)
         .def("fit", &GMDH::MIA::fit, py::call_guard<py::scoped_ostream_redirect, py::scoped_estream_redirect>(), 
             "This method used for training model",
-            "x"_a, "y"_a, "criterion"_a, "k_best"_a, "polynomial_type"_a = GMDH::PolynomialType::quadratic, 
-            "test_size"_a = 0.5, "p_average"_a = 1, "n_jobs"_a = 1, "verbose"_a = 0, "limit"_a = 0)
+            "x"_a, "y"_a, "criterion"_a = GMDH::Criterion(GMDH::CriterionType::regularity), 
+            "k_best"_a = 3, "polynomial_type"_a = GMDH::PolynomialType::quadratic,
+            "test_size"_a = 0.5, "p_average"_a = 1,
+            "n_jobs"_a = 1, "verbose"_a = 0, "limit"_a = 0)
         .def("get_best_polynomial", &GMDH::MIA::getBestPolynomial);
 
     py::class_<GMDH::RIA, GMDH::MIA>(m, "Ria")
@@ -125,16 +135,20 @@ PYBIND11_MODULE(gmdhpy, m)
         .def("load", &GMDH::RIA::load,
             "",
             "path"_a)
-        .def("predict", static_cast<Eigen::VectorXd(GMDH::RIA::*) (const Eigen::RowVectorXd&, int) const>(&GMDH::GmdhModel::predict),
+        .def("predict", static_cast<Eigen::VectorXd(GMDH::RIA::*) (const Eigen::RowVectorXd&, int) const>
+                        (&GMDH::GmdhModel::predict),
             "",
             "x"_a, "lags"_a = 1)
-        .def("predict", static_cast<Eigen::VectorXd(GMDH::RIA::*) (const Eigen::MatrixXd&) const>(&GMDH::RIA::predict),
+        .def("predict", static_cast<Eigen::VectorXd(GMDH::RIA::*) (const Eigen::MatrixXd&) const>
+                        (&GMDH::RIA::predict),
             "",
             "x"_a)
         .def("fit", &GMDH::RIA::fit, py::call_guard<py::scoped_ostream_redirect, py::scoped_estream_redirect>(),
             "This method used for training model",
-            "x"_a, "y"_a, "criterion"_a, "k_best"_a, "polynomial_type"_a = GMDH::PolynomialType::quadratic,
-            "test_size"_a = 0.5, "p_average"_a = 1, "n_jobs"_a = 1, "verbose"_a = 0, "limit"_a = 0)
+            "x"_a, "y"_a, "criterion"_a = GMDH::Criterion(GMDH::CriterionType::regularity), 
+            "k_best"_a = 3, "polynomial_type"_a = GMDH::PolynomialType::quadratic,
+            "test_size"_a = 0.5, "p_average"_a = 1, 
+            "n_jobs"_a = 1, "verbose"_a = 0, "limit"_a = 0)
         .def("get_best_polynomial", &GMDH::RIA::getBestPolynomial);
 
     m.def("time_series_transformation", &GMDH::timeSeriesTransformation,

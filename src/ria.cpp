@@ -17,7 +17,7 @@ namespace GMDH {
 			data.xTrain.conservativeResize(NoChange, data.xTrain.cols() + bestCombinations.size());
 			data.xTest.conservativeResize(NoChange, data.xTest.cols() + bestCombinations.size());
 			data.xTrain.col(data.xTrain.cols() - 1) = VectorXd::Ones(data.xTrain.rows());
-			data.xTest.col(data.xTrain.cols() - 1) = VectorXd::Ones(data.xTest.rows());
+			data.xTest.col(data.xTest.cols() - 1) = VectorXd::Ones(data.xTest.rows());
 		}
 		MatrixXd newColsTrain(data.xTrain.rows(), bestCombinations.size());
 		MatrixXd newColsTest(data.xTest.rows(), bestCombinations.size());
@@ -51,30 +51,22 @@ namespace GMDH {
 		return ((levelIndex < bestCombinations.size() - 1) ? "f" + std::to_string(levelIndex + 1) : "y") + " =";
 	}
 
-	std::string RIA::getPolynomialVariable(int levelIndex, int coeffIndex, int coeffsNumber, const VectorU16& bestColsIndexes) const {
-		if (levelIndex == 0) {
-			if (coeffIndex < 2)
-				return "*x" + std::to_string(bestColsIndexes[coeffIndex] + 1);
-			else if (coeffIndex == 2 && coeffsNumber > 3)
-				return "*x" + std::to_string(bestColsIndexes[0] + 1) +
-				"*x" + std::to_string(bestColsIndexes[1] + 1);
-			else if (coeffIndex < 5 && coeffsNumber > 4)
-				return "*x" + std::to_string(bestColsIndexes[coeffIndex - 3] + 1) + "^2";
-			else return "";
-		}
-		else {
-			if (coeffIndex == 0)
-				return "*x" + std::to_string(bestColsIndexes[coeffIndex] + 1);
-			else if (coeffIndex == 1)
-				return "*f" + std::to_string(levelIndex);
-			else if (coeffIndex == 2 && coeffsNumber > 3)
-				return "*x" + std::to_string(bestColsIndexes[0] + 1) + "*f" + std::to_string(levelIndex);
-			else if (coeffIndex == 3 && coeffsNumber > 4)
-				return "*x" + std::to_string(bestColsIndexes[coeffIndex - 3] + 1) + "^2";
-			else if (coeffIndex == 4 && coeffsNumber > 4)
-				return "*f" + std::to_string(levelIndex) + "^2";
-			else return "";
-		}
+	std::string RIA::getPolynomialVariable(int levelIndex, int coeffIndex, int coeffsNumber, 
+										   const VectorU16& bestColsIndexes) const {
+		if (levelIndex == 0)
+			return MIA::getPolynomialVariable(levelIndex, coeffIndex, coeffsNumber, bestColsIndexes);
+		
+		if (coeffIndex == 0)
+			return "*x" + std::to_string(bestColsIndexes[coeffIndex] + 1);
+		else if (coeffIndex == 1)
+			return "*f" + std::to_string(levelIndex);
+		else if (coeffIndex == 2 && coeffsNumber > 3)
+			return "*x" + std::to_string(bestColsIndexes[0] + 1) + "*f" + std::to_string(levelIndex);
+		else if (coeffIndex == 3 && coeffsNumber > 4)
+			return "*x" + std::to_string(bestColsIndexes[coeffIndex - 3] + 1) + "^2";
+		else if (coeffIndex == 4 && coeffsNumber > 4)
+			return "*f" + std::to_string(levelIndex) + "^2";
+		return "";
 	}
 
 	VectorXd RIA::predict(const MatrixXd& x) const {

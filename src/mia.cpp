@@ -75,15 +75,16 @@ namespace GMDH {
             "f" + std::to_string(levelIndex + 1) + "_" + std::to_string(combIndex + 1) : "y") + " =";
     }
 
-    std::string MIA::getPolynomialVariable(int levelIndex, int coeffIndex, int coeffsNumber, const VectorU16& bestColsIndexes) const {
+    std::string MIA::getPolynomialVariable(int levelIndex, int coeffIndex, int coeffsNumber, 
+                                           const VectorU16& bestColsIndexes) const {
         if (levelIndex == 0) {
             if (coeffIndex < 2)
                 return "*x" + std::to_string(bestColsIndexes[coeffIndex] + 1);
             else if (coeffIndex == 2 && coeffsNumber > 3)
-                return "*x" + std::to_string(bestColsIndexes[0] + 1) + "*x" + std::to_string(bestColsIndexes[1] + 1);
+                return "*x" + std::to_string(bestColsIndexes[0] + 1) + 
+                       "*x" + std::to_string(bestColsIndexes[1] + 1);
             else if (coeffIndex < 5 && coeffsNumber > 4)
                 return "*x" + std::to_string(bestColsIndexes[coeffIndex - 3] + 1) + "^2";
-            else return "";
         }
         else {
             if (coeffIndex < 2)
@@ -92,13 +93,15 @@ namespace GMDH {
                 return "*f" + std::to_string(levelIndex) + "_" + std::to_string(bestColsIndexes[0] + 1) +
                        "*f" + std::to_string(levelIndex) + "_" + std::to_string(bestColsIndexes[1] + 1);
             else if (coeffIndex < 5 && coeffsNumber > 4)
-                return "*f" + std::to_string(levelIndex) + "_" + std::to_string(bestColsIndexes[coeffIndex - 3] + 1) + "^2";
-            else return "";
+                return "*f" + std::to_string(levelIndex) + "_" + 
+                       std::to_string(bestColsIndexes[coeffIndex - 3] + 1) + "^2";
         }
+        return "";
     }
 
-    GmdhModel& MIA::fit(MatrixXd x, VectorXd y, Criterion& criterion, int kBest, PolynomialType _polynomialType,
-                   double testSize, uint8_t pAverage, int threads, int verbose, double limit) {
+    GmdhModel& MIA::fit(const MatrixXd& x, const VectorXd& y, const Criterion& criterion, int kBest, 
+                        PolynomialType _polynomialType, double testSize, uint8_t pAverage, 
+                        int threads, int verbose, double limit) {
         validateInputData(&testSize, &pAverage, &threads, &kBest);
         polynomialType = _polynomialType;
         return GmdhModel::fit(x, y, criterion, kBest, testSize, pAverage, threads, verbose, limit);
