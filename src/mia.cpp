@@ -23,49 +23,6 @@ namespace GMDH {
         return polyX;
     }
 
-    void MIA::polynomialsEvaluation(const SplittedData& data, const Criterion& criterion, IterC beginCoeffsVec, 
-                                    IterC endCoeffsVec, std::atomic<int>* leftTasks, bool verbose) const {
-        for (; beginCoeffsVec < endCoeffsVec; ++beginCoeffsVec) {
-            auto pairCoeffsEvaluation = criterion.calculate(
-                                            getPolynomialX(data.xTrain(Eigen::all, (*beginCoeffsVec).combination())),
-                                            getPolynomialX(data.xTest(Eigen::all, (*beginCoeffsVec).combination())),
-                                            data.yTrain, data.yTest);
-            (*beginCoeffsVec).setEvaluation(pairCoeffsEvaluation.first);
-            (*beginCoeffsVec).setBestCoeffs(std::move(pairCoeffsEvaluation.second));
-            if (unlikely(verbose))
-                --(*leftTasks);
-        }
-    }
-
-    bool MIA::nextLevelCondition(int kBest, uint8_t pAverage, VectorC& combinations,
-                                 const Criterion& criterion, SplittedData& data, double limit) {
-        VectorC _bestCombinations = getBestCombinations(combinations, kBest);
-        if (criterion.getClassName() == "SequentialCriterion") {
-            // TODO: add threads or kBest value will be always small?
-            for (auto combBegin = std::begin(_bestCombinations), 
-                        combEnd = std::end(_bestCombinations); combBegin != combEnd; ++combBegin) {
-                auto pairCoeffsEvaluation = static_cast<const SequentialCriterion&>(criterion).recalculate(
-                    getPolynomialX(data.xTrain(Eigen::all, (*combBegin).combination())),
-                    getPolynomialX(data.xTest(Eigen::all, (*combBegin).combination())),
-                    data.yTrain, data.yTest, (*combBegin).bestCoeffs());
-                (*combBegin).setEvaluation(pairCoeffsEvaluation.first);
-            }
-            std::sort(std::begin(_bestCombinations), std::end(_bestCombinations));
-        }
-        currentLevelEvaluation = getMeanCriterionValue(_bestCombinations, pAverage);
-        //std::cout << "\n" << currLevelEvaluation << "\n";
-
-        if (lastLevelEvaluation - currentLevelEvaluation > limit) {
-            bestCombinations.push_back(std::move(_bestCombinations));
-            lastLevelEvaluation = currentLevelEvaluation;
-            transformDataForNextLevel(data, bestCombinations[level - 1]);
-            ++level;
-            return true;
-        }
-        removeExtraCombinations();
-        return false;
-    }
-
     void MIA::transformDataForNextLevel(SplittedData& data, const VectorC& bestCombinations) {
         MatrixXd xTrainNew(data.xTrain.rows(), bestCombinations.size() + 1);
         MatrixXd xTestNew(data.xTest.rows(), bestCombinations.size() + 1);
@@ -101,6 +58,16 @@ namespace GMDH {
             }
         }
         bestCombinations = realBestCombinations;
+    }
+
+    bool MIA::preparations(SplittedData& data, VectorC& _bestCombinations) {
+        bestCombinations.push_back(std::move(_bestCombinations));
+        transformDataForNextLevel(data, bestCombinations[level - 1]);
+        return true;
+    }
+
+    MatrixXd MIA::xDataForCombination(const MatrixXd& x, const VectorU16& comb) const {
+        return getPolynomialX(x(Eigen::all, comb));
     }
 
     std::string MIA::getPolynomialPrefix(int levelIndex, int combIndex) const {

@@ -11,14 +11,12 @@ namespace GMDH {
 		VectorVu16 generateCombinations(int n_cols) const override;
 		MatrixXd getPolynomialX(const MatrixXd& x) const;
 
-		void polynomialsEvaluation(const SplittedData& data, const Criterion& criterion, IterC beginCoeffsVec, 
-								   IterC endCoeffsVec, std::atomic<int>* leftTasks, bool verbose) const override;
-
-		bool nextLevelCondition(int kBest, uint8_t pAverage, VectorC& combinations,
-							    const Criterion& criterion, SplittedData& data, double limit) override;
-
 		virtual void transformDataForNextLevel(SplittedData& data, const VectorC& bestCombinations);
-		virtual void removeExtraCombinations();
+		virtual void removeExtraCombinations() override;
+		virtual bool preparations(SplittedData& data, VectorC& _bestCombinations) override;
+
+		virtual MatrixXd xDataForCombination(const MatrixXd& x, const VectorU16& comb) const override;
+
 		std::string getPolynomialPrefix(int levelIndex, int combIndex) const override;
 		std::string getPolynomialVariable(int levelIndex, int coeffIndex, int coeffsNumber, const VectorU16& bestColsIndexes) const override;
 

@@ -79,18 +79,18 @@ namespace GMDH {
 
     void GmdhModel::polynomialsEvaluation(const SplittedData& data, const Criterion& criterion,
         IterC beginCoeffsVec, IterC endCoeffsVec, std::atomic<int> *leftTasks, bool verbose) const {
-            #ifdef GMDH_MODULE                
-                //catch_signals();
+        #ifdef GMDH_MODULE                
+            //catch_signals();
         #endif
         for (; beginCoeffsVec < endCoeffsVec; ++beginCoeffsVec) {
-            auto pairCoeffsEvaluation{ criterion.calculate(data.xTrain(Eigen::all, (*beginCoeffsVec).combination()),
-                                                            data.xTest(Eigen::all, (*beginCoeffsVec).combination()),
-                                                            data.yTrain, data.yTest) };
+            auto pairCoeffsEvaluation{ criterion.calculate(xDataForCombination(data.xTrain, (*beginCoeffsVec).combination()),
+                                                           xDataForCombination(data.xTest, (*beginCoeffsVec).combination()),
+                                                           data.yTrain, data.yTest) };
             (*beginCoeffsVec).setEvaluation(pairCoeffsEvaluation.first);
             (*beginCoeffsVec).setBestCoeffs(std::move(pairCoeffsEvaluation.second));
             if (unlikely(verbose))
                 --(*leftTasks);                
-        }      
+        }
     }
 
     bool GmdhModel::nextLevelCondition(int kBest, uint8_t pAverage, VectorC& combinations,
@@ -100,8 +100,8 @@ namespace GMDH {
             // TODO: add threads or kBest value will be always small?
             for (auto &combBegin : _bestCombinations) {
                 auto pairCoeffsEvaluation = static_cast<const SequentialCriterion&>(criterion).recalculate(
-                    data.xTrain(Eigen::all, combBegin.combination()),
-                    data.xTest(Eigen::all, combBegin.combination()),
+                    xDataForCombination(data.xTrain, combBegin.combination()),
+                    xDataForCombination(data.xTest, combBegin.combination()),
                     data.yTrain, data.yTest, combBegin.bestCoeffs());
                 combBegin.setEvaluation(pairCoeffsEvaluation.first);
             }
@@ -111,12 +111,14 @@ namespace GMDH {
         //std::cout << "\n" << currLevelEvaluation << "\n";
 
         if ((lastLevelEvaluation - currentLevelEvaluation > limit)) {
-            bestCombinations[0] = std::move(_bestCombinations);
             lastLevelEvaluation = currentLevelEvaluation;
-            if (++level < data.xTrain.cols())
+            if (preparations(data, _bestCombinations)) {
+                ++level;
                 return true;
+            }
         }
-        bestCombinations[0] = VectorC(1, bestCombinations[0][0]); // TODO: add removeExtraCombinations() method
+
+        removeExtraCombinations();
         return false;
     }
 

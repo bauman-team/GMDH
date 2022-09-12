@@ -51,15 +51,20 @@ protected:
     std::string getModelName() const;
     VectorVu16 nChooseK(int n, int k) const;
     virtual VectorVu16 generateCombinations(int n_cols) const = 0;
-    virtual VectorC getBestCombinations(VectorC& combinations, int k) const;
+    VectorC getBestCombinations(VectorC& combinations, int k) const;
     double getMeanCriterionValue(const VectorC& sortedCombinations, int k) const;
 
-    virtual void polynomialsEvaluation(const SplittedData& data, const Criterion& criterion, IterC beginCoeffsVec, 
+    void polynomialsEvaluation(const SplittedData& data, const Criterion& criterion, IterC beginCoeffsVec, 
                                        IterC endCoeffsVec, std::atomic<int>* leftTasks, bool verbose) const;
 
-    virtual bool nextLevelCondition(int kBest, uint8_t pAverage, VectorC& combinations,
+    bool nextLevelCondition(int kBest, uint8_t pAverage, VectorC& combinations,
                                     const Criterion& criterion, SplittedData& data, double limit);
-   
+
+    virtual void removeExtraCombinations() = 0;
+    virtual bool preparations(SplittedData& data, VectorC& _bestCombinations) = 0;
+
+    virtual MatrixXd xDataForCombination(const MatrixXd& x, const VectorU16& comb) const = 0;
+
     GmdhModel& fit(const MatrixXd& x, const VectorXd& y, const Criterion& criterion, int kBest,
               double testSize = 0.5, uint8_t pAverage = 1, int threads = 1, int verbose = 0, double limit = 0);
 

@@ -2,6 +2,20 @@
 
 namespace GMDH {
 
+    void MULTI::removeExtraCombinations() {
+        bestCombinations[0] = VectorC(1, bestCombinations[0][0]);
+    }
+
+    bool MULTI::preparations(SplittedData& data, VectorC& _bestCombinations) {
+        bestCombinations[0] = std::move(_bestCombinations);
+        if (level + 1 < data.xTrain.cols())
+            return true;
+    }
+
+    MatrixXd MULTI::xDataForCombination(const MatrixXd& x, const VectorU16& comb) const {
+        return x(Eigen::all, comb);
+    }
+
     VectorVu16 MULTI::generateCombinations(int n_cols) const {
         VectorVu16 combs;
         if (level == 1)
