@@ -3,14 +3,6 @@
 
 namespace GMDH {
 
-#ifdef GMDH_MODULE
-    /*void catch_signals() {
-        auto handler = [](int code) { throw std::runtime_error("SIGNAL " + std::to_string(code)); };
-        signal(SIGINT, handler);
-        signal(SIGTERM, handler);
-        signal(SIGKILL, handler);
-    }*/
-#endif
 /*
     int GmdhModel::calculateLeftTasksForVerbose(const std::vector<std::shared_ptr<std::vector<Combination>::iterator >> beginTasksVec, 
     const std::vector<std::shared_ptr<std::vector<Combination>::iterator >> endTasksVec) const {
@@ -79,9 +71,6 @@ namespace GMDH {
 
     void GmdhModel::polynomialsEvaluation(const SplittedData& data, const Criterion& criterion,
         IterC beginCoeffsVec, IterC endCoeffsVec, std::atomic<int> *leftTasks, bool verbose) const {
-            #ifdef GMDH_MODULE                
-                //catch_signals();
-        #endif
         for (; beginCoeffsVec < endCoeffsVec; ++beginCoeffsVec) {
             auto pairCoeffsEvaluation{ criterion.calculate(data.xTrain(Eigen::all, (*beginCoeffsVec).combination()),
                                                             data.xTest(Eigen::all, (*beginCoeffsVec).combination()),
@@ -173,7 +162,7 @@ namespace GMDH {
                     option::ShowPercentage{ true },
                     option::PostfixText{ "(" + std::to_string(evaluationCoeffsVec.size()) + " combinations)" }
                 );
-                show_console_cursor(false);
+                show_console_cursor(false); // TODO: wtf???
                 progressBar->set_progress(0);
             }
             decltype(auto) model = this;
@@ -187,20 +176,34 @@ namespace GMDH {
                             evaluationCoeffsVec.size()), &leftTasks, verbose); });
                 futures.push_back(pt.get_future());
                 post(pool, std::move(pt));
-            }
+            } 
 
             if (verbose) {
-#ifdef GMDH_MODULE
-                std::cout << std::nounitbuf;
-#endif
                 while (leftTasks) {
+                    #ifdef GMDH_MODULE
+if (PyErr_CheckSignals() != 0) {
+    pool.stop();
+            pool.join();
+    //boost::when_all(std::begin(futures), std::end(futures)).get();  
+            return *this;
+                //throw pybind11::error_already_set();
+        }
+            #endif
+            
                     if (progressBar->current() < 100.0 * (evaluationCoeffsVec.size() - leftTasks) / evaluationCoeffsVec.size())
                         progressBar->set_progress(100.0 * (evaluationCoeffsVec.size() - leftTasks) / evaluationCoeffsVec.size());
                     boost::this_thread::sleep_for(boost::chrono::milliseconds(20));
                 }
             }
-            else
-                boost::when_all(std::begin(futures), std::end(futures)).get();    
+            else {
+                boost::when_all(std::begin(futures), std::end(futures)).get();   
+                #ifdef GMDH_MODULE
+if (PyErr_CheckSignals() != 0) {
+
+            return *this;
+        }
+            #endif
+            } 
             goToTheNextLevel = nextLevelCondition(kBest, pAverage, evaluationCoeffsVec, criterion, data, limit);
 
             if (verbose)

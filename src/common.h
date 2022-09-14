@@ -2,7 +2,6 @@
 #ifdef GMDH_MODULE
     #include <pybind11/pybind11.h>
     #include <pybind11/iostream.h>
-    //#include <signal.h>
 #endif
 
 #ifdef __GNUC__
