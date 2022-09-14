@@ -11,22 +11,22 @@ namespace GMDH {
 		VectorVu16 generateCombinations(int n_cols) const override;
 		MatrixXd getPolynomialX(const MatrixXd& x) const;
 
-		void polynomialsEvaluation(const SplittedData& data, const Criterion& criterion, IterC beginCoeffsVec, 
-								   IterC endCoeffsVec, std::atomic<int>* leftTasks, bool verbose) const override;
-
-		bool nextLevelCondition(int kBest, uint8_t pAverage, VectorC& combinations,
-							    const Criterion& criterion, SplittedData& data, double limit) override;
-
 		virtual void transformDataForNextLevel(SplittedData& data, const VectorC& bestCombinations);
-		virtual void removeExtraCombinations();
+		virtual void removeExtraCombinations() override;
+		virtual bool preparations(SplittedData& data, VectorC& _bestCombinations) override;
+		virtual MatrixXd xDataForCombination(const MatrixXd& x, const VectorU16& comb) const override;
+
 		std::string getPolynomialPrefix(int levelIndex, int combIndex) const override;
-		std::string getPolynomialVariable(int levelIndex, int coeffIndex, int coeffsNumber, const VectorU16& bestColsIndexes) const override;
+		std::string getPolynomialVariable(int levelIndex, int coeffIndex, int coeffsNumber, 
+										  const VectorU16& bestColsIndexes) const override;
 
 	public:
-		GmdhModel& fit(MatrixXd x, VectorXd y, Criterion& criterion, int _kBest,
-				  PolynomialType _polynomialType = PolynomialType::quadratic, double testSize = 0.5, bool shuffle = false, 
-				  int randomSeed = 0, uint8_t pAverage = 1, int threads = 1, int verbose = 0, double limit = 0);
+		GmdhModel& fit(const MatrixXd& x, const VectorXd& y, 
+					   const Criterion& criterion = Criterion(CriterionType::regularity), int kBest = 3,
+					   PolynomialType _polynomialType = PolynomialType::quadratic, double testSize = 0.5,
+					   uint8_t pAverage = 1, int threads = 1, int verbose = 0, double limit = 0);
 
+		using GmdhModel::predict;
 		virtual VectorXd predict(const MatrixXd& x) const override;
 	};
 }

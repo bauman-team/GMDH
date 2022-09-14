@@ -77,14 +77,14 @@ int main() {
     auto criterion = GMDH::Criterion(GMDH::CriterionType::regularity);
     GMDH::RIA mia;
     mia.fit(splittedData.xTrain, splittedData.yTrain, criterion, 3,
-             GMDH::PolynomialType::quadratic, testSize, 0, 0, 2, 1, 1, 0);
+             GMDH::PolynomialType::quadratic, testSize, 2, 1, 1, 0);
 
     std::cout << "\nThe best polynomial:\n\n" << mia.getBestPolynomial() << std::endl;
 
-    auto res = mia.predict(splittedData.xTest);
+    VectorXd res = mia.predict(splittedData.xTest(0, all), 20);
     mia.save("model1.txt");
     mia.load("model1.txt");
-    auto res2 = mia.predict(splittedData.xTest);
+    auto res2 = mia.predict(splittedData.xTest(0, all), 20);
 
     std::cout << "\nThe best polynomial after loading:\n\n" << mia.getBestPolynomial() << std::endl;
 

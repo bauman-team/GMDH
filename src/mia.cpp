@@ -23,49 +23,6 @@ namespace GMDH {
         return polyX;
     }
 
-    void MIA::polynomialsEvaluation(const SplittedData& data, const Criterion& criterion, IterC beginCoeffsVec, 
-                                    IterC endCoeffsVec, std::atomic<int>* leftTasks, bool verbose) const {
-        for (; beginCoeffsVec < endCoeffsVec; ++beginCoeffsVec) {
-            auto pairCoeffsEvaluation = criterion.calculate(
-                                            getPolynomialX(data.xTrain(Eigen::all, (*beginCoeffsVec).combination())),
-                                            getPolynomialX(data.xTest(Eigen::all, (*beginCoeffsVec).combination())),
-                                            data.yTrain, data.yTest);
-            (*beginCoeffsVec).setEvaluation(pairCoeffsEvaluation.first);
-            (*beginCoeffsVec).setBestCoeffs(std::move(pairCoeffsEvaluation.second));
-            if (unlikely(verbose))
-                --(*leftTasks);
-        }
-    }
-
-    bool MIA::nextLevelCondition(int kBest, uint8_t pAverage, VectorC& combinations,
-                                 const Criterion& criterion, SplittedData& data, double limit) {
-        VectorC _bestCombinations = getBestCombinations(combinations, kBest);
-        if (criterion.getClassName() == "SequentialCriterion") {
-            // TODO: add threads or kBest value will be always small?
-            for (auto combBegin = std::begin(_bestCombinations), 
-                        combEnd = std::end(_bestCombinations); combBegin != combEnd; ++combBegin) {
-                auto pairCoeffsEvaluation = static_cast<const SequentialCriterion&>(criterion).recalculate(
-                    getPolynomialX(data.xTrain(Eigen::all, (*combBegin).combination())),
-                    getPolynomialX(data.xTest(Eigen::all, (*combBegin).combination())),
-                    data.yTrain, data.yTest, (*combBegin).bestCoeffs());
-                (*combBegin).setEvaluation(pairCoeffsEvaluation.first);
-            }
-            std::sort(std::begin(_bestCombinations), std::end(_bestCombinations));
-        }
-        currentLevelEvaluation = getMeanCriterionValue(_bestCombinations, pAverage);
-        //std::cout << "\n" << currLevelEvaluation << "\n";
-
-        if (lastLevelEvaluation - currentLevelEvaluation > limit) {
-            bestCombinations.push_back(std::move(_bestCombinations));
-            lastLevelEvaluation = currentLevelEvaluation;
-            transformDataForNextLevel(data, bestCombinations[level - 1]);
-            ++level;
-            return true;
-        }
-        removeExtraCombinations();
-        return false;
-    }
-
     void MIA::transformDataForNextLevel(SplittedData& data, const VectorC& bestCombinations) {
         MatrixXd xTrainNew(data.xTrain.rows(), bestCombinations.size() + 1);
         MatrixXd xTestNew(data.xTest.rows(), bestCombinations.size() + 1);
@@ -103,20 +60,31 @@ namespace GMDH {
         bestCombinations = realBestCombinations;
     }
 
+    bool MIA::preparations(SplittedData& data, VectorC& _bestCombinations) {
+        bestCombinations.push_back(std::move(_bestCombinations));
+        transformDataForNextLevel(data, bestCombinations[level - 1]);
+        return true;
+    }
+
+    MatrixXd MIA::xDataForCombination(const MatrixXd& x, const VectorU16& comb) const {
+        return getPolynomialX(x(Eigen::all, comb));
+    }
+
     std::string MIA::getPolynomialPrefix(int levelIndex, int combIndex) const {
         return ((levelIndex < bestCombinations.size() - 1) ?
             "f" + std::to_string(levelIndex + 1) + "_" + std::to_string(combIndex + 1) : "y") + " =";
     }
 
-    std::string MIA::getPolynomialVariable(int levelIndex, int coeffIndex, int coeffsNumber, const VectorU16& bestColsIndexes) const {
+    std::string MIA::getPolynomialVariable(int levelIndex, int coeffIndex, int coeffsNumber, 
+                                           const VectorU16& bestColsIndexes) const {
         if (levelIndex == 0) {
             if (coeffIndex < 2)
                 return "*x" + std::to_string(bestColsIndexes[coeffIndex] + 1);
             else if (coeffIndex == 2 && coeffsNumber > 3)
-                return "*x" + std::to_string(bestColsIndexes[0] + 1) + "*x" + std::to_string(bestColsIndexes[1] + 1);
+                return "*x" + std::to_string(bestColsIndexes[0] + 1) + 
+                       "*x" + std::to_string(bestColsIndexes[1] + 1);
             else if (coeffIndex < 5 && coeffsNumber > 4)
                 return "*x" + std::to_string(bestColsIndexes[coeffIndex - 3] + 1) + "^2";
-            else return "";
         }
         else {
             if (coeffIndex < 2)
@@ -125,16 +93,18 @@ namespace GMDH {
                 return "*f" + std::to_string(levelIndex) + "_" + std::to_string(bestColsIndexes[0] + 1) +
                        "*f" + std::to_string(levelIndex) + "_" + std::to_string(bestColsIndexes[1] + 1);
             else if (coeffIndex < 5 && coeffsNumber > 4)
-                return "*f" + std::to_string(levelIndex) + "_" + std::to_string(bestColsIndexes[coeffIndex - 3] + 1) + "^2";
-            else return "";
+                return "*f" + std::to_string(levelIndex) + "_" + 
+                       std::to_string(bestColsIndexes[coeffIndex - 3] + 1) + "^2";
         }
+        return "";
     }
 
-    GmdhModel& MIA::fit(MatrixXd x, VectorXd y, Criterion& criterion, int kBest, PolynomialType _polynomialType,
-                   double testSize, bool shuffle, int randomSeed, uint8_t pAverage, int threads, int verbose, double limit) {
+    GmdhModel& MIA::fit(const MatrixXd& x, const VectorXd& y, const Criterion& criterion, int kBest, 
+                        PolynomialType _polynomialType, double testSize, uint8_t pAverage, 
+                        int threads, int verbose, double limit) {
         validateInputData(&testSize, &pAverage, &threads, &kBest);
         polynomialType = _polynomialType;
-        return GmdhModel::fit(x, y, criterion, kBest, testSize, shuffle, randomSeed, pAverage, threads, verbose, limit);
+        return GmdhModel::fit(x, y, criterion, kBest, testSize, pAverage, threads, verbose, limit);
     }
 
     VectorXd MIA::predict(const MatrixXd& x) const {
