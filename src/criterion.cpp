@@ -184,12 +184,6 @@ namespace GMDH {
         solver = _solver;
     }
 
-    std::string Criterion::getClassName() const {
-        std::string className = std::string(boost::typeindex::type_id_runtime(*this).pretty_name());
-        className = className.substr(className.find_last_of(':') + 1);
-        return className;
-    }
-
     PairDVXd Criterion::calculate(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain,
                                   const VectorXd& yTest) const {
         BufferValues tempValues;
@@ -216,10 +210,38 @@ namespace GMDH {
         secondCriterionType = _secondCriterionType;
     }
 
+    VectorC SequentialCriterion::getBestCombinations(VectorC& combinations, const SplittedData& data, const std::function<MatrixXd(const MatrixXd&, const VectorU16&)> func, int k) const
+    {
+        auto bestCombinations = Criterion::getBestCombinations(combinations, data, func, k);
+        // TODO: add threads or kBest value will be always small?
+        for (auto& combBegin : bestCombinations) {
+            auto pairCoeffsEvaluation = recalculate(func(data.xTrain, combBegin.combination()),
+                                                    func(data.xTest, combBegin.combination()),
+                                                    data.yTrain, data.yTest, combBegin.bestCoeffs());
+            combBegin.setEvaluation(pairCoeffsEvaluation.first);
+        }
+        std::sort(std::begin(bestCombinations), std::end(bestCombinations));
+        return bestCombinations;
+    }
+
     PairDVXd SequentialCriterion::recalculate(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain,
                                               const VectorXd& yTest, const VectorXd& _coeffsTrain) const {
         BufferValues tempValues;
         tempValues.coeffsTrain = _coeffsTrain;
         return Criterion::getResult(xTrain, xTest, yTrain, yTest, secondCriterionType, tempValues);
+    }
+
+    VectorC Criterion::getBestCombinations(VectorC& combinations, const SplittedData& data, const std::function<MatrixXd(const MatrixXd&, const VectorU16&)> func, int k) const {
+        k = std::min(k, static_cast<int>(combinations.size()));
+        VectorC _bestCombinations{ std::begin(combinations), std::begin(combinations) + k };
+        std::sort(std::begin(_bestCombinations), std::end(_bestCombinations));
+        for (auto combBegin = std::begin(combinations) + k, combEnd = std::end(combinations);
+            combBegin != combEnd; ++combBegin) {
+            if (*combBegin < _bestCombinations.back()) {
+                std::swap(*combBegin, _bestCombinations.back());
+                std::sort(std::begin(_bestCombinations), std::end(_bestCombinations));
+            }
+        }
+        return _bestCombinations;
     }
 }

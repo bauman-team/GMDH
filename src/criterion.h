@@ -57,7 +57,7 @@ public:
     Criterion() {};
     Criterion(CriterionType _criterionType, Solver _solver = Solver::balanced);
 
-    std::string getClassName() const;
+    virtual VectorC getBestCombinations(VectorC& combinations, const SplittedData& data, const std::function<MatrixXd(const MatrixXd&, const VectorU16&)> func, int k) const;
 
     virtual PairDVXd calculate(const MatrixXd& xTrain, const MatrixXd& xTest, 
                                const VectorXd& yTrain, const VectorXd& yTest) const;
@@ -79,10 +79,11 @@ public:
 class GMDH_API SequentialCriterion : public Criterion {
     CriterionType secondCriterionType;
 
+    PairDVXd recalculate(const MatrixXd& xTrain, const MatrixXd& xTest,
+        const VectorXd& yTrain, const VectorXd& yTest, const VectorXd& _coeffsTrain) const;
 public:
     SequentialCriterion(CriterionType _firstCriterionType, CriterionType _secondCriterionType, Solver _solver = Solver::balanced);
 
-    PairDVXd recalculate(const MatrixXd& xTrain, const MatrixXd& xTest, 
-                         const VectorXd& yTrain, const VectorXd& yTest, const VectorXd& _coeffsTrain) const;
+    VectorC getBestCombinations(VectorC& combinations, const SplittedData& data, const std::function<MatrixXd(const MatrixXd&, const VectorU16&)> func, int k) const override;
 };
 }

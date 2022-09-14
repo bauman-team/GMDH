@@ -54,20 +54,6 @@ namespace GMDH {
         return combs;
     }
 
-    VectorC GmdhModel::getBestCombinations(VectorC& combinations, int k) const {
-        k = std::min(k, static_cast<int>(combinations.size()));
-        VectorC _bestCombinations{ std::begin(combinations), std::begin(combinations) + k };
-        std::sort(std::begin(_bestCombinations), std::end(_bestCombinations));
-        for (auto combBegin = std::begin(combinations) + k, combEnd = std::end(combinations);
-            combBegin != combEnd; ++combBegin) {
-            if (*combBegin < _bestCombinations.back()) {
-                std::swap(*combBegin, _bestCombinations.back());
-                std::sort(std::begin(_bestCombinations), std::end(_bestCombinations)); 
-            }
-        }
-        return _bestCombinations;
-    }
-
     double GmdhModel::getMeanCriterionValue(const VectorC& sortedCombinations, int k) const {
         k = std::min(k, static_cast<int>(sortedCombinations.size()));
         auto currLevelEvaluation{ 0. };
@@ -95,20 +81,11 @@ namespace GMDH {
 
     bool GmdhModel::nextLevelCondition(int kBest, uint8_t pAverage, VectorC& combinations,
                                   const Criterion& criterion, SplittedData& data, double limit) {
-        auto _bestCombinations{ getBestCombinations(combinations, kBest) };
-        if (criterion.getClassName() == "SequentialCriterion") { // TODO: THE WORST code style 
-            // TODO: add threads or kBest value will be always small?
-            for (auto &combBegin : _bestCombinations) {
-                auto pairCoeffsEvaluation = static_cast<const SequentialCriterion&>(criterion).recalculate(
-                    xDataForCombination(data.xTrain, combBegin.combination()),
-                    xDataForCombination(data.xTest, combBegin.combination()),
-                    data.yTrain, data.yTest, combBegin.bestCoeffs());
-                combBegin.setEvaluation(pairCoeffsEvaluation.first);
-            }
-            std::sort(std::begin(_bestCombinations), std::end(_bestCombinations));
-        }
+
+        decltype(auto) model = this;
+        auto func = [model = model](const MatrixXd& x, const VectorU16& comb) {return model->xDataForCombination(x, comb); };
+        auto _bestCombinations{ criterion.getBestCombinations(combinations, data, func, kBest) };
         currentLevelEvaluation = getMeanCriterionValue(_bestCombinations, pAverage);
-        //std::cout << "\n" << currLevelEvaluation << "\n";
 
         if ((lastLevelEvaluation - currentLevelEvaluation > limit)) {
             lastLevelEvaluation = currentLevelEvaluation;

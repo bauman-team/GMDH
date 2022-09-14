@@ -49,7 +49,6 @@ protected:
 
     std::string getModelName() const;
     VectorVu16 nChooseK(int n, int k) const;
-    VectorC getBestCombinations(VectorC& combinations, int k) const;
     double getMeanCriterionValue(const VectorC& sortedCombinations, int k) const;
     std::string getPolynomialCoeff(double coeff, int coeffIndex) const;
     void polynomialsEvaluation(const SplittedData& data, const Criterion& criterion, IterC beginCoeffsVec, 
