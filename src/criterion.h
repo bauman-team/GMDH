@@ -1,5 +1,7 @@
 namespace GMDH {
 
+class GmdhModel;
+
 enum class Solver { fast, accurate, balanced };
 
 enum class CriterionType {regularity, symRegularity, stability, symStability, unbiasedOutputs, symUnbiasedOutputs,
@@ -53,14 +55,16 @@ protected:
     PairDVXd symAbsoluteStability(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain, const VectorXd& yTest,
                                   BufferValues& bufferValues) const;
 
-public:
-    Criterion() {};
-    Criterion(CriterionType _criterionType, Solver _solver = Solver::balanced);
-
     virtual VectorC getBestCombinations(VectorC& combinations, const SplittedData& data, const std::function<MatrixXd(const MatrixXd&, const VectorU16&)> func, int k) const;
 
     virtual PairDVXd calculate(const MatrixXd& xTrain, const MatrixXd& xTest, 
                                const VectorXd& yTrain, const VectorXd& yTest) const;
+
+public:
+    Criterion() {};
+    Criterion(CriterionType _criterionType, Solver _solver = Solver::balanced);
+
+    friend class GmdhModel;
 };
 
 
@@ -68,12 +72,11 @@ class GMDH_API ParallelCriterion : public Criterion {
     CriterionType secondCriterionType;
     double alpha;
 
+    PairDVXd calculate(const MatrixXd& xTrain, const MatrixXd& xTest, 
+                       const VectorXd& yTrain, const VectorXd& yTest) const override;
 public:
     ParallelCriterion(CriterionType _firstCriterionType, CriterionType _secondCriterionType, 
                         double _alpha = 0.5, Solver _solver = Solver::balanced);
-
-    PairDVXd calculate(const MatrixXd& xTrain, const MatrixXd& xTest, 
-                       const VectorXd& yTrain, const VectorXd& yTest) const override;
 };
 
 class GMDH_API SequentialCriterion : public Criterion {
@@ -81,9 +84,9 @@ class GMDH_API SequentialCriterion : public Criterion {
 
     PairDVXd recalculate(const MatrixXd& xTrain, const MatrixXd& xTest,
         const VectorXd& yTrain, const VectorXd& yTest, const VectorXd& _coeffsTrain) const;
+    
+    VectorC getBestCombinations(VectorC& combinations, const SplittedData& data, const std::function<MatrixXd(const MatrixXd&, const VectorU16&)> func, int k) const override;
 public:
     SequentialCriterion(CriterionType _firstCriterionType, CriterionType _secondCriterionType, Solver _solver = Solver::balanced);
-
-    VectorC getBestCombinations(VectorC& combinations, const SplittedData& data, const std::function<MatrixXd(const MatrixXd&, const VectorU16&)> func, int k) const override;
 };
 }
