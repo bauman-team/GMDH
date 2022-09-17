@@ -9,10 +9,12 @@ set(SOURCES common.h
     gmdh.cpp
     criterion.h 
     criterion.cpp 
+	linear_model.h
+	linear_model.cpp
     combi.h 
     combi.cpp 
-    multi.h 
-    multi.cpp
+	multi.h
+	multi.cpp
 	mia.h 
 	mia.cpp
 	ria.h

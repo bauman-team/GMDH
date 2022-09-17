@@ -9,6 +9,6 @@ namespace GMDH
 	GmdhModel& COMBI::fit(const MatrixXd& x, const VectorXd& y, const Criterion& criterion, double testSize,
 						  uint8_t pAverage, int threads, int verbose, double limit) {
 		validateInputData(&testSize, &pAverage, &threads);
-		return GmdhModel::fit(x, y, criterion, pAverage, testSize, pAverage, threads, verbose, limit);
+		return GmdhModel::gmdhFit(x, y, criterion, pAverage, testSize, pAverage, threads, verbose, limit);
 	}
 }

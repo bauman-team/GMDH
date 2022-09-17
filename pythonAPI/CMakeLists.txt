@@ -9,13 +9,15 @@ set(SOURCES ../src/common.h
     ../src/gmdh.cpp
     ../src/criterion.h 
     ../src/criterion.cpp 
+	../src/linear_model.h
+	../src/linear_model.cpp
     ../src/combi.h 
     ../src/combi.cpp 
-    ../src/multi.h 
-    ../src/multi.cpp
     ../src/gmdh_lib.h
     ../src/mia.h 
     ../src/mia.cpp
+	../src/multi.h
+	../src/multi.cpp
 	../src/ria.h
 	../src/ria.cpp
     gmdh.cpp) 

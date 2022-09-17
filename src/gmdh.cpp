@@ -88,7 +88,7 @@ namespace GMDH {
         return false;
     }
 
-    GmdhModel& GmdhModel::fit(const MatrixXd& x, const VectorXd& y, const Criterion& criterion, int kBest, 
+    GmdhModel& GmdhModel::gmdhFit(const MatrixXd& x, const VectorXd& y, const Criterion& criterion, int kBest,
                               double testSize, uint8_t pAverage, int threads, int verbose, double limit) {
 
         using namespace indicators;

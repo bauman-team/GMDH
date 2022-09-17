@@ -55,7 +55,7 @@ protected:
                                IterC endCoeffsVec, std::atomic<int>* leftTasks, bool verbose) const;
     bool nextLevelCondition(int kBest, uint8_t pAverage, VectorC& combinations,
                             const Criterion& criterion, SplittedData& data, double limit);
-    GmdhModel& fit(const MatrixXd& x, const VectorXd& y, const Criterion& criterion, int kBest,
+    GmdhModel& gmdhFit(const MatrixXd& x, const VectorXd& y, const Criterion& criterion, int kBest,
                    double testSize, uint8_t pAverage, int threads, int verbose, double limit);
 
     virtual VectorVu16 generateCombinations(int n_cols) const = 0;

@@ -1,5 +1,6 @@
 #include <iostream>
 #include <combi.h>
+#include <multi.h>
 #include <ria.h>
 
 
@@ -22,7 +23,7 @@ int main() {
 
     //VectorXd data(10); data << 1, 2, 3, 4, 5, 6, 7, 8, 9, 10;
 	
-    int lags = 20;
+    int lags = 8;
     double validateSize = 0.2;
     double testSize = 0.33;
     auto timeSeries = GMDH::timeSeriesTransformation(data, lags);
@@ -75,9 +76,8 @@ int main() {
 
     //std::cout << "Original time series:\n" << data << "\n\n";
     auto criterion = GMDH::Criterion(GMDH::CriterionType::regularity);
-    GMDH::RIA mia;
-    mia.fit(splittedData.xTrain, splittedData.yTrain, criterion, 3,
-             GMDH::PolynomialType::quadratic, testSize, 2, 1, 1, 0);
+    GMDH::MULTI mia;
+    mia.fit(splittedData.xTrain, splittedData.yTrain, criterion, 3, testSize, 2, 1, 1, 0);
 
     std::cout << "\nThe best polynomial:\n\n" << mia.getBestPolynomial() << std::endl;
 
