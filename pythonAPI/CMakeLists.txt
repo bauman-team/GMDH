@@ -29,5 +29,5 @@ target_compile_definitions(${MODULE_NAME} PRIVATE "GMDH_MODULE")
 
 if(Boost_FOUND)
     target_include_directories(${MODULE_NAME} PRIVATE ${Boost_INCLUDE_DIR})
-    target_link_libraries(${MODULE_NAME} PRIVATE ${Boost_LIBRARIES})
+    target_link_libraries(${MODULE_NAME} PRIVATE stdc++fs ${Boost_LIBRARIES})
 endif()

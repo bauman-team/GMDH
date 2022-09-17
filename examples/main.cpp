@@ -8,7 +8,7 @@ int main() {
     using namespace Eigen;
 
     std::ifstream dataStream;
-    dataStream.open("../../examples/Sber.csv");
+    dataStream.open("../examples/Sber.csv");
     std::string dataLine;
     std::vector<double> dataValues;
     VectorXd data;
@@ -77,16 +77,18 @@ int main() {
     auto criterion = GMDH::Criterion(GMDH::CriterionType::regularity);
     GMDH::RIA mia;
     mia.fit(splittedData.xTrain, splittedData.yTrain, criterion, 3,
-             GMDH::PolynomialType::quadratic, testSize, 2, 1, 1, 0);
+             GMDH::PolynomialType::quadratic, testSize, 2, -1, 1, 0);
 
     std::cout << "\nThe best polynomial:\n\n" << mia.getBestPolynomial() << std::endl;
 
     VectorXd res = mia.predict(splittedData.xTest(0, all), 20);
     mia.save("model1.txt");
-    mia.load("model1.txt");
-    auto res2 = mia.predict(splittedData.xTest(0, all), 20);
 
-    std::cout << "\nThe best polynomial after loading:\n\n" << mia.getBestPolynomial() << std::endl;
+    if (!mia.load("model1.txt")) {
+        auto res2 = mia.predict(splittedData.xTest(0, all), 20);
+
+        std::cout << "\nThe best polynomial after loading:\n\n" << mia.getBestPolynomial() << std::endl;
+    }
 
     /*for (int i = 0; i < 20; ++i)
         std::cout << splittedData.yTest[i] << " " << res[i] << " " << res2[i] << "\n";*/

@@ -109,7 +109,7 @@ namespace GMDH {
 
     VectorXd MIA::predict(const MatrixXd& x) const {
         if (inputColsNumber != x.cols())
-            throw GmdhException(GMDHPREDICTEXCEPTIONMSG);
+            throw GmdhException(GMDHPREDICTEXCEPTIONMSG); // TODO: maybe move to base class
         MatrixXd modifiedX(x.rows(), x.cols() + 1);
         modifiedX.col(x.cols()).setOnes();
         modifiedX.leftCols(x.cols()) = x;

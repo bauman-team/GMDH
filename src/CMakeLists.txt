@@ -31,5 +31,5 @@ endif()
 
 if(Boost_FOUND)
     target_include_directories(${LIBRARY_NAME} PRIVATE ${Boost_INCLUDE_DIR})
-    target_link_libraries(${LIBRARY_NAME} PRIVATE ${Boost_LIBRARIES})
+    target_link_libraries(${LIBRARY_NAME} PRIVATE stdc++fs ${Boost_LIBRARIES})
 endif()

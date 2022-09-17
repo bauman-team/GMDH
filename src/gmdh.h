@@ -14,6 +14,7 @@
 #include <atomic>
 #include <map>
 #include <set>
+#include <experimental/filesystem>
 
 #include <Eigen/Dense>
 
@@ -25,6 +26,7 @@
 #include <boost/type_index.hpp>
 #include <boost/chrono.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include <indicators/progress_bar.hpp>
 #include <indicators/cursor_control.hpp>
