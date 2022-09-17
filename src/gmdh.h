@@ -12,8 +12,6 @@
 #include <ctime>
 #include <algorithm>
 #include <atomic>
-#include <map>
-#include <set>
 
 #include <Eigen/Dense>
 
@@ -33,6 +31,7 @@
 #include "gmdh_lib.h"
 #include "common.h"
 #include "gmdh_objects.h"
+#include "criterion.h"
 
 namespace GMDH {    
 
@@ -83,5 +82,3 @@ PairMVXd GMDH_API timeSeriesTransformation(VectorXd x, int lags);
 SplittedData GMDH_API splitData(const MatrixXd& x, const VectorXd& y, double testSize = 0.2, 
                                 bool shuffle = false, int randomSeed = 0);
 }
-
-#include "criterion.h"
