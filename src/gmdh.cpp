@@ -279,6 +279,12 @@ if (PyErr_CheckSignals() != 0) {
     }
 
     int GmdhModel::save(const std::string& path) const {
+        if (!boost::filesystem::is_regular_file(path))
+#ifdef GMDH_MODULE
+            throw GmdhException(GMDHOPENFILEEXCEPTIONMSG); 
+#else
+            return 1; 
+#endif
         std::ofstream modelFile(path);
         if (!modelFile.is_open())
 #ifdef GMDH_MODULE
@@ -308,8 +314,8 @@ if (PyErr_CheckSignals() != 0) {
 
         inputColsNumber = 0;
         bestCombinations.clear(); // TODO: maybe after validation
-
-        if (!std::experimental::filesystem::is_regular_file(path))
+        
+        if (!boost::filesystem::is_regular_file(path))
 #ifdef GMDH_MODULE
             throw GmdhException(GMDHOPENFILEEXCEPTIONMSG); 
 #else
