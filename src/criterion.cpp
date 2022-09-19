@@ -175,7 +175,7 @@ namespace GMDH {
         case CriterionType::absoluteStability:
             return absoluteStability(xTrain, xTest, yTrain, yTest, bufferValues);
         case CriterionType::symAbsoluteStability:
-            return symAbsoluteStability(xTrain, xTest, yTrain, yTest, bufferValues); // TODO: default return (because compilation warning)
+            return symAbsoluteStability(xTrain, xTest, yTrain, yTest, bufferValues); 
         }
     }
 
@@ -213,7 +213,6 @@ namespace GMDH {
     VectorC SequentialCriterion::getBestCombinations(VectorC& combinations, const SplittedData& data, const std::function<MatrixXd(const MatrixXd&, const VectorU16&)> func, int k) const
     {
         auto bestCombinations = Criterion::getBestCombinations(combinations, data, func, k);
-        // TODO: add threads or kBest value will be always small?
         for (auto& combBegin : bestCombinations) {
             auto pairCoeffsEvaluation = recalculate(func(data.xTrain, combBegin.combination()),
                                                     func(data.xTest, combBegin.combination()),

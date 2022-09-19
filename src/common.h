@@ -19,6 +19,9 @@
 #define DISPLAYEDWARNINGMSG(expr, param) "\nWarning! The input " expr " is incorrect!\nThe default value is used (" param ")!\n"
 
 #define GMDHPREDICTEXCEPTIONMSG "Input data number of cols is not match number of cols of fitted data!"
+#define GMDHOPENFILEEXCEPTIONMSG "Input model file path is not exist!"
+#define GMDHLOADMODELNAMEEXCEPTIONMSG(inputModel, realModel) "Input file for model is " + inputModel + ", but used model is " + realModel + "!"
+#define GMDHLOADMODELPARAMSEXCEPTIONMSG "Input model file is corrupted!"
 
 namespace GMDH {
 

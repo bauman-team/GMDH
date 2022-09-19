@@ -141,7 +141,7 @@ namespace GMDH {
                     option::ShowPercentage{ true },
                     option::PostfixText{ "(" + std::to_string(evaluationCoeffsVec.size()) + " combinations)" }
                 );
-                show_console_cursor(false); // TODO: wtf???
+                show_console_cursor(false); 
                 progressBar->set_progress(0);
             }
             decltype(auto) model = this;
@@ -210,54 +210,54 @@ if (PyErr_CheckSignals() != 0) {
 
     int validateInputData(double* testSize, uint8_t* pAverage, int* threads, int* kBest) {
         auto errorCode{ 0 };
-#ifdef GMDH_LIB
-        std::cout << DISPLAYEDCOLORWARNING;
-#elif GMDH_MODULE
+#ifdef GMDH_MODULE
         //auto warnings = pybind11::module::import("warnings");
         auto sys = pybind11::module::import("sys");
+#else
+        std::cout << DISPLAYEDCOLORWARNING;
 #endif
         if (*testSize <= 0) { // TODO: add range 
-#ifdef GMDH_LIB
-            std::cout << DISPLAYEDWARNINGMSG("value of testSize", "testSize = 0.5");
-#elif GMDH_MODULE
+#ifdef GMDH_MODULE
             PyErr_WarnEx(PyExc_Warning, DISPLAYEDWARNINGMSG("value of test_size", "test_size = 0.5"), 1);
+#else
+            std::cout << DISPLAYEDWARNINGMSG("value of testSize", "testSize = 0.5");
 #endif
             * testSize = 0.5;
             errorCode |= 1;
         }
         if (threads && (*threads < -1 || !*threads))
         {
-#ifdef GMDH_LIB
-            std::cout << DISPLAYEDWARNINGMSG("number of threads", "threads = 1");
-#elif GMDH_MODULE
+#ifdef GMDH_MODULE
             //warnings.attr("warn")("old_foo() is deprecated, use new_foo() instead.");                
             PyErr_WarnEx(PyExc_Warning, DISPLAYEDWARNINGMSG("number of n_jobs", "n_jobs = 1"), 1);
+#else
+            std::cout << DISPLAYEDWARNINGMSG("number of threads", "threads = 1");
 #endif
             * threads = 1;
             errorCode |= 2;
         }
         if (pAverage && !(*pAverage)) {
-#ifdef GMDH_LIB
-            std::cout << DISPLAYEDWARNINGMSG("number of pAverage", "pAverage = 1");
-#elif GMDH_MODULE
+#ifdef GMDH_MODULE
             PyErr_WarnEx(PyExc_Warning, DISPLAYEDWARNINGMSG("number of p_average", "p_average = 1"), 1);
+#else
+            std::cout << DISPLAYEDWARNINGMSG("number of pAverage", "pAverage = 1");
 #endif
             * pAverage = 1;
             errorCode |= 4;
         }
         if (kBest && !(*kBest)) {
-#ifdef GMDH_LIB
-            std::cout << DISPLAYEDWARNINGMSG("number of kBest", "kBest = 1");
-#elif GMDH_MODULE
+#ifdef GMDH_MODULE
             PyErr_WarnEx(PyExc_Warning, DISPLAYEDWARNINGMSG("number of k_best", "k_best = 1"), 1);
+#else 
+            std::cout << DISPLAYEDWARNINGMSG("number of kBest", "kBest = 1");
 #endif
             * kBest = 1;
             errorCode |= 8;
         }
-#ifdef GMDH_LIB
-        std::cout << DISPLAYEDCOLORINFO;
-#elif GMDH_MODULE
+#ifdef GMDH_MODULE
         sys.attr("stderr").attr("flush")();
+#else
+        std::cout << DISPLAYEDCOLORINFO;
 #endif
         return errorCode;
     }
@@ -279,9 +279,19 @@ if (PyErr_CheckSignals() != 0) {
     }
 
     int GmdhModel::save(const std::string& path) const {
+        if (!boost::filesystem::is_regular_file(path))
+#ifdef GMDH_MODULE
+            throw GmdhException(GMDHOPENFILEEXCEPTIONMSG); 
+#else
+            return 1; 
+#endif
         std::ofstream modelFile(path);
         if (!modelFile.is_open())
-            return -1; // TODO: throw exception for Python
+#ifdef GMDH_MODULE
+            throw GmdhException(GMDHOPENFILEEXCEPTIONMSG); 
+#else
+            return 1; 
+#endif
         else {
             modelFile << getModelName() << "\n" << inputColsNumber << "\n";
             for (int i = 0; i < bestCombinations.size(); ++i) {
@@ -295,19 +305,52 @@ if (PyErr_CheckSignals() != 0) {
     }
 
     int GmdhModel::load(const std::string& path) {
-        inputColsNumber = 0;
-        bestCombinations.clear();
+        auto getIntegerValue = [](std::stringstream &stream, auto &value) -> auto {
+            if ((stream >> value).fail() && !stream.eof()) return 2;
+            else if (stream.eof()) return 1;
 
+            return 0;
+        };
+
+        inputColsNumber = 0;
+        bestCombinations.clear(); // TODO: maybe after validation
+        
+        if (!boost::filesystem::is_regular_file(path))
+#ifdef GMDH_MODULE
+            throw GmdhException(GMDHOPENFILEEXCEPTIONMSG); 
+#else
+            return 1; 
+#endif
+        
         std::ifstream modelFile(path);
+        
         if (!modelFile.is_open())
-            return -1; // TODO: throw exception for Python
+#ifdef GMDH_MODULE
+            throw GmdhException(GMDHOPENFILEEXCEPTIONMSG); 
+#else
+            return 1; 
+#endif
         else {
             std::string modelName;
-            modelFile >> modelName;
-            if (modelName != getModelName())
-                return -2; // TODO: throw exception for Python
-            else {
-                (modelFile >> inputColsNumber).get();
+            std::getline(modelFile, modelName);
+            if (modelName != getModelName()) {
+                modelFile.close();
+#ifdef GMDH_MODULE
+                throw GmdhException(GMDHLOADMODELNAMEEXCEPTIONMSG(modelName, getModelName())); 
+#else
+                return 2; 
+#endif
+            } else {
+                auto errorCode = 0;
+                (modelFile >> inputColsNumber).get(); // TODO: add validation       ERROR: getIntegerValue(modelFile, inputColsNumber);
+                if (errorCode == 2) {
+                    modelFile.close();
+#ifdef GMDH_MODULE
+                    throw GmdhException(GMDHLOADMODELPARAMSEXCEPTIONMSG);
+#else
+                    return 3; // TODO: remove dublicate
+#endif
+                }
 
                 int currLevel = -1;
                 while (modelFile.peek() != EOF) {
@@ -317,6 +360,13 @@ if (PyErr_CheckSignals() != 0) {
                         std::getline(modelFile, buffer);
                         ++currLevel;
                         bestCombinations.push_back(VectorC());
+                    } else if (currLevel == -1) {
+                        modelFile.close();
+#ifdef GMDH_MODULE
+                        throw GmdhException(GMDHLOADMODELPARAMSEXCEPTIONMSG);
+#else
+                        return 3;
+#endif
                     }
 
                     std::string colsIndexesLine;
@@ -324,17 +374,33 @@ if (PyErr_CheckSignals() != 0) {
                     std::getline(modelFile, colsIndexesLine);
                     std::stringstream indexStream{ colsIndexesLine };
                     uint16_t index;
-                    while (indexStream >> index)
+                    while (!(errorCode = getIntegerValue(indexStream, index)))
                         bestColsIndexes.push_back(index);
 
+                    if (errorCode == 2) {
+                        modelFile.close();
+#ifdef GMDH_MODULE
+                        throw GmdhException(GMDHLOADMODELPARAMSEXCEPTIONMSG);
+#else
+                        return 3; // TODO: remove dublicate
+#endif
+                    }
                     std::string coeffsLine;
                     std::vector<double> coeffs;
                     std::getline(modelFile, coeffsLine);
                     std::stringstream coeffsStream{ coeffsLine };
                     double coeff;
-                    while (coeffsStream >> coeff)
+                    while (!(errorCode = getIntegerValue(coeffsStream, coeff))) 
                         coeffs.push_back(coeff);
 
+                    if (errorCode == 2) {
+                        modelFile.close();
+#ifdef GMDH_MODULE
+                        throw GmdhException(GMDHLOADMODELPARAMSEXCEPTIONMSG);
+#else
+                        return 3; // TODO: remove dublicate
+#endif
+                    }
                     bestCombinations[currLevel].push_back({ std::move(bestColsIndexes), 
                                                             Map<VectorXd>(coeffs.data(), coeffs.size()) });
                 }

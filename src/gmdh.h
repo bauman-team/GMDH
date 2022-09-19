@@ -23,6 +23,7 @@
 #include <boost/type_index.hpp>
 #include <boost/chrono.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/filesystem.hpp>
 
 #include <indicators/progress_bar.hpp>
 #include <indicators/cursor_control.hpp>

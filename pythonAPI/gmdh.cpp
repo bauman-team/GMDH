@@ -1,6 +1,7 @@
 #include <pybind11/eigen.h>
 // to convert C++ STL containers to python list
 #include <pybind11/stl.h>
+#include <exception>
 #include "../src/combi.h"
 #include "../src/ria.h"
 
@@ -11,6 +12,9 @@ PYBIND11_MODULE(gmdhpy, m)
     using namespace std;
     using namespace pybind11::literals;
     m.doc() = "Group method of data handling";  // TODO: add main documentation and for all methods
+
+    py::register_exception<GMDH::GmdhException>(m, "GmdhException");
+    py::register_local_exception<GMDH::GmdhException>(m, "GmdhException");
     
     py::class_<GMDH::SplittedData>(m, "splitted_data")
         .def_readwrite("x_train", &GMDH::SplittedData::xTrain)
