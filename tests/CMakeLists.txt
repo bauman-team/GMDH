@@ -3,7 +3,11 @@ cmake_minimum_required(VERSION 3.19)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_executable(${TESTS_NAME} test_combi.cpp)
+add_executable(${TESTS_NAME} test_setup.h
+	test_setup.cpp
+	test_combi.cpp
+	test_multi.cpp
+	test_ria.cpp)
 target_include_directories(${TESTS_NAME} PRIVATE ../src/ ../external/eigen-3.4 ../external/indicators-master/include)
 
 if (WIN32)
