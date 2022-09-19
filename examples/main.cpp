@@ -9,7 +9,7 @@ int main() {
     using namespace Eigen;
 
     std::ifstream dataStream;
-    dataStream.open("../examples/Sber.csv");
+    dataStream.open("../../examples/Sber.csv");
     std::string dataLine;
     std::vector<double> dataValues;
     VectorXd data;

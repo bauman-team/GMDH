@@ -12,6 +12,7 @@
 #include <ctime>
 #include <algorithm>
 #include <atomic>
+#include <set>
 
 #include <Eigen/Dense>
 

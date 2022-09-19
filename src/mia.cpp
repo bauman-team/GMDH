@@ -126,11 +126,21 @@ namespace GMDH {
     }
 
     int MIA::save(const std::string& path) const {
+        if (!boost::filesystem::is_regular_file(path))
+#ifdef GMDH_MODULE
+            throw GmdhException(GMDHOPENFILEEXCEPTIONMSG);
+#else
+            return 1;
+#endif
         std::ofstream modelFile(path);
         if (!modelFile.is_open())
-            return -1; // TODO: throw exception for Python
+#ifdef GMDH_MODULE
+            throw GmdhException(GMDHOPENFILEEXCEPTIONMSG);
+#else
+            return 1;
+#endif
         else {
-            modelFile << getModelName() << "\n" << inputColsNumber << "\n" << (int)polynomialType << "\n";
+            modelFile << getModelName() << "\n" << inputColsNumber << "\n" << static_cast<int>(polynomialType) << "\n";
             for (int i = 0; i < bestCombinations.size(); ++i) {
                 modelFile << "~\n";
                 for (int j = 0; j < bestCombinations[i].size(); ++j)
@@ -142,32 +152,75 @@ namespace GMDH {
     }
 
     int MIA::load(const std::string& path) {
-        inputColsNumber = 0;
-        bestCombinations.clear();
+        auto getIntegerValue = [](std::stringstream& stream, auto& value) -> auto {
+            if ((stream >> value).fail() && !stream.eof()) return 2;
+            else if (stream.eof()) return 1;
+
+            return 0;
+        };
+
+        if (!boost::filesystem::is_regular_file(path))
+#ifdef GMDH_MODULE
+            throw GmdhException(GMDHOPENFILEEXCEPTIONMSG);
+#else
+            return 1;
+#endif
 
         std::ifstream modelFile(path);
+
         if (!modelFile.is_open())
-            return -1; // TODO: throw exception for Python
+#ifdef GMDH_MODULE
+            throw GmdhException(GMDHOPENFILEEXCEPTIONMSG);
+#else
+            return 1;
+#endif
         else {
+            int newColsNumber;
+            decltype(bestCombinations) newBestCombinations;
+
             std::string modelName;
-            modelFile >> modelName;
-            if (modelName != getModelName())
-                return -2; // TODO: throw exception for Python
+            std::getline(modelFile, modelName);
+            if (modelName != getModelName()) {
+                modelFile.close();
+#ifdef GMDH_MODULE
+                throw GmdhException(GMDHLOADMODELNAMEEXCEPTIONMSG(modelName, getModelName()));
+#else
+                return 2;
+#endif
+            }
             else {
-                (modelFile >> inputColsNumber).get();
+                auto errorCode = 0;
+                (modelFile >> newColsNumber).get(); // TODO: add validation       ERROR: getIntegerValue(modelFile, inputColsNumber);
+                if (errorCode == 2) {
+                    modelFile.close();
+#ifdef GMDH_MODULE
+                    throw GmdhException(GMDHLOADMODELPARAMSEXCEPTIONMSG);
+#else
+                    return 3; // TODO: remove dublicate
+#endif
+                }
 
                 int type;
                 (modelFile >> type).get();
                 polynomialType = static_cast<PolynomialType>(type);
 
                 int currLevel = -1;
+
                 while (modelFile.peek() != EOF) {
 
                     if (modelFile.peek() == '~') {
                         std::string buffer;
                         std::getline(modelFile, buffer);
                         ++currLevel;
-                        bestCombinations.push_back(VectorC());
+                        newBestCombinations.push_back(VectorC());
+                    }
+                    else if (currLevel == -1) {
+                        modelFile.close();
+#ifdef GMDH_MODULE
+                        throw GmdhException(GMDHLOADMODELPARAMSEXCEPTIONMSG);
+#else
+                        return 3;
+#endif
                     }
 
                     std::string colsIndexesLine;
@@ -175,22 +228,40 @@ namespace GMDH {
                     std::getline(modelFile, colsIndexesLine);
                     std::stringstream indexStream{ colsIndexesLine };
                     uint16_t index;
-                    while (indexStream >> index)
+                    while (!(errorCode = getIntegerValue(indexStream, index)))
                         bestColsIndexes.push_back(index);
 
+                    if (errorCode == 2) {
+                        modelFile.close();
+#ifdef GMDH_MODULE
+                        throw GmdhException(GMDHLOADMODELPARAMSEXCEPTIONMSG);
+#else
+                        return 3; // TODO: remove dublicate
+#endif
+                    }
                     std::string coeffsLine;
                     std::vector<double> coeffs;
                     std::getline(modelFile, coeffsLine);
                     std::stringstream coeffsStream{ coeffsLine };
                     double coeff;
-                    while (coeffsStream >> coeff)
+                    while (!(errorCode = getIntegerValue(coeffsStream, coeff)))
                         coeffs.push_back(coeff);
 
-                    bestCombinations[currLevel].push_back({ std::move(bestColsIndexes),
+                    if (errorCode == 2) {
+                        modelFile.close();
+#ifdef GMDH_MODULE
+                        throw GmdhException(GMDHLOADMODELPARAMSEXCEPTIONMSG);
+#else
+                        return 3; // TODO: remove dublicate
+#endif
+                    }
+                    newBestCombinations[currLevel].push_back({ std::move(bestColsIndexes),
                                                             Map<VectorXd>(coeffs.data(), coeffs.size()) });
                 }
             }
             modelFile.close();
+            inputColsNumber = newColsNumber;
+            bestCombinations = std::move(newBestCombinations);
         }
         return 0;
     }

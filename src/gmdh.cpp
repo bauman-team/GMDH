@@ -311,9 +311,6 @@ if (PyErr_CheckSignals() != 0) {
 
             return 0;
         };
-
-        inputColsNumber = 0;
-        bestCombinations.clear(); // TODO: maybe after validation
         
         if (!boost::filesystem::is_regular_file(path))
 #ifdef GMDH_MODULE
@@ -331,6 +328,9 @@ if (PyErr_CheckSignals() != 0) {
             return 1; 
 #endif
         else {
+            int newColsNumber;
+            decltype(bestCombinations) newBestCombinations;
+
             std::string modelName;
             std::getline(modelFile, modelName);
             if (modelName != getModelName()) {
@@ -342,7 +342,7 @@ if (PyErr_CheckSignals() != 0) {
 #endif
             } else {
                 auto errorCode = 0;
-                (modelFile >> inputColsNumber).get(); // TODO: add validation       ERROR: getIntegerValue(modelFile, inputColsNumber);
+                (modelFile >> newColsNumber).get(); // TODO: add validation       ERROR: getIntegerValue(modelFile, inputColsNumber);
                 if (errorCode == 2) {
                     modelFile.close();
 #ifdef GMDH_MODULE
@@ -353,13 +353,14 @@ if (PyErr_CheckSignals() != 0) {
                 }
 
                 int currLevel = -1;
+
                 while (modelFile.peek() != EOF) {
 
                     if (modelFile.peek() == '~') {
                         std::string buffer;
                         std::getline(modelFile, buffer);
                         ++currLevel;
-                        bestCombinations.push_back(VectorC());
+                        newBestCombinations.push_back(VectorC());
                     } else if (currLevel == -1) {
                         modelFile.close();
 #ifdef GMDH_MODULE
@@ -401,11 +402,13 @@ if (PyErr_CheckSignals() != 0) {
                         return 3; // TODO: remove dublicate
 #endif
                     }
-                    bestCombinations[currLevel].push_back({ std::move(bestColsIndexes), 
+                    newBestCombinations[currLevel].push_back({ std::move(bestColsIndexes),
                                                             Map<VectorXd>(coeffs.data(), coeffs.size()) });
                 }
             }
             modelFile.close();
+            inputColsNumber = newColsNumber;
+            bestCombinations = std::move(newBestCombinations);
         }
         return 0;
     }
