@@ -1,18 +1,18 @@
 #include "test_setup.h"
-#include <multi.h>
+#include <ria.h>
 
-class TestMULTI : public TestGmdhModel
+class TestRIA : public TestGmdhModel
 {
 protected:
     void setModel(std::vector<double> values) override {
-        MULTI *multi = new MULTI;
-        multi->fit(testModel.first.dataValues.xTrain, testModel.first.dataValues.yTrain);
-        testModel.second = multi;
+        RIA *ria = new RIA;
+        ria->fit(testModel.first.dataValues.xTrain, testModel.first.dataValues.yTrain);
+        testModel.second = ria;
     }
 };
 
 
-TEST_F(TestMULTI, testPrediction)
+TEST_F(TestRIA, testPrediction)
 {
     VectorXd standartData = Map<VectorXd, Unaligned>(testModel.first.realPredValues.data(), testModel.first.realPredValues.size());
     auto res = testModel.second->predict(testModel.first.dataValues.xTest);
