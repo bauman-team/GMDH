@@ -1,13 +1,15 @@
-#include "multi.h"
+#include "linear_model.h"
 
 namespace GMDH {
 
-    class GMDH_API COMBI : public MULTI {
+    class GMDH_API COMBI : public LinearModel {
     protected:
-        VectorVu16 getCombinations(int n_cols) const override;
+        VectorVu16 generateCombinations(int n_cols) const override;
     public:
-        COMBI() : MULTI() {}
-        GMDH& fit(const MatrixXd& x, const VectorXd& y, const Criterion& criterion, double testSize = 0.5, bool shuffle = false,
-            int randomSeed = 0, uint8_t p = 1, int threads = 1, int verbose = 0);
+        COMBI() : LinearModel() {}
+
+        GmdhModel& fit(const MatrixXd& x, const VectorXd& y,
+                       const Criterion& criterion = Criterion(CriterionType::regularity),
+                       double testSize = 0.5, uint8_t pAverage = 1, int threads = 1, int verbose = 0, double limit = 0);
     };
 }

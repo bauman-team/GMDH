@@ -1,5 +1,7 @@
 #include <iostream>
-#include <mia.h>
+#include <combi.h>
+#include <multi.h>
+#include <ria.h>
 
 
 int main() {
@@ -21,10 +23,10 @@ int main() {
 
     //VectorXd data(10); data << 1, 2, 3, 4, 5, 6, 7, 8, 9, 10;
 	
-    int lags = 10;
+    int lags = 8;
     double validateSize = 0.2;
     double testSize = 0.33;
-    auto timeSeries = GMDH::convertToTimeSeries(data, lags);
+    auto timeSeries = GMDH::timeSeriesTransformation(data, lags);
     GMDH::SplittedData splittedData = GMDH::splitData(timeSeries.first, timeSeries.second, validateSize);
 
     /*std::cout << splittedData.xTrain << "\n\n";
@@ -72,20 +74,22 @@ int main() {
 
     */
 
-   //std::cout << "Original time series:\n" << data << "\n\n";
+    //std::cout << "Original time series:\n" << data << "\n\n";
     auto criterion = GMDH::Criterion(GMDH::CriterionType::regularity);
-    GMDH::MIA mia;
-    mia.fit(splittedData.xTrain, splittedData.yTrain, criterion, 5,
-        GMDH::PolynomialType::quadratic, testSize, 0, 0, 0, -123, 1);
+    GMDH::RIA mia;
+    mia.fit(splittedData.xTrain, splittedData.yTrain, criterion, 3,
+             GMDH::PolynomialType::quadratic, testSize, 2, -1, 1, 0);
 
-    std::cout << "\nThe best polynoms:\n\n" << mia.getBestPolynomial() << std::endl;
+    std::cout << "\nThe best polynomial:\n\n" << mia.getBestPolynomial() << std::endl;
 
-    auto res = mia.predict(splittedData.xTest);
+    VectorXd res = mia.predict(splittedData.xTest(0, all), 20);
     mia.save("model1.txt");
-    mia.load("model1.txt");
-    auto res2 = mia.predict(splittedData.xTest);
 
-    std::cout << "\nThe best polynoms after loading:\n\n" << mia.getBestPolynomial() << std::endl;
+    if (!mia.load("model1.txt")) {
+        auto res2 = mia.predict(splittedData.xTest(0, all), 20);
+
+        std::cout << "\nThe best polynomial after loading:\n\n" << mia.getBestPolynomial() << std::endl;
+    }
 
     /*for (int i = 0; i < 20; ++i)
         std::cout << splittedData.yTest[i] << " " << res[i] << " " << res2[i] << "\n";*/
@@ -95,5 +99,7 @@ int main() {
 
     //(std::cin).get();
 
+    //GMDH::COMBI combi;
+    //combi.fit(splittedData.xTrain, splittedData.yTrain, criterion, testSize, false, 0, (uint8_t)1, -123, 1);//, 0, 0, 0, -123, 1);
     return 0;
 }

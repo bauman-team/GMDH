@@ -3,16 +3,22 @@ cmake_minimum_required(VERSION 3.19)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(SOURCES gmdh.h
+set(SOURCES common.h
+    gmdh_objects.h
+    gmdh.h
     gmdh.cpp
     criterion.h 
     criterion.cpp 
+	linear_model.h
+	linear_model.cpp
     combi.h 
     combi.cpp 
-    multi.h 
-    multi.cpp
+	multi.h
+	multi.cpp
 	mia.h 
-	mia.cpp) 
+	mia.cpp
+	ria.h
+	ria.cpp) 
 
 add_library(${LIBRARY_NAME} SHARED ${SOURCES})
 target_compile_definitions(${LIBRARY_NAME} PRIVATE "GMDH_LIB")

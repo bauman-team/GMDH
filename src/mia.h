@@ -4,25 +4,32 @@ namespace GMDH {
 
 	enum class PolynomialType {linear, linear_cov, quadratic};
 
-	class GMDH_API MIA : public GMDH {
+	class GMDH_API MIA : public GmdhModel {
 	protected:
 		PolynomialType polynomialType;
 
-		VectorVu16 getCombinations(int n) const override;
-		//MatrixXd polynomailFeatures(const MatrixXd& X, int max_degree);
+		VectorVu16 generateCombinations(int n_cols) const override;
 		MatrixXd getPolynomialX(const MatrixXd& x) const;
-		void polinomialsEvaluation(const SplittedData& data, const Criterion& criterion, IterC beginCoeffsVec, IterC endCoeffsVec, std::atomic<int>* leftTasks, bool verbose) const override;
-		bool nextLevelCondition(double& lastLevelEvaluation, int kBest, uint8_t p, VectorC& combinations, const Criterion& criterion, SplittedData& data) override;
+
+		virtual void transformDataForNextLevel(SplittedData& data, const VectorC& bestCombinations);
+		virtual void removeExtraCombinations() override;
+		virtual bool preparations(SplittedData& data, VectorC& _bestCombinations) override;
+		virtual MatrixXd xDataForCombination(const MatrixXd& x, const VectorU16& comb) const override;
+
+		std::string getPolynomialPrefix(int levelIndex, int combIndex) const override;
+		std::string getPolynomialVariable(int levelIndex, int coeffIndex, int coeffsNumber, 
+										  const VectorU16& bestColsIndexes) const override;
+
 	public:
-		GMDH& fit(MatrixXd x, VectorXd y, Criterion& criterion, int _kBest, 
-				  PolynomialType _polynomialType = PolynomialType::quadratic, double testSize = 0.5, 
-				  bool shuffle = false, int randomSeed = 0, uint8_t p = 1, int threads = 1, int verbose = 0);
+		GmdhModel& fit(const MatrixXd& x, const VectorXd& y, 
+					   const Criterion& criterion = Criterion(CriterionType::regularity), int kBest = 3,
+					   PolynomialType _polynomialType = PolynomialType::quadratic, double testSize = 0.5,
+					   uint8_t pAverage = 1, int threads = 1, int verbose = 0, double limit = 0);
+
+		using GmdhModel::predict;
+		virtual VectorXd predict(const MatrixXd& x) const override;
 
 		int save(const std::string& path) const override;
 		int load(const std::string& path) override;
-
-		double predict(const RowVectorXd& x) const override;
-		VectorXd predict(const MatrixXd& x) const override;
-		std::string getBestPolynomial() const override;
 	};
 }

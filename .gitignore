@@ -2,6 +2,7 @@
 /.vscode
 /venv
 /.ipynb_checkpoints
+/examples/.ipynb_checkpoints
 /gmdhpy
 /.vs
 /.cache
