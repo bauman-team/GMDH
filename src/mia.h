@@ -28,5 +28,8 @@ namespace GMDH {
 
 		using GmdhModel::predict;
 		virtual VectorXd predict(const MatrixXd& x) const override;
+
+		int save(const std::string& path) const override;
+		int load(const std::string& path) override;
 	};
 }

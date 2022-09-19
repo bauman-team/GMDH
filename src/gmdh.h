@@ -68,8 +68,8 @@ protected:
 public:
     GmdhModel() : level(1), lastLevelEvaluation(0) {}
 
-    int save(const std::string& path) const;
-    int load(const std::string& path);
+    virtual int save(const std::string& path) const;
+    virtual int load(const std::string& path);
 
     VectorXd predict(const RowVectorXd& x, int lags) const;
     virtual VectorXd predict(const MatrixXd& x) const = 0;

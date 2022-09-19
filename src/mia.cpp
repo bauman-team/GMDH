@@ -124,4 +124,74 @@ namespace GMDH {
         }
         return modifiedX.col(0);
     }
+
+    int MIA::save(const std::string& path) const {
+        std::ofstream modelFile(path);
+        if (!modelFile.is_open())
+            return -1; // TODO: throw exception for Python
+        else {
+            modelFile << getModelName() << "\n" << inputColsNumber << "\n" << (int)polynomialType << "\n";
+            for (int i = 0; i < bestCombinations.size(); ++i) {
+                modelFile << "~\n";
+                for (int j = 0; j < bestCombinations[i].size(); ++j)
+                    modelFile << bestCombinations[i][j].getInfoForSaving();
+            }
+            modelFile.close();
+        }
+        return 0;
+    }
+
+    int MIA::load(const std::string& path) {
+        inputColsNumber = 0;
+        bestCombinations.clear();
+
+        std::ifstream modelFile(path);
+        if (!modelFile.is_open())
+            return -1; // TODO: throw exception for Python
+        else {
+            std::string modelName;
+            modelFile >> modelName;
+            if (modelName != getModelName())
+                return -2; // TODO: throw exception for Python
+            else {
+                (modelFile >> inputColsNumber).get();
+
+                int type;
+                (modelFile >> type).get();
+                polynomialType = static_cast<PolynomialType>(type);
+
+                int currLevel = -1;
+                while (modelFile.peek() != EOF) {
+
+                    if (modelFile.peek() == '~') {
+                        std::string buffer;
+                        std::getline(modelFile, buffer);
+                        ++currLevel;
+                        bestCombinations.push_back(VectorC());
+                    }
+
+                    std::string colsIndexesLine;
+                    VectorU16 bestColsIndexes;
+                    std::getline(modelFile, colsIndexesLine);
+                    std::stringstream indexStream{ colsIndexesLine };
+                    uint16_t index;
+                    while (indexStream >> index)
+                        bestColsIndexes.push_back(index);
+
+                    std::string coeffsLine;
+                    std::vector<double> coeffs;
+                    std::getline(modelFile, coeffsLine);
+                    std::stringstream coeffsStream{ coeffsLine };
+                    double coeff;
+                    while (coeffsStream >> coeff)
+                        coeffs.push_back(coeff);
+
+                    bestCombinations[currLevel].push_back({ std::move(bestColsIndexes),
+                                                            Map<VectorXd>(coeffs.data(), coeffs.size()) });
+                }
+            }
+            modelFile.close();
+        }
+        return 0;
+    }
 }
