@@ -3,6 +3,7 @@
 #include <pybind11/stl.h>
 #include <exception>
 #include "../src/combi.h"
+#include "../src/multi.h"
 #include "../src/ria.h"
 
 namespace py = pybind11;
@@ -60,8 +61,9 @@ PYBIND11_MODULE(gmdhpy, m)
             "criterion_type"_a, "second_criterion_type"_a, "solver"_a = GMDH::Solver::balanced);
 
     py::class_<GMDH::GmdhModel>(m, "GmdhModel");
+    py::class_<GMDH::LinearModel, GMDH::GmdhModel>(m, "LinearModel");
 
-    py::class_<GMDH::MULTI, GMDH::GmdhModel>(m, "Multi")
+    py::class_<GMDH::MULTI, GMDH::LinearModel>(m, "Multi")
         .def(py::init<>())
         .def("save", &GMDH::MULTI::save,
             "",
@@ -84,7 +86,7 @@ PYBIND11_MODULE(gmdhpy, m)
             "n_jobs"_a = 1, "verbose"_a = 0,  "limit"_a = 0)
         .def("get_best_polynomial", &GMDH::MULTI::getBestPolynomial);
 
-    py::class_<GMDH::COMBI, GMDH::MULTI>(m, "Combi")
+    py::class_<GMDH::COMBI, GMDH::LinearModel>(m, "Combi")
         .def(py::init<>())
         .def("save", &GMDH::COMBI::save,
             "",
