@@ -25,6 +25,7 @@
 #include <boost/chrono.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/json.hpp>
 
 #include <indicators/progress_bar.hpp>
 #include <indicators/cursor_control.hpp>
@@ -67,11 +68,14 @@ protected:
     virtual std::string getPolynomialVariable(int levelIndex, int coeffIndex, int coeffsNumber, 
                                               const VectorU16& bestColsIndexes) const = 0;
 
+    virtual boost::json::value toJSON() const;
+    virtual int fromJSON(boost::json::value jsonModel);
+
 public:
     GmdhModel() : level(1), lastLevelEvaluation(0) {}
 
-    virtual int save(const std::string& path) const;
-    virtual int load(const std::string& path);
+    int save(const std::string& path) const;
+    int load(const std::string& path);
 
     VectorXd predict(const RowVectorXd& x, int lags) const;
     virtual VectorXd predict(const MatrixXd& x) const = 0;

@@ -15,7 +15,7 @@ endif()
 
 set(Boost_USE_MULTITHREADED ON)  
 set(Boost_USE_STATIC_RUNTIME OFF) 
-find_package(Boost 1.79.0 COMPONENTS system thread filesystem) 
+find_package(Boost 1.79.0 COMPONENTS system thread filesystem json) 
 
 set(LIBRARY_NAME gmdh)
 set(MODULE_NAME gmdhpy)
