@@ -20,6 +20,9 @@ namespace GMDH {
 		std::string getPolynomialVariable(int levelIndex, int coeffIndex, int coeffsNumber, 
 										  const VectorU16& bestColsIndexes) const override;
 
+		boost::json::value toJSON() const override;
+    	int fromJSON(boost::json::value jsonModel) override;
+
 	public:
 		GmdhModel& fit(const MatrixXd& x, const VectorXd& y, 
 					   const Criterion& criterion = Criterion(CriterionType::regularity), int kBest = 3,
@@ -29,7 +32,5 @@ namespace GMDH {
 		using GmdhModel::predict;
 		virtual VectorXd predict(const MatrixXd& x) const override;
 
-		int save(const std::string& path) const override;
-		int load(const std::string& path) override;
 	};
 }
