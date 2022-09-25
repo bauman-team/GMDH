@@ -158,9 +158,21 @@ PYBIND11_MODULE(gmdhpy, m)
         .def("get_best_polynomial", &GMDH::RIA::getBestPolynomial);
 
     m.def("time_series_transformation", &GMDH::timeSeriesTransformation,
-        "",
-        "x"_a, "lags"_a);
+        "x"_a, "lags"_a,
+        "It is a method for converting time series array into 'X' and 'y' matrices\n\n" \
+        ">>> import gmdhpy\n" \
+        ">>> x, y = gmdhpy.time_series_transformation([1, 2, 3, 4, 5, 6], lags=3)\n" \
+        ">>> x\n" \
+        "array([[1., 2., 3.],\n" \
+        "       [2., 3., 4.],\n" \
+        "       [3., 4., 5.]])");
+
     m.def("split_data", &GMDH::splitData,
-        "",
-        "x"_a, "y"_a, "test_size"_a = 0.2, "shuffle"_a = false, "random_state"_a = 0);
+        "x"_a, "y"_a, "test_size"_a = 0.2, "shuffle"_a = false, "random_state"_a = 0,
+        "\n\n" \
+        ">>> import gmdhpy\n" \
+        ">>> x, y = gmdhpy.time_series_transformation([1, 2, 3, 4, 5, 6], lags=3)\n" \
+        ">>> splitted_data = gmdhpy.split_data(x, y)\n" \
+        ">>> splitted_data.x_train\n" \
+        "array([[1., 2., 3.],\n       [2., 3., 4.]])");
 }
