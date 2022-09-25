@@ -55,7 +55,7 @@ namespace GMDH {
     }
 
     void GmdhModel::polynomialsEvaluation(const SplittedData& data, const Criterion& criterion,
-        IterC beginCoeffsVec, IterC endCoeffsVec, std::atomic<int> *leftTasks, bool verbose) const {
+        IterC beginCoeffsVec, IterC endCoeffsVec, std::atomic<int> *leftCombinations, bool verbose) const {
         for (; beginCoeffsVec < endCoeffsVec; ++beginCoeffsVec) {
             auto pairCoeffsEvaluation{ criterion.calculate(xDataForCombination(data.xTrain, beginCoeffsVec->combination()),
                                                            xDataForCombination(data.xTest, beginCoeffsVec->combination()),
@@ -63,7 +63,8 @@ namespace GMDH {
             beginCoeffsVec->setEvaluation(pairCoeffsEvaluation.first);
             beginCoeffsVec->setBestCoeffs(std::move(pairCoeffsEvaluation.second));
             if (unlikely(verbose))
-                --(*leftTasks);                
+                --(*leftCombinations);    
+            boost::this_thread::interruption_point();            
         }
     }
 
@@ -87,15 +88,24 @@ namespace GMDH {
 
     GmdhModel& GmdhModel::gmdhFit(const MatrixXd& x, const VectorXd& y, const Criterion& criterion,
                 int kBest, double testSize, int pAverage, int threads, int verbose, double limit) {
-
         using namespace indicators;
-        using T = boost::packaged_task<void>;
+        using PtaskT = boost::packaged_task<void()>;        
         std::unique_ptr<ProgressBar> progressBar;
 
-        boost::asio::thread_pool pool(threads); 
-        std::vector<boost::unique_future<T::result_type> > futures;
-        futures.reserve(threads);
-        std::atomic<int> leftTasks; // TODO: change to volatile structure
+        boost::asio::io_service io_service;
+        boost::thread_group pool;
+        boost::asio::io_service::work work(io_service);
+        for (int i = 0; i < threads; ++i)
+        {
+            pool.create_thread(boost::bind(&boost::asio::io_service::run,
+                &io_service));
+        }
+
+        std::vector<boost::unique_future<PtaskT::result_type> > pending_data;
+        std::vector<std::shared_ptr<PtaskT>> packagedTasks;
+        pending_data.reserve(threads);
+        packagedTasks.reserve(threads);
+        std::atomic<int> leftCombinations; // TODO: change to volatile structure
 
         level = 1;
         inputColsNumber = x.cols();
@@ -110,7 +120,8 @@ namespace GMDH {
         bool goToTheNextLevel;
         VectorC evaluationCoeffsVec;
         do {
-            futures.clear();
+            pending_data.clear();
+            packagedTasks.clear();
             evaluationCoeffsVec.clear();
             auto combinations{ generateCombinations(data.xTrain.cols() - 1) };
             evaluationCoeffsVec.resize(combinations.size());
@@ -120,7 +131,7 @@ namespace GMDH {
             for (auto it = std::begin(combinations); it != std::end(combinations); ++it, ++currLevelEvaluation)
                 currLevelEvaluation->setCombination(std::move(*it));
 
-            leftTasks = static_cast<int>(evaluationCoeffsVec.size());
+            leftCombinations = static_cast<int>(evaluationCoeffsVec.size());
             if (verbose) {
                 progressBar = std::make_unique<ProgressBar>(
                     option::BarWidth{ 25 },
@@ -137,37 +148,43 @@ namespace GMDH {
             decltype(auto) model = this;
             auto combsPortion{ static_cast<int>(std::ceil(evaluationCoeffsVec.size() / static_cast<double>(threads))) }; // TODO: maybe change
             for (auto i = 0; i * combsPortion < evaluationCoeffsVec.size(); ++i) {
-                boost::packaged_task<void> pt([model = static_cast<const GmdhModel*>(model),
+                packagedTasks.push_back(std::make_shared<PtaskT>([model = static_cast<const GmdhModel*>(model),
                     &data = static_cast<const SplittedData&>(data), &criterion = static_cast<const Criterion&>(criterion), 
-                    &evaluationCoeffsVec, &leftTasks, verbose, combsPortion, i]() {
+                    &evaluationCoeffsVec, &leftCombinations, verbose, combsPortion, i]() {
                         model->polynomialsEvaluation(data, criterion, std::begin(evaluationCoeffsVec) + combsPortion * i,
                             std::begin(evaluationCoeffsVec) + std::min(static_cast<size_t>(combsPortion * (i + 1)), 
-                            evaluationCoeffsVec.size()), &leftTasks, verbose); });
-                futures.push_back(pt.get_future());
-                post(pool, std::move(pt));
+                            evaluationCoeffsVec.size()), &leftCombinations, verbose); }));
+                pending_data.push_back(packagedTasks.back()->get_future());
+                io_service.post(std::ref(*packagedTasks.back()));
             } 
-
+            
             if (verbose) {
-                while (leftTasks) {
+                while (leftCombinations) {
 #ifdef GMDH_MODULE
                     if (PyErr_CheckSignals() != 0) {
-                        pool.stop();
-                        pool.join();
-                        //boost::when_all(std::begin(futures), std::end(futures)).get();  
+                        pool.interrupt_all();
+                        boost::when_all(std::begin(pending_data), std::end(pending_data)).get();  
                         return *this;
-                        //throw pybind11::error_already_set();
                     }
 #endif
-                    if (progressBar->current() < 100.0 * (evaluationCoeffsVec.size() - leftTasks) / evaluationCoeffsVec.size())
-                        progressBar->set_progress(100.0 * (evaluationCoeffsVec.size() - leftTasks) / evaluationCoeffsVec.size());
+                    if (progressBar->current() < 100.0 * (evaluationCoeffsVec.size() - leftCombinations) / evaluationCoeffsVec.size())
+                        progressBar->set_progress(100.0 * (evaluationCoeffsVec.size() - leftCombinations) / evaluationCoeffsVec.size());
                     boost::this_thread::sleep_for(boost::chrono::milliseconds(20));
                 }
             }
             else {
-                boost::when_all(std::begin(futures), std::end(futures)).get();   
-#ifdef GMDH_MODULE
-                if (PyErr_CheckSignals() != 0)
-                    return *this;
+#ifndef GMDH_MODULE
+                boost::when_all(std::begin(pending_data), std::end(pending_data)).get();  
+#else
+                for (auto it = std::cbegin(pending_data); it != std::cend(pending_data); ++it)
+                    while (!it->is_ready()) {
+                        if (PyErr_CheckSignals() != 0) {
+                            pool.interrupt_all();
+                            boost::when_all(std::begin(pending_data), std::end(pending_data)).get(); 
+                            return *this;
+                        }
+                        boost::this_thread::sleep_for(boost::chrono::milliseconds(20));
+                    }
 #endif
             } 
             goToTheNextLevel = nextLevelCondition(kBest, pAverage, evaluationCoeffsVec, criterion, data, limit);

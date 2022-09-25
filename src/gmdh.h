@@ -1,5 +1,6 @@
 #pragma once
 #define BOOST_THREAD_PROVIDES_FUTURE_WHEN_ALL_WHEN_ANY
+#define BOOST_THREAD_PROVIDES_SIGNATURE_PACKAGED_TASK
 
 #include <vector>
 #include <cmath>
@@ -17,10 +18,10 @@
 #include <Eigen/Dense>
 
 #include <boost/asio.hpp>
-#include <boost/function.hpp>
-#include <boost/bind/bind.hpp>
 #include <boost/thread/thread.hpp>
 #include <boost/thread/future.hpp>
+#include <boost/move/move.hpp>
+#include <boost/function.hpp>
 #include <boost/type_index.hpp>
 #include <boost/chrono.hpp>
 #include <boost/algorithm/string.hpp>
@@ -57,7 +58,7 @@ protected:
     double getMeanCriterionValue(const VectorC& sortedCombinations, int k) const;
     std::string getPolynomialCoeff(double coeff, int coeffIndex) const;
     void polynomialsEvaluation(const SplittedData& data, const Criterion& criterion, IterC beginCoeffsVec, 
-                               IterC endCoeffsVec, std::atomic<int>* leftTasks, bool verbose) const;
+                               IterC endCoeffsVec, std::atomic<int>* leftCombinations, bool verbose) const;
     bool nextLevelCondition(int kBest, int pAverage, VectorC& combinations,
                             const Criterion& criterion, SplittedData& data, double limit);
     GmdhModel& gmdhFit(const MatrixXd& x, const VectorXd& y, const Criterion& criterion, int kBest, 
