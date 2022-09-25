@@ -70,6 +70,7 @@ namespace GMDH {
 	}
 
 	VectorXd RIA::predict(const MatrixXd& x) const {
+		checkMatrixColsNumber(x);
 		MatrixXd modifiedX(x.rows(), x.cols() + 2);
 		modifiedX.col(x.cols()).setOnes();
 		modifiedX.col(x.cols() + 1).setOnes();

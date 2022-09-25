@@ -38,6 +38,9 @@
 
 namespace GMDH {    
 
+SplittedData GMDH_API splitData(const MatrixXd& x, const VectorXd& y, double testSize = 0.2,
+    bool shuffle = false, int randomSeed = 0);
+
 class GMDH_API GmdhModel { 
     //int calculateLeftTasksForVerbose(const std::vector<std::shared_ptr<std::vector<Combination>::iterator> > beginTasksVec, 
     //const std::vector<std::shared_ptr<std::vector<Combination>::iterator> > endTasksVec) const; 
@@ -55,14 +58,14 @@ protected:
     std::string getPolynomialCoeff(double coeff, int coeffIndex) const;
     void polynomialsEvaluation(const SplittedData& data, const Criterion& criterion, IterC beginCoeffsVec, 
                                IterC endCoeffsVec, std::atomic<int>* leftTasks, bool verbose) const;
-    bool nextLevelCondition(int kBest, uint8_t pAverage, VectorC& combinations,
+    bool nextLevelCondition(int kBest, int pAverage, VectorC& combinations,
                             const Criterion& criterion, SplittedData& data, double limit);
-    GmdhModel& gmdhFit(const MatrixXd& x, const VectorXd& y, const Criterion& criterion, int kBest,
-                   double testSize, uint8_t pAverage, int threads, int verbose, double limit);
+    GmdhModel& gmdhFit(const MatrixXd& x, const VectorXd& y, const Criterion& criterion, int kBest, 
+                       double testSize, int pAverage, int threads, int verbose, double limit);
 
     virtual VectorVu16 generateCombinations(int n_cols) const = 0;
     virtual void removeExtraCombinations() = 0;
-    virtual bool preparations(SplittedData& data, VectorC& _bestCombinations) = 0;
+    virtual bool preparations(SplittedData& data, VectorC&& _bestCombinations) = 0;
     virtual MatrixXd xDataForCombination(const MatrixXd& x, const VectorU16& comb) const = 0;
     virtual std::string getPolynomialPrefix(int levelIndex, int combIndex) const = 0;
     virtual std::string getPolynomialVariable(int levelIndex, int coeffIndex, int coeffsNumber, 
@@ -70,6 +73,13 @@ protected:
 
     virtual boost::json::value toJSON() const;
     virtual int fromJSON(boost::json::value jsonModel);
+
+    static SplittedData internalSplitData(const MatrixXd& x, const VectorXd& y, double testSize, bool addOnesCol = false);
+
+    friend SplittedData splitData(const MatrixXd& x, const VectorXd& y, double testSize,
+                                           bool shuffle, int randomSeed);
+
+    void checkMatrixColsNumber(const MatrixXd& x) const;
 
 public:
     GmdhModel() : level(1), lastLevelEvaluation(0) {}
@@ -82,9 +92,7 @@ public:
     std::string getBestPolynomial() const;
 };
 
-int GMDH_API validateInputData(double *testSize, uint8_t *pAverage = nullptr, 
+int GMDH_API validateInputData(double *testSize, int *pAverage = nullptr, 
                                int *threads = nullptr, int *kBest = nullptr);
-PairMVXd GMDH_API timeSeriesTransformation(VectorXd x, int lags);
-SplittedData GMDH_API splitData(const MatrixXd& x, const VectorXd& y, double testSize = 0.2, 
-                                bool shuffle = false, int randomSeed = 0);
+PairMVXd GMDH_API timeSeriesTransformation(const VectorXd& x, int lags);
 }

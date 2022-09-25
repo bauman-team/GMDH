@@ -2,7 +2,7 @@
 
 namespace GMDH
 {
-    VectorVu16 MULTI::generateCombinations(int n_cols) const {
+    VectorVu16 MULTI::generateCombinations(int n_cols) const { // TODO: maybe change for bit masks 
         VectorVu16 combs;
         if (level == 1)
             return nChooseK(n_cols, level);
@@ -22,7 +22,7 @@ namespace GMDH
     }
 
     GmdhModel& MULTI::fit(const MatrixXd& x, const VectorXd& y, const Criterion& criterion, int kBest, double testSize,
-        uint8_t pAverage, int threads, int verbose, double limit) {
+        int pAverage, int threads, int verbose, double limit) {
         validateInputData(&testSize, &pAverage, &threads, &kBest);
         return GmdhModel::gmdhFit(x, y, criterion, kBest, testSize, pAverage, threads, verbose, limit);
     }

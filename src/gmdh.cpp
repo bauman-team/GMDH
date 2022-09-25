@@ -50,25 +50,24 @@ namespace GMDH {
         k = std::min(k, static_cast<int>(sortedCombinations.size()));
         auto currLevelEvaluation{ 0. };
         for (auto combBegin = std::cbegin(sortedCombinations); combBegin != std::cbegin(sortedCombinations) + k; ++combBegin)
-            currLevelEvaluation += (*combBegin).evaluation();
-        currLevelEvaluation /= static_cast<double>(k);
-        return currLevelEvaluation;
+            currLevelEvaluation += combBegin->evaluation();
+        return currLevelEvaluation / static_cast<double>(k);
     }
 
     void GmdhModel::polynomialsEvaluation(const SplittedData& data, const Criterion& criterion,
         IterC beginCoeffsVec, IterC endCoeffsVec, std::atomic<int> *leftTasks, bool verbose) const {
         for (; beginCoeffsVec < endCoeffsVec; ++beginCoeffsVec) {
-            auto pairCoeffsEvaluation{ criterion.calculate(xDataForCombination(data.xTrain, (*beginCoeffsVec).combination()),
-                                                           xDataForCombination(data.xTest, (*beginCoeffsVec).combination()),
+            auto pairCoeffsEvaluation{ criterion.calculate(xDataForCombination(data.xTrain, beginCoeffsVec->combination()),
+                                                           xDataForCombination(data.xTest, beginCoeffsVec->combination()),
                                                            data.yTrain, data.yTest) };
-            (*beginCoeffsVec).setEvaluation(pairCoeffsEvaluation.first);
-            (*beginCoeffsVec).setBestCoeffs(std::move(pairCoeffsEvaluation.second));
+            beginCoeffsVec->setEvaluation(pairCoeffsEvaluation.first);
+            beginCoeffsVec->setBestCoeffs(std::move(pairCoeffsEvaluation.second));
             if (unlikely(verbose))
                 --(*leftTasks);                
         }
     }
 
-    bool GmdhModel::nextLevelCondition(int kBest, uint8_t pAverage, VectorC& combinations,
+    bool GmdhModel::nextLevelCondition(int kBest, int pAverage, VectorC& combinations,
                                   const Criterion& criterion, SplittedData& data, double limit) {
 
         decltype(auto) model = this;
@@ -76,44 +75,33 @@ namespace GMDH {
         auto _bestCombinations{ criterion.getBestCombinations(combinations, data, func, kBest) };
         currentLevelEvaluation = getMeanCriterionValue(_bestCombinations, pAverage);
 
-        if ((lastLevelEvaluation - currentLevelEvaluation > limit)) {
-            lastLevelEvaluation = currentLevelEvaluation;
-            if (preparations(data, _bestCombinations)) {
-                ++level;
-                return true;
-            }
+        if ((lastLevelEvaluation - currentLevelEvaluation > limit) &&
+            (lastLevelEvaluation = currentLevelEvaluation, preparations(data, std::move(_bestCombinations)))) {
+            ++level;
+            return true;
         }
 
         removeExtraCombinations();
         return false;
     }
 
-    GmdhModel& GmdhModel::gmdhFit(const MatrixXd& x, const VectorXd& y, const Criterion& criterion, int kBest,
-                              double testSize, uint8_t pAverage, int threads, int verbose, double limit) {
+    GmdhModel& GmdhModel::gmdhFit(const MatrixXd& x, const VectorXd& y, const Criterion& criterion,
+                int kBest, double testSize, int pAverage, int threads, int verbose, double limit) {
 
         using namespace indicators;
         using T = boost::packaged_task<void>;
         std::unique_ptr<ProgressBar> progressBar;
-        
-        level = 1;
-        if (threads == -1)
-            threads = boost::thread::hardware_concurrency(); // TODO: maybe find optimal count based on data.size() and hardware_concurrency()
-        else 
-            threads = std::min(threads, static_cast<int>(boost::thread::hardware_concurrency())); // TODO: change limit
 
         boost::asio::thread_pool pool(threads); 
         std::vector<boost::unique_future<T::result_type> > futures;
         futures.reserve(threads);
         std::atomic<int> leftTasks; // TODO: change to volatile structure
 
+        level = 1;
         inputColsNumber = x.cols();
         lastLevelEvaluation = std::numeric_limits<double>::max();
 
-        MatrixXd modifiedX{ x.rows(), x.cols() + 1 };
-        modifiedX.col(x.cols()).setOnes();
-        modifiedX.leftCols(x.cols()) = x;
-        auto data{ splitData(modifiedX, y, testSize) };
-        modifiedX.resize(0, 0); // TODO: clear???
+        auto data{ internalSplitData(x, y, testSize, true) };
 
         /*std::cout << data.xTrain << "\n\n";
         std::cout << data.xTest << "\n\n";
@@ -126,6 +114,8 @@ namespace GMDH {
             evaluationCoeffsVec.clear();
             auto combinations{ generateCombinations(data.xTrain.cols() - 1) };
             evaluationCoeffsVec.resize(combinations.size());
+
+            //evaluationCoeffsVec = VectorC{std::begin(combinations), std::end(combinations)}
             auto currLevelEvaluation{ std::begin(evaluationCoeffsVec) };
             for (auto it = std::begin(combinations); it != std::end(combinations); ++it, ++currLevelEvaluation)
                 currLevelEvaluation->setCombination(std::move(*it));
@@ -145,7 +135,7 @@ namespace GMDH {
                 progressBar->set_progress(0);
             }
             decltype(auto) model = this;
-            auto combsPortion{ static_cast<int>(std::ceil(evaluationCoeffsVec.size() / static_cast<double>(threads))) };
+            auto combsPortion{ static_cast<int>(std::ceil(evaluationCoeffsVec.size() / static_cast<double>(threads))) }; // TODO: maybe change
             for (auto i = 0; i * combsPortion < evaluationCoeffsVec.size(); ++i) {
                 boost::packaged_task<void> pt([model = static_cast<const GmdhModel*>(model),
                     &data = static_cast<const SplittedData&>(data), &criterion = static_cast<const Criterion&>(criterion), 
@@ -159,16 +149,15 @@ namespace GMDH {
 
             if (verbose) {
                 while (leftTasks) {
-                    #ifdef GMDH_MODULE
-if (PyErr_CheckSignals() != 0) {
-    pool.stop();
-            pool.join();
-    //boost::when_all(std::begin(futures), std::end(futures)).get();  
-            return *this;
-                //throw pybind11::error_already_set();
-        }
-            #endif
-            
+#ifdef GMDH_MODULE
+                    if (PyErr_CheckSignals() != 0) {
+                        pool.stop();
+                        pool.join();
+                        //boost::when_all(std::begin(futures), std::end(futures)).get();  
+                        return *this;
+                        //throw pybind11::error_already_set();
+                    }
+#endif
                     if (progressBar->current() < 100.0 * (evaluationCoeffsVec.size() - leftTasks) / evaluationCoeffsVec.size())
                         progressBar->set_progress(100.0 * (evaluationCoeffsVec.size() - leftTasks) / evaluationCoeffsVec.size());
                     boost::this_thread::sleep_for(boost::chrono::milliseconds(20));
@@ -176,12 +165,10 @@ if (PyErr_CheckSignals() != 0) {
             }
             else {
                 boost::when_all(std::begin(futures), std::end(futures)).get();   
-                #ifdef GMDH_MODULE
-if (PyErr_CheckSignals() != 0) {
-
-            return *this;
-        }
-            #endif
+#ifdef GMDH_MODULE
+                if (PyErr_CheckSignals() != 0)
+                    return *this;
+#endif
             } 
             goToTheNextLevel = nextLevelCondition(kBest, pAverage, evaluationCoeffsVec, criterion, data, limit);
 
@@ -216,11 +203,11 @@ if (PyErr_CheckSignals() != 0) {
         };
     }
 
-    int GmdhModel::fromJSON(boost::json::value jsonModel) {
+    int GmdhModel::fromJSON(boost::json::value jsonModel) { // TODO: maybe add try/catch
         auto& o = jsonModel.as_object();
         std::string modelName = o.at("modelName").as_string().c_str();
         if (modelName != getModelName()) 
-            return 3; 
+            return 3; // TODO: add defines for error numbers
         bestCombinations.clear();
         inputColsNumber = o.at("inputColsNumber").as_int64();
         auto& bestCombs = o.at("bestCombinations").as_array();
@@ -233,10 +220,9 @@ if (PyErr_CheckSignals() != 0) {
         return 0;
     }
 
-    int validateInputData(double* testSize, uint8_t* pAverage, int* threads, int* kBest) {
+    int validateInputData(double* testSize, int* pAverage, int* threads, int* kBest) {
         auto errorCode{ 0 };
 #ifdef GMDH_MODULE
-        //auto warnings = pybind11::module::import("warnings");
         auto sys = pybind11::module::import("sys");
 #else
         std::cout << DISPLAYEDCOLORWARNING;
@@ -250,18 +236,24 @@ if (PyErr_CheckSignals() != 0) {
             * testSize = 0.5;
             errorCode |= 1;
         }
-        if (threads && (*threads < -1 || !*threads))
+        if (threads)
         {
+            if (*threads == -1)
+                *threads = boost::thread::hardware_concurrency(); // TODO: maybe find optimal count based on data.size() and hardware_concurrency()
+            else if (*threads < 1 || *threads > boost::thread::hardware_concurrency()) {
+                if (*threads < 1)
+                    * threads = 1;
+                else if (*threads > boost::thread::hardware_concurrency())
+                    *threads = 1; //boost::thread::hardware_concurrency(); // TODO: change limit
+                errorCode |= 2;
 #ifdef GMDH_MODULE
-            //warnings.attr("warn")("old_foo() is deprecated, use new_foo() instead.");                
-            PyErr_WarnEx(PyExc_Warning, DISPLAYEDWARNINGMSG("number of n_jobs", "n_jobs = 1"), 1);
+                PyErr_WarnEx(PyExc_Warning, DISPLAYEDWARNINGMSG("number of n_jobs", "n_jobs = 1"), 1);
 #else
-            std::cout << DISPLAYEDWARNINGMSG("number of threads", "threads = 1");
+                std::cout << DISPLAYEDWARNINGMSG("number of threads", "threads = 1");
 #endif
-            * threads = 1;
-            errorCode |= 2;
+            }
         }
-        if (pAverage && !(*pAverage)) {
+        if (pAverage && *pAverage < 1) {
 #ifdef GMDH_MODULE
             PyErr_WarnEx(PyExc_Warning, DISPLAYEDWARNINGMSG("number of p_average", "p_average = 1"), 1);
 #else
@@ -270,7 +262,7 @@ if (PyErr_CheckSignals() != 0) {
             * pAverage = 1;
             errorCode |= 4;
         }
-        if (kBest && !(*kBest)) {
+        if (kBest && *kBest < 1) {
 #ifdef GMDH_MODULE
             PyErr_WarnEx(PyExc_Warning, DISPLAYEDWARNINGMSG("number of k_best", "k_best = 1"), 1);
 #else 
@@ -378,6 +370,7 @@ if (PyErr_CheckSignals() != 0) {
         return expandedX.rightCols(lags);
     }
 
+
     std::string GmdhModel::getBestPolynomial() const {
         std::string polynomialStr = "";
         for (int i = 0; i < bestCombinations.size(); ++i) {
@@ -398,23 +391,50 @@ if (PyErr_CheckSignals() != 0) {
         return polynomialStr;
     }
 
-    PairMVXd timeSeriesTransformation(VectorXd x, int lags) {
+    PairMVXd timeSeriesTransformation(const VectorXd& x, int lags) {
+        // TODO: add check for lags > x.size()
         VectorXd yTimeSeries{ x.tail(x.size() - lags) };
         MatrixXd xTimeSeries{ x.size() - lags, lags };
         for (auto i = 0; i < x.size() - lags; ++i)
             xTimeSeries.row(i) = x.segment(i, lags);
-        return { xTimeSeries, yTimeSeries };
+        return { std::move(xTimeSeries), std::move(yTimeSeries) };
+    }
+
+    SplittedData GmdhModel::internalSplitData(const MatrixXd& x, const VectorXd& y, double testSize, bool addOnesCol) {
+        SplittedData data;
+        
+        if (addOnesCol) {
+            data.xTrain.resize(x.rows() - round(x.rows() * testSize), x.cols() + 1);
+            data.xTest.resize(round(x.rows() * testSize), x.cols() + 1);
+
+            data.xTrain.leftCols(x.cols()) = x.topRows(x.rows() - round(x.rows() * testSize));
+            data.xTrain.col(x.cols()).setOnes();
+
+            data.xTest.leftCols(x.cols()) = x.bottomRows(round(x.rows() * testSize));
+            data.xTest.col(x.cols()).setOnes();
+        }
+        else {
+            data.xTrain = x.topRows(x.rows() - round(x.rows() * testSize));
+            data.xTest = x.bottomRows(round(x.rows() * testSize));
+        }
+
+        data.yTrain = y.head(y.size() - round(y.size() * testSize));
+        data.yTest = y.tail(round(y.size() * testSize));
+
+        return data;
+    }
+
+    void GmdhModel::checkMatrixColsNumber(const MatrixXd& x) const {
+        if (inputColsNumber != x.cols())
+            throw GmdhException(GMDHPREDICTEXCEPTIONMSG);
     }
 
     SplittedData splitData(const MatrixXd& x, const VectorXd& y, double testSize, bool shuffle, int randomSeed) {
-        validateInputData(&testSize);   
+        validateInputData(&testSize);
         SplittedData data;
-        if (!shuffle) {
-            data.xTrain = x.topRows(x.rows() - round(x.rows() * testSize));
-            data.xTest = x.bottomRows(round(x.rows() * testSize));
-            data.yTrain = y.head(y.size() - round(y.size() * testSize));
-            data.yTest = y.tail(round(y.size() * testSize));
-        } else {
+        if (!shuffle)
+            data = GmdhModel::internalSplitData(x, y, testSize);
+        else {
             if (randomSeed != 0) std::srand(randomSeed);
             else std::srand(std::time(NULL));
 

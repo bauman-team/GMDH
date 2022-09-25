@@ -13,7 +13,7 @@ namespace GMDH {
 
 		virtual void transformDataForNextLevel(SplittedData& data, const VectorC& bestCombinations);
 		virtual void removeExtraCombinations() override;
-		virtual bool preparations(SplittedData& data, VectorC& _bestCombinations) override;
+		virtual bool preparations(SplittedData& data, VectorC&& _bestCombinations) override;
 		virtual MatrixXd xDataForCombination(const MatrixXd& x, const VectorU16& comb) const override;
 
 		std::string getPolynomialPrefix(int levelIndex, int combIndex) const override;
@@ -27,7 +27,7 @@ namespace GMDH {
 		GmdhModel& fit(const MatrixXd& x, const VectorXd& y, 
 					   const Criterion& criterion = Criterion(CriterionType::regularity), int kBest = 3,
 					   PolynomialType _polynomialType = PolynomialType::quadratic, double testSize = 0.5,
-					   uint8_t pAverage = 1, int threads = 1, int verbose = 0, double limit = 0);
+					   int pAverage = 1, int threads = 1, int verbose = 0, double limit = 0);
 
 		using GmdhModel::predict;
 		virtual VectorXd predict(const MatrixXd& x) const override;

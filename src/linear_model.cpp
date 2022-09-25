@@ -6,10 +6,9 @@ namespace GMDH {
         bestCombinations[0] = VectorC(1, bestCombinations[0][0]);
     }
 
-    bool LinearModel::preparations(SplittedData& data, VectorC& _bestCombinations) {
+    bool LinearModel::preparations(SplittedData& data, VectorC&& _bestCombinations) {
         bestCombinations[0] = std::move(_bestCombinations);
-        if (level + 1 < data.xTrain.cols())
-            return true;
+        return level + 1 < data.xTrain.cols();
     }
 
     MatrixXd LinearModel::xDataForCombination(const MatrixXd& x, const VectorU16& comb) const {
@@ -29,8 +28,7 @@ namespace GMDH {
     }
 
     VectorXd LinearModel::predict(const MatrixXd& x) const {
-        if (inputColsNumber != x.cols())
-            throw GmdhException(GMDHPREDICTEXCEPTIONMSG);
+        checkMatrixColsNumber(x);
         MatrixXd modifiedX{ x.rows(), x.cols() + 1 };
         modifiedX.col(x.cols()).setOnes();
         modifiedX.leftCols(x.cols()) = x;

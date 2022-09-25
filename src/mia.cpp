@@ -33,8 +33,8 @@ namespace GMDH {
         }
         xTrainNew.col(xTrainNew.cols() - 1) = VectorXd::Ones(xTrainNew.rows());
         xTestNew.col(xTestNew.cols() - 1) = VectorXd::Ones(xTestNew.rows());
-        data.xTrain = xTrainNew;
-        data.xTest = xTestNew;
+        data.xTrain = std::move(xTrainNew);
+        data.xTest = std::move(xTestNew);
     }
 
     void MIA::removeExtraCombinations() {
@@ -60,7 +60,7 @@ namespace GMDH {
         bestCombinations = realBestCombinations;
     }
 
-    bool MIA::preparations(SplittedData& data, VectorC& _bestCombinations) {
+    bool MIA::preparations(SplittedData& data, VectorC&& _bestCombinations) {
         bestCombinations.push_back(std::move(_bestCombinations));
         transformDataForNextLevel(data, bestCombinations[level - 1]);
         return true;
@@ -118,7 +118,7 @@ namespace GMDH {
     }
 
     GmdhModel& MIA::fit(const MatrixXd& x, const VectorXd& y, const Criterion& criterion, int kBest, 
-                        PolynomialType _polynomialType, double testSize, uint8_t pAverage, 
+                        PolynomialType _polynomialType, double testSize, int pAverage, 
                         int threads, int verbose, double limit) {
         validateInputData(&testSize, &pAverage, &threads, &kBest);
         polynomialType = _polynomialType;
@@ -126,8 +126,7 @@ namespace GMDH {
     }
 
     VectorXd MIA::predict(const MatrixXd& x) const {
-        if (inputColsNumber != x.cols())
-            throw GmdhException(GMDHPREDICTEXCEPTIONMSG); // TODO: maybe move to base class
+        checkMatrixColsNumber(x);
         MatrixXd modifiedX(x.rows(), x.cols() + 1);
         modifiedX.col(x.cols()).setOnes();
         modifiedX.leftCols(x.cols()) = x;
