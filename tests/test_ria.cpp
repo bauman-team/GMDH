@@ -19,4 +19,3 @@ TEST_F(TestRIA, testPrediction)
     EXPECT_TRUE(PredictionEvaluation(res, standartData, 3)); 
        
 }
-// TODO: test save(), load()
