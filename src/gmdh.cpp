@@ -296,12 +296,6 @@ namespace GMDH {
     }
 
     int GmdhModel::save(const std::string& path) const {
-        if (!boost::filesystem::is_regular_file(path))
-#ifdef GMDH_MODULE
-            throw GmdhException(GMDHOPENFILEEXCEPTIONMSG); 
-#else
-            return 1; 
-#endif
         std::ofstream modelFile(path);
         if (!modelFile.is_open())
 #ifdef GMDH_MODULE
