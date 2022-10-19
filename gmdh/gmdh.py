@@ -6,7 +6,7 @@ import gmdhpy
 
 def time_series_transformation(x, lags):
     """
-    Method for transformations of time series!!!
+    Method for transformations of time series!
 
     Examples
     --------
