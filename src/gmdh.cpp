@@ -1,8 +1,27 @@
 #include "gmdh.h"
-
+#include <thread>
 
 namespace GMDH {
 
+int GMDH_API testFunc(int timeToWait) {
+    std::atomic<int> x(1);
+    
+    std::thread tr([timeToWait=timeToWait, &x=x] () {
+        sleep(timeToWait);
+        x = 0;
+    });
+    while (x != 0) {
+#ifdef GMDH_MODULE
+        if (PyErr_CheckSignals() != 0) {
+            throw pybind11::error_already_set();
+            return 0;
+        }
+#endif
+        sleep(1);
+    }
+    tr.detach();
+    return 0;
+}
 /*
     int GmdhModel::calculateLeftTasksForVerbose(const std::vector<std::shared_ptr<std::vector<Combination>::iterator >> beginTasksVec, 
     const std::vector<std::shared_ptr<std::vector<Combination>::iterator >> endTasksVec) const {

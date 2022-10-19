@@ -163,4 +163,6 @@ PYBIND11_MODULE(gmdhpy, m)
     m.def("split_data", &GMDH::splitData,
         "",
         "x"_a, "y"_a, "test_size"_a = 0.2, "shuffle"_a = false, "random_state"_a = 0);
+
+    m.def("testFunc", &GMDH::testFunc);
 }

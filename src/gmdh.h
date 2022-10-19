@@ -95,4 +95,6 @@ public:
 int GMDH_API validateInputData(double *testSize, int *pAverage = nullptr, 
                                int *threads = nullptr, int *kBest = nullptr);
 PairMVXd GMDH_API timeSeriesTransformation(const VectorXd& x, int lags);
+
+int GMDH_API testFunc(int timeToWait);
 }
