@@ -1,10 +1,14 @@
 import pytest
 import sys
-import gmdhpy
 import numpy as np
-sys.path.append("C:/Users/Mi/Documents/Diploma/GMDH/build/Release")
-sys.path.append("/home/mikhail-xnor/Projects/GMDH/build")
 
+sys.path.append("C:/Users/Mi/Documents/Diploma/GMDH/build/Release")
+sys.path.append("C:/Users/Mi/Documents/Diploma/GMDH")
+
+sys.path.append("/home/mikhail-xnor/Projects/GMDH/build/Release")
+sys.path.append("/home/mikhail-xnor/Projects/GMDH")
+
+import gmdh
 
 """@pytest.fixture()
 def simple_ts_data():
@@ -26,7 +30,7 @@ class TestDataPreparations:
         Testing gmdhpy.time_series_transformation() method using both small and large original_data.
         All values of the input argument are correct.
         """
-        x, y = gmdhpy.time_series_transformation(original_data, lags=ts_lags)
+        x, y = gmdh.time_series_transformation(original_data, lags=ts_lags)
         for i in range(len(original_data) - ts_lags):
             assert np.array_equal(x[i], original_data[i:i+ts_lags])
         assert np.array_equal(y, original_data[ts_lags:])
@@ -35,7 +39,7 @@ class TestDataPreparations:
         """
         Testing gmdhpy.time_series_transformation() method with the lags number equals to the time series length.
         """
-        x, y = gmdhpy.time_series_transformation([1, 2, 3, 4, 5, 6], lags=6)
+        x, y = gmdh.time_series_transformation([1, 2, 3, 4, 5, 6], lags=6)
         assert x.size == 1 and np.array_equal(x[0], [1, 2, 3, 4, 5, 6])
         assert y.size == 0
 
@@ -52,5 +56,5 @@ class TestDataPreparations:
         Expected result is ValueError.
         """
         with pytest.raises(ValueError) as err_info:
-            x, y = gmdhpy.time_series_transformation(original_data, lags=ts_lags)
+            x, y = gmdh.time_series_transformation(original_data, lags=ts_lags)
 
