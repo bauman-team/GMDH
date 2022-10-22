@@ -392,7 +392,12 @@ namespace GMDH {
     }
 
     PairMVXd timeSeriesTransformation(const VectorXd& x, int lags) {
-        // TODO: add check for lags > x.size()
+        if (x.size() == 0)
+            throw std::invalid_argument("x value is empty");
+        if (lags <= 0)
+            throw std::invalid_argument("lags value <= 0");
+        if (lags >= x.size())
+            throw std::invalid_argument("lags value >= vector size");
         VectorXd yTimeSeries{ x.tail(x.size() - lags) };
         MatrixXd xTimeSeries{ x.size() - lags, lags };
         for (auto i = 0; i < x.size() - lags; ++i)

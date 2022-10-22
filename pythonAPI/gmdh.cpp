@@ -8,7 +8,7 @@
 
 namespace py = pybind11;
 
-PYBIND11_MODULE(gmdhpy, m)
+PYBIND11_MODULE(_gmdh_core, m)
 {
     using namespace std;
     using namespace pybind11::literals;
@@ -157,15 +157,7 @@ PYBIND11_MODULE(gmdhpy, m)
             "n_jobs"_a = 1, "verbose"_a = 0, "limit"_a = 0)
         .def("get_best_polynomial", &GMDH::RIA::getBestPolynomial);
 
-    m.def("time_series_transformation", &GMDH::timeSeriesTransformation,
-        "x"_a, "lags"_a,
-        "It is a method for converting time series array into 'X' and 'y' matrices\n\n" \
-        ">>> import gmdhpy\n" \
-        ">>> x, y = gmdhpy.time_series_transformation([1, 2, 3, 4, 5, 6], lags=3)\n" \
-        ">>> x\n" \
-        "array([[1., 2., 3.],\n" \
-        "       [2., 3., 4.],\n" \
-        "       [3., 4., 5.]])");
+    m.def("time_series_transformation", &GMDH::timeSeriesTransformation);
 
     m.def("split_data", &GMDH::splitData,
         "x"_a, "y"_a, "test_size"_a = 0.2, "shuffle"_a = false, "random_state"_a = 0,

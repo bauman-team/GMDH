@@ -55,7 +55,7 @@ protected:
 	}
     std::pair<COMBI, TestData> getModelTS(TestData _data, std::vector<double> values) {
         VectorXd data = Map<VectorXd, Unaligned>(values.data(), values.size());
-        auto timeSeries = convertToTimeSeries(data, _data.lags);
+        auto timeSeries = timeSeriesTransformation(data, _data.lags);
         SplittedData splittedData = splitData(timeSeries.first, timeSeries.second, _data.validateSize);
         COMBI combi;
         auto criterion = Criterion(CriterionType::regularity);

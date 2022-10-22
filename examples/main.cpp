@@ -26,6 +26,7 @@ int main() {
     int lags = 8;
     double validateSize = 0.2;
     double testSize = 0.33;
+    std::cout << data.size() << std::endl;
     auto timeSeries = GMDH::timeSeriesTransformation(data, lags);
     GMDH::SplittedData splittedData = GMDH::splitData(timeSeries.first, timeSeries.second, validateSize);
 

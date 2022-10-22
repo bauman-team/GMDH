@@ -18,7 +18,7 @@ set(Boost_USE_STATIC_RUNTIME OFF)
 find_package(Boost 1.79.0 COMPONENTS system thread filesystem json) 
 
 set(LIBRARY_NAME gmdh)
-set(MODULE_NAME gmdhpy)
+set(MODULE_NAME _gmdh_core)
 set(TESTS_NAME gmdh_tests)
 set(PROJECT_EXAMPLES gmdh_example) # only for examples
 

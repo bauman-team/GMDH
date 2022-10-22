@@ -27,7 +27,7 @@ class TestDataPreparations:
                             ([np.random.random() for i in range(10000)], 50)])
     def test_time_series_transformation_on_simple_data(self, original_data, ts_lags):
         """
-        Testing gmdhpy.time_series_transformation() method using both small and large original_data.
+        Testing gmdh.time_series_transformation() method using both small and large original_data.
         All values of the input argument are correct.
         """
         x, y = gmdh.time_series_transformation(original_data, lags=ts_lags)
@@ -35,26 +35,29 @@ class TestDataPreparations:
             assert np.array_equal(x[i], original_data[i:i+ts_lags])
         assert np.array_equal(y, original_data[ts_lags:])
 
-    def test_time_series_transformation_max_lags(self):
-        """
-        Testing gmdhpy.time_series_transformation() method with the lags number equals to the time series length.
-        """
-        x, y = gmdh.time_series_transformation([1, 2, 3, 4, 5, 6], lags=6)
-        assert x.size == 1 and np.array_equal(x[0], [1, 2, 3, 4, 5, 6])
-        assert y.size == 0
-
     @pytest.mark.parametrize('original_data, ts_lags',
                             [([1, 2, 3, 4, 5, 6], 0), 
                             ([1, 2, 3, 4, 5, 6], -1),
+                            ([1, 2, 3, 4, 5, 6], 6),
                             ([1, 2, 3, 4, 5, 6], 7),
-                            ([1, 2, 3, 4, 5, 6], 3.5),
-                            ([1, 2, 3, 4, 5, 6], 'a'),
                             ([], 2)])
-    def test_time_series_transformation_incorrect(self, original_data, ts_lags):
+    def test_time_series_transformation_value_error(self, original_data, ts_lags):
         """
-        Testing gmdhpy.time_series_transformation() method using incorrect input arguments.
+        Testing gmdh.time_series_transformation() method using incorrect input arguments values.
         Expected result is ValueError.
         """
         with pytest.raises(ValueError) as err_info:
+            x, y = gmdh.time_series_transformation(original_data, lags=ts_lags)
+
+    @pytest.mark.parametrize('original_data, ts_lags',
+                            [([1, 2, 3, 4, 5, 6], 3.5),
+                            ([1, 2, 3, 4, 5, 6], 'a'),
+                            (['a', 'b', 'c', 'd'], 3)])
+    def test_time_series_transformation_type_error(self, original_data, ts_lags):
+        """
+        Testing gmdh.time_series_transformation() method using incorrect input arguments types.
+        Expected result is TypeError.
+        """
+        with pytest.raises(TypeError) as err_info:
             x, y = gmdh.time_series_transformation(original_data, lags=ts_lags)
 
