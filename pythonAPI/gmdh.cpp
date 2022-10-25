@@ -24,25 +24,25 @@ PYBIND11_MODULE(_gmdh_core, m)
         .def_readwrite("y_test", &GMDH::SplittedData::yTest); 
 
     py::enum_<GMDH::Solver>(m, "Solver")
-        .value("fast", GMDH::Solver::fast)
-        .value("balanced", GMDH::Solver::balanced)
-        .value("accurate", GMDH::Solver::accurate);
+        .value("FAST", GMDH::Solver::fast)
+        .value("ACCURATE", GMDH::Solver::accurate)
+        .value("BALANCED", GMDH::Solver::balanced);
 
     py::enum_<GMDH::CriterionType>(m, "CriterionType")
-        .value("regularity", GMDH::CriterionType::regularity)
-        .value("sym_regularity", GMDH::CriterionType::symRegularity)
-        .value("stability", GMDH::CriterionType::stability)
-        .value("sym_stability", GMDH::CriterionType::symStability)
-        .value("unbiasedOutputs", GMDH::CriterionType::unbiasedOutputs)
-        .value("sym_unbiased_outputs", GMDH::CriterionType::symUnbiasedOutputs)
-        .value("unbiased_coeffs", GMDH::CriterionType::unbiasedCoeffs)
-        .value("absolute_stability", GMDH::CriterionType::absoluteStability)
-        .value("sym_absolute_stability", GMDH::CriterionType::symAbsoluteStability);
+        .value("REGULARITY", GMDH::CriterionType::regularity)
+        .value("SYM_REGULARITY", GMDH::CriterionType::symRegularity)
+        .value("STABILITY", GMDH::CriterionType::stability)
+        .value("SYM_STABILITY", GMDH::CriterionType::symStability)
+        .value("UNBIASED_OUTPUTS", GMDH::CriterionType::unbiasedOutputs)
+        .value("SYM_UNBIASED_OUTPUTS", GMDH::CriterionType::symUnbiasedOutputs)
+        .value("UNBIASED_COEFFS", GMDH::CriterionType::unbiasedCoeffs)
+        .value("ABSOLUTE_STABILITY", GMDH::CriterionType::absoluteStability)
+        .value("SYM_ABSOLUTE_STABILITY", GMDH::CriterionType::symAbsoluteStability);
 
     py::enum_<GMDH::PolynomialType>(m, "PolynomialType")
-        .value("linear", GMDH::PolynomialType::linear)
-        .value("linear_cov", GMDH::PolynomialType::linear_cov)
-        .value("quadratic", GMDH::PolynomialType::quadratic);
+        .value("LINEAR", GMDH::PolynomialType::linear)
+        .value("LINEAR_COV", GMDH::PolynomialType::linear_cov)
+        .value("QUADRATIC", GMDH::PolynomialType::quadratic);
 
     py::class_<GMDH::Criterion>(m, "Criterion")
         .def(py::init<>())
@@ -158,13 +158,5 @@ PYBIND11_MODULE(_gmdh_core, m)
         .def("get_best_polynomial", &GMDH::RIA::getBestPolynomial);
 
     m.def("time_series_transformation", &GMDH::timeSeriesTransformation);
-
-    m.def("split_data", &GMDH::splitData,
-        "x"_a, "y"_a, "test_size"_a = 0.2, "shuffle"_a = false, "random_state"_a = 0,
-        "\n\n" \
-        ">>> import gmdhpy\n" \
-        ">>> x, y = gmdhpy.time_series_transformation([1, 2, 3, 4, 5, 6], lags=3)\n" \
-        ">>> splitted_data = gmdhpy.split_data(x, y)\n" \
-        ">>> splitted_data.x_train\n" \
-        "array([[1., 2., 3.],\n       [2., 3., 4.]])");
+    m.def("split_data", &GMDH::splitData);
 }

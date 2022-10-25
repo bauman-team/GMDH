@@ -227,14 +227,10 @@ namespace GMDH {
 #else
         std::cout << DISPLAYEDCOLORWARNING;
 #endif
-        if (*testSize <= 0) { // TODO: add range 
-#ifdef GMDH_MODULE
-            PyErr_WarnEx(PyExc_Warning, DISPLAYEDWARNINGMSG("value of test_size", "test_size = 0.5"), 1);
-#else
-            std::cout << DISPLAYEDWARNINGMSG("value of testSize", "testSize = 0.5");
-#endif
-            * testSize = 0.5;
-            errorCode |= 1;
+        if (*testSize <= 0 || *testSize >= 1) { // TODO: add range 
+            std::string errorMsg = getVariableName("testSize", "test_size") + " value must be in the (0, 1) range";
+            throw std::invalid_argument(errorMsg);
+            //errorCode |= 1;
         }
         if (threads)
         {
@@ -364,7 +360,6 @@ namespace GMDH {
         return expandedX.rightCols(lags);
     }
 
-
     std::string GmdhModel::getBestPolynomial() const {
         std::string polynomialStr = "";
         for (int i = 0; i < bestCombinations.size(); ++i) {
@@ -385,40 +380,53 @@ namespace GMDH {
         return polynomialStr;
     }
 
-    PairMVXd timeSeriesTransformation(const VectorXd& x, int lags) {
-        if (x.size() == 0)
-            throw std::invalid_argument("x value is empty");
-        if (lags <= 0)
-            throw std::invalid_argument("lags value <= 0");
-        if (lags >= x.size())
-            throw std::invalid_argument("lags value >= vector size");
-        VectorXd yTimeSeries{ x.tail(x.size() - lags) };
-        MatrixXd xTimeSeries{ x.size() - lags, lags };
-        for (auto i = 0; i < x.size() - lags; ++i)
-            xTimeSeries.row(i) = x.segment(i, lags);
+    std::string getVariableName(std::string cppName, std::string pyName) {
+#ifdef GMDH_MODULE
+        return pyName;
+#else
+        return cppName;
+#endif
+    }
+
+    PairMVXd timeSeriesTransformation(const VectorXd& timeSeries, int lags) {
+        std::string errorMsg = "";
+        if (timeSeries.size() == 0)
+            errorMsg = getVariableName("timeSeries", "time_series") + " value is empty";
+        else if (lags <= 0)
+            errorMsg = "lags value <= 0";
+        else if (lags >= timeSeries.size())
+            errorMsg = "lags value >= " + getVariableName("timeSeries", "time_series") + " size";
+        if (errorMsg != "")
+            throw std::invalid_argument(errorMsg);
+            
+        VectorXd yTimeSeries{ timeSeries.tail(timeSeries.size() - lags) };
+        MatrixXd xTimeSeries{ timeSeries.size() - lags, lags };
+        for (auto i = 0; i < timeSeries.size() - lags; ++i)
+            xTimeSeries.row(i) = timeSeries.segment(i, lags);
         return { std::move(xTimeSeries), std::move(yTimeSeries) };
     }
 
     SplittedData GmdhModel::internalSplitData(const MatrixXd& x, const VectorXd& y, double testSize, bool addOnesCol) {
         SplittedData data;
-        
-        if (addOnesCol) {
-            data.xTrain.resize(x.rows() - round(x.rows() * testSize), x.cols() + 1);
-            data.xTest.resize(round(x.rows() * testSize), x.cols() + 1);
+        int testItemsNumber = round(x.rows() * testSize);
 
-            data.xTrain.leftCols(x.cols()) = x.topRows(x.rows() - round(x.rows() * testSize));
+        if (addOnesCol) {
+            data.xTrain.resize(x.rows() - testItemsNumber, x.cols() + 1);
+            data.xTest.resize(testItemsNumber, x.cols() + 1);
+
+            data.xTrain.leftCols(x.cols()) = x.topRows(x.rows() - testItemsNumber);
             data.xTrain.col(x.cols()).setOnes();
 
-            data.xTest.leftCols(x.cols()) = x.bottomRows(round(x.rows() * testSize));
+            data.xTest.leftCols(x.cols()) = x.bottomRows(testItemsNumber);
             data.xTest.col(x.cols()).setOnes();
         }
         else {
-            data.xTrain = x.topRows(x.rows() - round(x.rows() * testSize));
-            data.xTest = x.bottomRows(round(x.rows() * testSize));
+            data.xTrain = x.topRows(x.rows() - testItemsNumber);
+            data.xTest = x.bottomRows(testItemsNumber);
         }
 
-        data.yTrain = y.head(y.size() - round(y.size() * testSize));
-        data.yTest = y.tail(round(y.size() * testSize));
+        data.yTrain = y.head(y.size() - testItemsNumber);
+        data.yTest = y.tail(testItemsNumber);
 
         return data;
     }
@@ -430,6 +438,15 @@ namespace GMDH {
 
     SplittedData splitData(const MatrixXd& x, const VectorXd& y, double testSize, bool shuffle, int randomSeed) {
         validateInputData(&testSize);
+        std::string errorMsg = "";
+        if (x.rows() != y.size())
+            errorMsg = getVariableName("x", "X") + " rows number and y size must be equal";
+        else if (round(x.rows() * testSize) == 0 || round(x.rows() * testSize) == x.rows())
+            errorMsg = "Result contains an empty array. Change the arrays size or the " + 
+                getVariableName("testSize", "test_size") + " value for correct splitting";
+        if (errorMsg != "")
+            throw std::invalid_argument(errorMsg);
+
         SplittedData data;
         if (!shuffle)
             data = GmdhModel::internalSplitData(x, y, testSize);
@@ -441,8 +458,10 @@ namespace GMDH {
             std::iota(std::begin(shuffled_rows_indexes), std::end(shuffled_rows_indexes), 0);
             std::random_shuffle(std::begin(shuffled_rows_indexes), std::end(shuffled_rows_indexes));
 
-            VectorI train_indexes{ std::begin(shuffled_rows_indexes), std::end(shuffled_rows_indexes) - round(x.rows() * testSize) };
-            VectorI test_indexes{ std::end(shuffled_rows_indexes) - round(x.rows() * testSize), std::end(shuffled_rows_indexes) };
+            int testItemsNumber = round(x.rows() * testSize);
+
+            VectorI train_indexes{ std::begin(shuffled_rows_indexes), std::end(shuffled_rows_indexes) - testItemsNumber };
+            VectorI test_indexes{ std::end(shuffled_rows_indexes) - testItemsNumber, std::end(shuffled_rows_indexes) };
 
             data.xTrain = x(train_indexes, Eigen::all);
             data.xTest = x(test_indexes, Eigen::all);

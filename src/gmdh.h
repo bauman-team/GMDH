@@ -80,7 +80,6 @@ protected:
                                            bool shuffle, int randomSeed);
 
     void checkMatrixColsNumber(const MatrixXd& x) const;
-
 public:
     GmdhModel() : level(1), lastLevelEvaluation(0) {}
 
@@ -94,5 +93,6 @@ public:
 
 int GMDH_API validateInputData(double *testSize, int *pAverage = nullptr, 
                                int *threads = nullptr, int *kBest = nullptr);
-PairMVXd GMDH_API timeSeriesTransformation(const VectorXd& x, int lags);
+std::string getVariableName(std::string pyName, std::string cppName);
+PairMVXd GMDH_API timeSeriesTransformation(const VectorXd& timeSeries, int lags);
 }
