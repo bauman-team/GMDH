@@ -192,8 +192,11 @@ namespace GMDH {
 
     ParallelCriterion::ParallelCriterion(CriterionType _firstCriterionType, CriterionType _secondCriterionType,
         double _alpha, Solver _solver) : Criterion(_firstCriterionType, _solver) {
-        secondCriterionType = _secondCriterionType;
+        if (_alpha >= 1 || _alpha <= 0)
+            throw std::invalid_argument("alpha value must be in the (0, 1) range");
+
         alpha = _alpha;
+        secondCriterionType = _secondCriterionType;
     }
 
     PairDVXd ParallelCriterion::calculate(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain,

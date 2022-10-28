@@ -1,4 +1,13 @@
-__all__ = ["time_series_transformation", "split_data", "Solver", "PolynomialType", "CriterionType"]
+__all__ = [
+    "time_series_transformation", 
+    "split_data",
+    "Solver",
+    "PolynomialType",
+    "CriterionType", 
+    "Criterion",
+    "ParallelCriterion",
+    "SequentialCriterion"
+]
 
 
 import _gmdh_core
@@ -46,11 +55,97 @@ class CriterionType(DocEnum):
     ABSOLUTE_STABILITY = _gmdh_core.CriterionType.ABSOLUTE_STABILITY.value, ""
     SYM_ABSOLUTE_STABILITY = _gmdh_core.CriterionType.SYM_ABSOLUTE_STABILITY.value, ""
 
-"""
-class Criterion:
-    def __init__(self, criterion_type, solver=Solver.BALANCED):
-        pass
 
+class Criterion:
+    """
+    Class implementing calculations for all possible single external criterions of GMDH models.
+
+    Parameters
+    ----------
+    criterion_type : gmdh.CriterionType
+        Element from `gmdh.CriterionType` enumeration specifying the type of external criterion 
+        that will be used to select the optimum solution during training GMDH model.
+    solver : gmdh.Solver, default=gmdh.Solver.BALANCED
+        Element from `gmdh.Solver` enumeration specifying the method of linear equations solving during training GMDH model.
+    """
+    def __init__(self, criterion_type, solver=Solver.BALANCED):
+        if not isinstance(criterion_type, CriterionType):
+            raise TypeError(f"{criterion_type} is not a 'CriterionType' type object")
+        if not isinstance(solver, Solver):
+            raise TypeError(f"{solver} is not a 'Solver' type object")
+
+        self.__criterion = _gmdh_core.Criterion(_gmdh_core.CriterionType(criterion_type.value), _gmdh_core.Solver(solver.value))
+
+
+class ParallelCriterion:
+    """
+    Class implementing calculations for double parallel external criterions of GMDH models.
+
+    A double parallel external criterion is a combination of two weighted single criterions.
+    The resulting value is calculated by the formula: result = alpha * criterion1 + (1 - alpha) * criterion2
+
+    Parameters
+    ----------
+    criterion_type : gmdh.CriterionType
+        Element from `gmdh.CriterionType` enumeration specifying the type of the first external criterion 
+        that will be used to select the optimum solution during training GMDH model.
+    second_criterion_type : gmdh.CriterionType
+        Element from `gmdh.CriterionType` enumeration specifying the type of the second external criterion 
+        that will be used to select the optimum solution during training GMDH model.
+    alpha : float, default=0.5
+        Contribution of the first criterion to the combined parallel criterion.
+        The Contribution of the second criterion will be equal to (1 - alpha).
+        Value must be in the (0, 1) range.
+    solver : gmdh.Solver, default=gmdh.Solver.BALANCED
+        Element from `gmdh.Solver` enumeration specifying the method of linear equations solving during training GMDH model.
+    """
+    def __init__(self, criterion_type, second_criterion_type, alpha=0.5, solver=Solver.BALANCED):
+        if not isinstance(criterion_type, CriterionType):
+            raise TypeError(f"{criterion_type} is not a 'CriterionType' type object")
+        if not isinstance(second_criterion_type, CriterionType):
+            raise TypeError(f"{second_criterion_type} is not a 'CriterionType' type object")
+        if not isinstance(solver, Solver):
+            raise TypeError(f"{solver} is not a 'Solver' type object")
+
+        self.__criterion = _gmdh_core.ParallelCriterion(
+            _gmdh_core.CriterionType(criterion_type.value), 
+            _gmdh_core.CriterionType(second_criterion_type.value),
+            alpha, _gmdh_core.Solver(solver.value))
+
+
+class SequentialCriterion:
+    """
+    Class implementing calculations for double sequential external criterions of GMDH models.
+
+    A double sequential external criterion is a combination of two single criterion that are applied one after the other.
+    The first one is used to calculate criterion values for all solutions.
+    The second one is used to recalculate criterion values for several solutions with the best values of the first criterion.
+
+    Parameters
+    ----------
+    criterion_type : gmdh.CriterionType
+        Element from `gmdh.CriterionType` enumeration specifying the type of the first external criterion 
+        that will be used to select the optimum solution during training GMDH model.
+    second_criterion_type : gmdh.CriterionType
+        Element from `gmdh.CriterionType` enumeration specifying the type of the second external criterion 
+        that will be used to recalcuate criterion values for solutions with the best first criterion values.
+    solver : gmdh.Solver, default=gmdh.Solver.BALANCED
+        Element from `gmdh.Solver` enumeration specifying the method of linear equations solving during training GMDH model.
+    """
+    def __init__(self, criterion_type, second_criterion_type, solver=Solver.BALANCED):
+        if not isinstance(criterion_type, CriterionType):
+            raise TypeError(f"{criterion_type} is not a 'CriterionType' type object")
+        if not isinstance(second_criterion_type, CriterionType):
+            raise TypeError(f"{second_criterion_type} is not a 'CriterionType' type object")
+        if not isinstance(solver, Solver):
+            raise TypeError(f"{solver} is not a 'Solver' type object")
+        
+        self.__criterion = _gmdh_core.SequentialCriterion(
+            _gmdh_core.CriterionType(criterion_type.value), 
+            _gmdh_core.CriterionType(second_criterion_type.value),
+            _gmdh_core.Solver(solver.value))
+
+"""
 class Combi:
     def __init__(self):
         self.__combi = _gmdh_core.Combi()

@@ -45,20 +45,13 @@ PYBIND11_MODULE(_gmdh_core, m)
         .value("QUADRATIC", GMDH::PolynomialType::quadratic);
 
     py::class_<GMDH::Criterion>(m, "Criterion")
-        .def(py::init<>())
-        .def(py::init<GMDH::CriterionType, GMDH::Solver>(), 
-            "", 
-            "criterionType"_a, "solver"_a = GMDH::Solver::balanced);
+        .def(py::init<GMDH::CriterionType, GMDH::Solver>());
 
     py::class_<GMDH::ParallelCriterion, GMDH::Criterion>(m, "ParallelCriterion")
-        .def(py::init<GMDH::CriterionType, GMDH::CriterionType, double, GMDH::Solver>(), 
-            "", 
-            "criterion_type"_a, "second_criterion_type"_a, "alpha"_a = 0.5, "solver"_a = GMDH::Solver::balanced);
+        .def(py::init<GMDH::CriterionType, GMDH::CriterionType, double, GMDH::Solver>());
 
     py::class_<GMDH::SequentialCriterion, GMDH::Criterion>(m, "SequentialCriterion")
-        .def(py::init<GMDH::CriterionType, GMDH::CriterionType, GMDH::Solver>(), 
-            "", 
-            "criterion_type"_a, "second_criterion_type"_a, "solver"_a = GMDH::Solver::balanced);
+        .def(py::init<GMDH::CriterionType, GMDH::CriterionType, GMDH::Solver>());
 
     py::class_<GMDH::GmdhModel>(m, "GmdhModel");
     py::class_<GMDH::LinearModel, GMDH::GmdhModel>(m, "LinearModel");
