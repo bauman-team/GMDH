@@ -23,7 +23,8 @@ namespace GMDH
 
     GmdhModel& MULTI::fit(const MatrixXd& x, const VectorXd& y, const Criterion& criterion, int kBest, double testSize,
         int pAverage, int threads, int verbose, double limit) {
-        validateInputData(&testSize, &pAverage, &threads, &kBest);
+        validateInputData(&testSize, &pAverage, &threads, &verbose, &limit, &kBest);
+
         return GmdhModel::gmdhFit(x, y, criterion, kBest, testSize, pAverage, threads, verbose, limit);
     }
 }

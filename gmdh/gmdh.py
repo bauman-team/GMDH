@@ -6,12 +6,19 @@ __all__ = [
     "CriterionType", 
     "Criterion",
     "ParallelCriterion",
-    "SequentialCriterion"
+    "SequentialCriterion",
+    "Combi",
+    "Multi",
+    "Mia",
+    "Ria"
 ]
 
 
 import _gmdh_core
 import enum
+from abc import ABC, abstractmethod
+import warnings
+warnings.filterwarnings("always")
 
 
 class DocEnum(enum.Enum):
@@ -75,7 +82,6 @@ class Criterion:
             raise TypeError(f"{solver} is not a 'Solver' type object")
 
         self.__criterion = _gmdh_core.Criterion(_gmdh_core.CriterionType(criterion_type.value), _gmdh_core.Solver(solver.value))
-
 
 class ParallelCriterion:
     """
@@ -145,16 +151,68 @@ class SequentialCriterion:
             _gmdh_core.CriterionType(second_criterion_type.value),
             _gmdh_core.Solver(solver.value))
 
-"""
-class Combi:
-    def __init__(self):
-        self.__combi = _gmdh_core.Combi()
+class Model(ABC):
+    def __init__(self, model):
+        self._model = model
 
-    def fit(self, X, y, test_size=0.5, p_average=1, n_jobs=1, verbose=0, limit=0):
-        self.__combi.fit(X, y, n_jobs=n_jobs, verbose=verbose)
+    @abstractmethod
+    def fit(self, X, y):
+        pass
+
+    def predict(self, X, lags=None):
+        if lags is None:
+            return self._model.predict(X)
+        else:
+            return self._model.predict(X, lags)
+
+    def get_best_polynomial(self):
+        return self._model.get_best_polynomial()
+
+    def save(self, path):
+        self._model.save(path)
         return self
-"""
 
+    def load(self, path):
+        self._model.load(path)
+        return self
+
+class Combi(Model):
+    def __init__(self):
+        super(Combi, self).__init__(_gmdh_core.Combi())
+
+    def fit(self, X, y, crit=Criterion(CriterionType.REGULARITY), test_size=0.5, p_average=1, n_jobs=1, verbose=0, limit=0):
+        self._model.fit(X, y, crit._Criterion__criterion, test_size, p_average, n_jobs, verbose, limit)
+        return self
+
+class Multi(Model):
+    def __init__(self):
+        super(Multi, self).__init__(_gmdh_core.Multi())
+
+    def fit(self, X, y, crit=Criterion(CriterionType.REGULARITY), k_best=3, test_size=0.5, p_average=1, n_jobs=1, verbose=0, limit=0):
+        self._model.fit(X, y, crit._Criterion__criterion, k_best, test_size, p_average, n_jobs, verbose, limit)
+        return self
+
+class Mia(Model):
+    def __init__(self):
+        super(Mia, self).__init__(_gmdh_core.Mia())
+
+    def fit(self, X, y, crit=Criterion(CriterionType.REGULARITY), k_best=3, polynomial_type=PolynomialType.QUADRATIC, 
+        test_size=0.5, p_average=1, n_jobs=1, verbose=0, limit=0):
+        if not isinstance(polynomial_type, PolynomialType):
+            raise TypeError(f"{polynomial_type} is not a 'PolynomialType' type object")
+        self._model.fit(X, y, crit._Criterion__criterion, k_best, _gmdh_core.PolynomialType(polynomial_type.value), test_size, p_average, n_jobs, verbose, limit)
+        return self
+
+class Ria(Model):
+    def __init__(self):
+        super(Ria, self).__init__(_gmdh_core.Ria())
+
+    def fit(self, X, y, crit=Criterion(CriterionType.REGULARITY), k_best=3, polynomial_type=PolynomialType.QUADRATIC, 
+        test_size=0.5, p_average=1, n_jobs=1, verbose=0, limit=0):
+        if not isinstance(polynomial_type, PolynomialType):
+            raise TypeError(f"{polynomial_type} is not a 'PolynomialType' type object")
+        self._model.fit(X, y, crit._Criterion__criterion, k_best, _gmdh_core.PolynomialType(polynomial_type.value), test_size, p_average, n_jobs, verbose, limit)
+        return self
 
 def time_series_transformation(time_series, lags):
     """

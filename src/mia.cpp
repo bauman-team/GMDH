@@ -120,7 +120,17 @@ namespace GMDH {
     GmdhModel& MIA::fit(const MatrixXd& x, const VectorXd& y, const Criterion& criterion, int kBest, 
                         PolynomialType _polynomialType, double testSize, int pAverage, 
                         int threads, int verbose, double limit) {
-        validateInputData(&testSize, &pAverage, &threads, &kBest);
+        /*
+        It is necessasy for kBest value to be >= 3 for the MIA algorithm because 
+        the number of combinations at each level is equal to combinations of 2 elements from kBest.
+        If kBest == 2 then there will be only one possible combination.
+        If kBest == 1 then it will be impossible to create combinations at all.
+        */
+        if (kBest < 3) {
+            std::string errorMsg = getVariableName("kBest", "k_best") + " value must be an integer >= 3";
+            throw std::invalid_argument(errorMsg);
+        }
+        validateInputData(&testSize, &pAverage, &threads, &verbose, &limit, &kBest);
         polynomialType = _polynomialType;
         return GmdhModel::gmdhFit(x, y, criterion, kBest, testSize, pAverage, threads, verbose, limit);
     }

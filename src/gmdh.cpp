@@ -55,14 +55,14 @@ namespace GMDH {
     }
 
     void GmdhModel::polynomialsEvaluation(const SplittedData& data, const Criterion& criterion,
-        IterC beginCoeffsVec, IterC endCoeffsVec, std::atomic<int> *leftTasks, bool verbose) const {
+        IterC beginCoeffsVec, IterC endCoeffsVec, std::atomic<int> *leftTasks, int verbose) const {
         for (; beginCoeffsVec < endCoeffsVec; ++beginCoeffsVec) {
             auto pairCoeffsEvaluation{ criterion.calculate(xDataForCombination(data.xTrain, beginCoeffsVec->combination()),
                                                            xDataForCombination(data.xTest, beginCoeffsVec->combination()),
                                                            data.yTrain, data.yTest) };
             beginCoeffsVec->setEvaluation(pairCoeffsEvaluation.first);
             beginCoeffsVec->setBestCoeffs(std::move(pairCoeffsEvaluation.second));
-            if (unlikely(verbose))
+            if (unlikely(verbose > 0))
                 --(*leftTasks);                
         }
     }
@@ -120,7 +120,7 @@ namespace GMDH {
             for (auto it = std::begin(combinations); it != std::end(combinations); ++it, ++currLevelEvaluation)
                 currLevelEvaluation->setCombination(std::move(*it));
 
-            if (verbose) {
+            if (verbose > 0) {
                 leftTasks = static_cast<int>(evaluationCoeffsVec.size()); // seting up counter for verbose
                 progressBar = std::make_unique<ProgressBar>(
                     option::BarWidth{ 25 },
@@ -147,7 +147,7 @@ namespace GMDH {
                 post(pool, std::move(pt)); // starting task executions
             } 
 
-            if (verbose) {
+            if (verbose > 0) {
                 while (leftTasks) {
 #ifdef GMDH_MODULE
                     if (PyErr_CheckSignals() != 0) { // handling keyboard (ctrl+c) interruption
@@ -172,7 +172,7 @@ namespace GMDH {
             } 
             goToTheNextLevel = nextLevelCondition(kBest, pAverage, evaluationCoeffsVec, criterion, data, limit); // checking the results of the current level for improvement
 
-            if (verbose)
+            if (verbose > 0)
             {
                 std::string stringError;
                 std::ostringstream stream;
@@ -190,7 +190,7 @@ namespace GMDH {
                 progressBar->set_progress(100);
             }
         } while (goToTheNextLevel);
-        if (verbose)
+        if (verbose > 0)
             show_console_cursor(true);
         return *this;   
     }
@@ -220,53 +220,78 @@ namespace GMDH {
         return 0;
     }
 
-    int validateInputData(double* testSize, int* pAverage, int* threads, int* kBest) {
+    int validateInputData(double* testSize, int* pAverage, int* threads, int* verbose, double* limit, int* kBest) {
         auto errorCode{ 0 };
 #ifdef GMDH_MODULE
         auto sys = pybind11::module::import("sys");
 #else
         std::cout << DISPLAYEDCOLORWARNING;
 #endif
+        // block with exceptions 
         if (*testSize <= 0 || *testSize >= 1) { // TODO: add range 
             std::string errorMsg = getVariableName("testSize", "test_size") + " value must be in the (0, 1) range";
             throw std::invalid_argument(errorMsg);
             //errorCode |= 1;
         }
+        if (pAverage && *pAverage < 1) {
+            std::string errorMsg = getVariableName("pAverage", "p_average") + " value must be a positive integer";
+            throw std::invalid_argument(errorMsg);
+            //errorCode |= 4;
+        }
+        if (limit && *limit < 0) {
+            std::string errorMsg = getVariableName("limit", "limit") + " value must be non-negative";
+            throw std::invalid_argument(errorMsg);
+        }
+        if (kBest && *kBest < 1) {
+            std::string errorMsg = getVariableName("kBest", "k_best") + " value must be a positive integer";
+            throw std::invalid_argument(errorMsg);
+            //errorCode |= 8;
+        }
+
+        // block with warnings 
         if (threads)
         {
             if (*threads == -1)
                 *threads = boost::thread::hardware_concurrency(); // TODO: maybe find optimal count based on data.size() and hardware_concurrency()
             else if (*threads < 1 || *threads > boost::thread::hardware_concurrency()) {
-                if (*threads < 1)
-                    * threads = 1;
-                else if (*threads > boost::thread::hardware_concurrency())
-                    *threads = 1; //boost::thread::hardware_concurrency(); // TODO: change limit
-                errorCode |= 2;
+                if (*threads < 1) {
 #ifdef GMDH_MODULE
-                PyErr_WarnEx(PyExc_Warning, DISPLAYEDWARNINGMSG("number of n_jobs", "n_jobs = 1"), 1);
+                    PyErr_WarnEx(PyExc_Warning, MINTHREADSWARNING("n_jobs"), 1);
 #else
-                std::cout << DISPLAYEDWARNINGMSG("number of threads", "threads = 1");
+                    std::cout << MINTHREADSWARNING("threads");
 #endif
+                    *threads = 1;
+                }  
+                else if (*threads > boost::thread::hardware_concurrency()) {
+#ifdef GMDH_MODULE
+                    PyErr_WarnEx(PyExc_Warning, MAXTHREADSWARNING("n_jobs"), 1);
+#else
+                    std::cout << MAXTHREADSWARNING("threads");
+#endif
+                    *threads = boost::thread::hardware_concurrency(); // TODO: change limit
+                }
+                //errorCode |= 2;
             }
         }
-        if (pAverage && *pAverage < 1) {
+        if (verbose) {
+            if (*verbose < 0) {
 #ifdef GMDH_MODULE
-            PyErr_WarnEx(PyExc_Warning, DISPLAYEDWARNINGMSG("number of p_average", "p_average = 1"), 1);
+                PyErr_WarnEx(PyExc_Warning, MINVERBOSEWARNING("verbose"), 1);
 #else
-            std::cout << DISPLAYEDWARNINGMSG("number of pAverage", "pAverage = 1");
+                std::cout << MINVERBOSEWARNING("verbose");
 #endif
-            * pAverage = 1;
-            errorCode |= 4;
-        }
-        if (kBest && *kBest < 1) {
+                *verbose = 0;
+            }
+            else if (*verbose > MAXVERBOSENUMBER) {
 #ifdef GMDH_MODULE
-            PyErr_WarnEx(PyExc_Warning, DISPLAYEDWARNINGMSG("number of k_best", "k_best = 1"), 1);
-#else 
-            std::cout << DISPLAYEDWARNINGMSG("number of kBest", "kBest = 1");
+                PyErr_WarnEx(PyExc_Warning, MAXVERBOSEWARNING("verbose"), 1);
+#else
+                std::cout << MAXVERBOSEWARNING("verbose");
 #endif
-            * kBest = 1;
-            errorCode |= 8;
+                *verbose = MAXVERBOSENUMBER;
+            }
         }
+
 #ifdef GMDH_MODULE
         sys.attr("stderr").attr("flush")();
 #else
@@ -295,7 +320,7 @@ namespace GMDH {
         std::ofstream modelFile(path);
         if (!modelFile.is_open())
 #ifdef GMDH_MODULE
-            throw GmdhException(GMDHOPENFILEEXCEPTIONMSG); 
+            throw FileException("Invalid argument: '" + path + "'"); 
 #else
             return 1; 
 #endif
@@ -309,16 +334,16 @@ namespace GMDH {
     int GmdhModel::load(const std::string& path) {        
         if (!boost::filesystem::is_regular_file(path)) // TODO: maybe remove because extra checking
 #ifdef GMDH_MODULE
-            throw GmdhException(GMDHOPENFILEEXCEPTIONMSG); 
+            throw FileException("Invalid argument: '" + path + "'");
 #else
             return 1; 
 #endif
         
         std::ifstream modelFile(path);
         
-        if (!modelFile.is_open())
+        if (!modelFile.is_open()) // TODO: maybe remove this condition because if file can't be opened is_regular_file will return false
 #ifdef GMDH_MODULE
-            throw GmdhException(GMDHOPENFILEEXCEPTIONMSG); 
+            throw FileException(OPENFILEEXCEPTION); 
 #else
             return 1; 
 #endif
@@ -331,7 +356,7 @@ namespace GMDH {
             if (ec) {
                 modelFile.close();
 #ifdef GMDH_MODULE
-                throw GmdhException(GMDHLOADMODELPARAMSEXCEPTIONMSG);
+                throw FileException(CORRUPTEDFILEEXCEPTION);
 #else
                 return 2; 
 #endif
@@ -341,7 +366,8 @@ namespace GMDH {
             if (errorCode) {
                 modelFile.close();
 #ifdef GMDH_MODULE
-                throw GmdhException(GMDHLOADMODELNAMEEXCEPTIONMSG(std::string{jsonValue.as_object().at("modelName").as_string().c_str()}, getModelName())); 
+                std::string inputModel{ jsonValue.as_object().at("modelName").as_string().c_str() };
+                throw FileException(WRONGMODELFILEEXCEPTION(inputModel, getModelName()));
 #else
                 return errorCode; 
 #endif
@@ -353,6 +379,10 @@ namespace GMDH {
     }
 
     VectorXd GmdhModel::predict(const RowVectorXd& x, int lags) const {
+        if (lags <= 0) {
+            std::string errorMsg = "lags value must be a positive integer";
+            throw std::invalid_argument(errorMsg);
+        }
         RowVectorXd expandedX(RowVectorXd::Zero(x.size() + lags));
         expandedX.leftCols(x.size()) = x;
         for (int i = 0; i < lags; ++i)
@@ -393,9 +423,9 @@ namespace GMDH {
         if (timeSeries.size() == 0)
             errorMsg = getVariableName("timeSeries", "time_series") + " value is empty";
         else if (lags <= 0)
-            errorMsg = "lags value <= 0";
+            errorMsg = "lags value must be a positive integer";
         else if (lags >= timeSeries.size())
-            errorMsg = "lags value >= " + getVariableName("timeSeries", "time_series") + " size";
+            errorMsg = "lags value can't be greater than " + getVariableName("timeSeries", "time_series") + " size";
         if (errorMsg != "")
             throw std::invalid_argument(errorMsg);
             
@@ -432,8 +462,13 @@ namespace GMDH {
     }
 
     void GmdhModel::checkMatrixColsNumber(const MatrixXd& x) const {
-        if (inputColsNumber != x.cols())
-            throw GmdhException(GMDHPREDICTEXCEPTIONMSG);
+        if (inputColsNumber != x.cols()) {
+            std::string varName = getVariableName("x", "X");
+            std::string needCols = std::to_string(inputColsNumber);
+            std::string errorMsg =  "Matrix '" + varName + "' must have " + needCols + 
+                " columns because there were " + needCols + " columns in the training '" + varName + "' matrix";
+            throw std::invalid_argument(errorMsg);
+        }
     }
 
     SplittedData splitData(const MatrixXd& x, const VectorXd& y, double testSize, bool shuffle, int randomSeed) {

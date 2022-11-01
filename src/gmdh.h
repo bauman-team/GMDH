@@ -64,7 +64,7 @@ protected:
     double getMeanCriterionValue(const VectorC& sortedCombinations, int k) const;
     std::string getPolynomialCoeff(double coeff, int coeffIndex) const;
     void polynomialsEvaluation(const SplittedData& data, const Criterion& criterion, IterC beginCoeffsVec, 
-                               IterC endCoeffsVec, std::atomic<int>* leftTasks, bool verbose) const;
+                               IterC endCoeffsVec, std::atomic<int>* leftTasks, int verbose) const;
     bool nextLevelCondition(int kBest, int pAverage, VectorC& combinations,
                             const Criterion& criterion, SplittedData& data, double limit);
     GmdhModel& gmdhFit(const MatrixXd& x, const VectorXd& y, const Criterion& criterion, int kBest, 
@@ -146,8 +146,8 @@ public:
  * 
  * @return Method exit status
  */
-int GMDH_API validateInputData(double *testSize, int *pAverage = nullptr, 
-                               int *threads = nullptr, int *kBest = nullptr);
+int GMDH_API validateInputData(double* testSize, int* pAverage = nullptr, int* threads = nullptr,
+                               int* verbose = nullptr, double* limit = nullptr, int* kBest = nullptr);
 std::string&& getVariableName(std::string&& pyName, std::string&& cppName);
 PairMVXd GMDH_API timeSeriesTransformation(const VectorXd& timeSeries, int lags);
 }
