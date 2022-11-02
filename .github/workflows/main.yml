@@ -1,0 +1,36 @@
+name: Run C++ tests
+on:
+  push:
+    branches:
+      - master
+      - develop
+  pull_request:
+    branches:
+      - master
+      - develop
+
+jobs:
+  build:
+    if:  github.base_ref != 'develop' || github.base_ref == 'develop' && github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.8.14
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.8.14
+    - name: Install dependencies
+      run: |
+        sudo apt-get install -y gcc g++ build-essential cmake libgtest-dev
+        wget -O boost_1_79_0.tar.gz https://boostorg.jfrog.io/artifactory/main/release/1.79.0/source/boost_1_79_0.tar.gz
+        tar xzvf boost_1_79_0.tar.gz
+        cd boost_1_79_0/
+        sudo ./bootstrap.sh --prefix=/usr/local
+        sudo ./b2 install --with-filesystem --with-system --with-thread --with-json --with-chrono
+        export LD_LIBRARY_PATH=/usr/local/lib
+    - name: Build 
+      run: |
+        mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && cmake --build . --config Release --target gmdh gmdh_tests
+    - name: Test
+      run: |
+        ./build/gmdh_tests

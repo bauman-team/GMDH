@@ -22,6 +22,7 @@ endif()
 
 target_link_libraries(${TESTS_NAME} PRIVATE ${LIBRARY_NAME})
 target_link_libraries(${TESTS_NAME} PRIVATE gtest gtest_main)
+#target_compile_definitions(${TESTS_NAME} PUBLIC LDFLAGS=-L/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/lib)
 
 if(Boost_FOUND)
     target_include_directories(${TESTS_NAME} PRIVATE ${Boost_INCLUDE_DIR}) # fix boost not find

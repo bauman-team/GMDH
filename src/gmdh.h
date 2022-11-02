@@ -52,7 +52,14 @@ protected:
     double currentLevelEvaluation;
     std::vector<VectorC> bestCombinations;
 
+
+    /**
+     * @brief Get full class name
+     * 
+     * @return String of class name model
+     */
     std::string getModelName() const;
+
     VectorVu16 nChooseK(int n, int k) const;
     double getMeanCriterionValue(const VectorC& sortedCombinations, int k) const;
     std::string getPolynomialCoeff(double coeff, int coeffIndex) const;
@@ -71,7 +78,20 @@ protected:
     virtual std::string getPolynomialVariable(int levelIndex, int coeffIndex, int coeffsNumber, 
                                               const VectorU16& bestColsIndexes) const = 0;
 
+    /**
+     * @brief Transform model data to JSON format for saving
+     * 
+     * @return JSON value of model data
+     */
     virtual boost::json::value toJSON() const;
+
+    /**
+     * @brief Set up model from JSON format model data
+     *
+     * @param jsonModel model data in JSON format
+     * 
+     * @return Method exit status
+     */
     virtual int fromJSON(boost::json::value jsonModel);
 
     static SplittedData internalSplitData(const MatrixXd& x, const VectorXd& y, double testSize, bool addOnesCol = false);
@@ -83,7 +103,24 @@ protected:
 public:
     GmdhModel() : level(1), lastLevelEvaluation(0) {}
 
+    /**
+     * @brief Save model data into regular file
+     *
+     * @param path path to regular file
+     * 
+     * @return Method exit status
+     */
     int save(const std::string& path) const;
+
+    /**
+     * @brief Load model data from regular file
+     *
+     * @param path path to regular file
+     * 
+     * @warning if opening file has a large size then program falls without exceptions
+     * 
+     * @return Method exit status
+     */
     int load(const std::string& path);
 
     VectorXd predict(const RowVectorXd& x, int lags) const;
@@ -91,6 +128,22 @@ public:
     std::string getBestPolynomial() const;
 };
 
+/**
+ * @brief Validate input params values and correct erroneous
+ *
+ * @param testSize value size of test selection
+ * @param pAverage value of ...
+ * @param threads value of using threads for fit
+ * @param kBest value of ...
+ * 
+ * Exit status stores info about erroneous values in bit format
+ * if testSize is erroneous then status = 0b1
+ * if pAverage is erroneous then status = 0b10
+ * if threads is erroneous then status = 0b100
+ * ...
+ * 
+ * @return Method exit status
+ */
 int GMDH_API validateInputData(double *testSize, int *pAverage = nullptr, 
                                int *threads = nullptr, int *kBest = nullptr);
 std::string getVariableName(std::string pyName, std::string cppName);
