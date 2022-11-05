@@ -62,7 +62,8 @@ protected:
 
     VectorVu16 nChooseK(int n, int k) const;
     double getMeanCriterionValue(const VectorC& sortedCombinations, int k) const;
-    std::string getPolynomialCoeff(double coeff, int coeffIndex) const;
+    std::string getPolynomialCoeffSign(double coeff, bool isFirstCoeff) const;
+    std::string getPolynomialCoeffValue(double coeff, bool isLastCoeff) const;
     void polynomialsEvaluation(const SplittedData& data, const Criterion& criterion, IterC beginCoeffsVec, 
                                IterC endCoeffsVec, std::atomic<int>* leftTasks, int verbose) const;
     bool nextLevelCondition(int kBest, int pAverage, VectorC& combinations,

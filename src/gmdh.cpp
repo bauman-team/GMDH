@@ -300,20 +300,20 @@ namespace GMDH {
         return errorCode;
     }
 
-    std::string GmdhModel::getPolynomialCoeff(double coeff, int coeffIndex) const {
+    std::string GmdhModel::getPolynomialCoeffSign(double coeff, bool isFirstCoeff) const {
+        return ((coeff >= 0) ? ((isFirstCoeff) ? " " : " + ") : " - ");
+    }
+
+    std::string GmdhModel::getPolynomialCoeffValue(double coeff, bool isLastCoeff) const {
         std::string stringCoeff;
-        if (coeff == 0)
-            stringCoeff = "0";
-        else {
-            std::ostringstream stream;
-            if (abs(coeff) >= 1e-4 && abs(coeff) < 1e6)
-                stream << std::fixed << std::setprecision(4);
-            stream << abs(coeff);
-            stringCoeff = stream.str();
-            boost::trim_right_if(stringCoeff, boost::is_any_of("0"));
-            boost::trim_right_if(stringCoeff, boost::is_any_of("."));
-        }
-        return ((coeff >= 0) ? ((coeffIndex > 0) ? " + " : " ") : " - ") + stringCoeff;
+        std::ostringstream stream;
+        if (abs(coeff) >= 1e-4 && abs(coeff) < 1e6)
+            stream << std::fixed << std::setprecision(4);
+        stream << abs(coeff);
+        stringCoeff = stream.str();
+        boost::trim_right_if(stringCoeff, boost::is_any_of("0"));
+        boost::trim_right_if(stringCoeff, boost::is_any_of("."));
+        return ((stringCoeff != "1" || isLastCoeff) ? stringCoeff : "");
     }
 
     int GmdhModel::save(const std::string& path) const {
@@ -397,9 +397,17 @@ namespace GMDH {
                 auto bestColsIndexes = bestCombinations[i][j].combination();
                 auto bestCoeffs = bestCombinations[i][j].bestCoeffs();
                 polynomialStr += getPolynomialPrefix(i, j);
+                bool isFirstCoeff = true;
                 for (int k = 0; k < bestCoeffs.size(); ++k) {
-                    polynomialStr += getPolynomialCoeff(bestCoeffs[k], k);
-                    polynomialStr += getPolynomialVariable(i, k, bestCoeffs.size(), bestColsIndexes);
+                    if (bestCoeffs[k]) {
+                        polynomialStr += getPolynomialCoeffSign(bestCoeffs[k], isFirstCoeff);
+                        auto coeffValuelStr = getPolynomialCoeffValue(bestCoeffs[k], k == bestCoeffs.size() - 1);
+                        polynomialStr += coeffValuelStr;
+                        if (coeffValuelStr != "" && k != bestCoeffs.size() - 1)
+                            polynomialStr += "*";
+                        polynomialStr += getPolynomialVariable(i, k, bestCoeffs.size(), bestColsIndexes);
+                        isFirstCoeff = false;
+                    }
                 }
                 if (i < bestCombinations.size() - 1 || j < bestCombinations[i].size() - 1)
                     polynomialStr += "\n";
