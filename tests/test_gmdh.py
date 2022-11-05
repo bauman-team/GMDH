@@ -1,4 +1,5 @@
 import pytest
+<<<<<<< HEAD
 import os
 import sys
 import numpy as np
@@ -8,6 +9,9 @@ import numpy as np
 #sys.path.append(GMDH_ROOT)
 #sys.path.append(GMDH_BINARY_FILES)
 
+=======
+import numpy as np
+>>>>>>> 734e24e (fully documented python module, improved get_best_polynomial output format, pylint 10/10)
 import gmdh
 
 """@pytest.fixture(scope='class')

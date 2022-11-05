@@ -57,16 +57,25 @@ namespace GMDH {
 			return MIA::getPolynomialVariable(levelIndex, coeffIndex, coeffsNumber, bestColsIndexes);
 		
 		if (coeffIndex == 0)
-			return "*x" + std::to_string(bestColsIndexes[coeffIndex] + 1);
+			return "x" + std::to_string(bestColsIndexes[coeffIndex] + 1);
 		else if (coeffIndex == 1)
-			return "*f" + std::to_string(levelIndex);
+			return "f" + std::to_string(levelIndex);
 		else if (coeffIndex == 2 && coeffsNumber > 3)
-			return "*x" + std::to_string(bestColsIndexes[0] + 1) + "*f" + std::to_string(levelIndex);
+			return "x" + std::to_string(bestColsIndexes[0] + 1) + "*f" + std::to_string(levelIndex);
 		else if (coeffIndex == 3 && coeffsNumber > 4)
-			return "*x" + std::to_string(bestColsIndexes[coeffIndex - 3] + 1) + "^2";
+			return "x" + std::to_string(bestColsIndexes[coeffIndex - 3] + 1) + "^2";
 		else if (coeffIndex == 4 && coeffsNumber > 4)
-			return "*f" + std::to_string(levelIndex) + "^2";
+			return "f" + std::to_string(levelIndex) + "^2";
 		return "";
+	}
+
+	GmdhModel& RIA::fit(const MatrixXd& x, const VectorXd& y, const Criterion& criterion, int kBest,
+		PolynomialType _polynomialType, double testSize, int pAverage,
+		int threads, int verbose, double limit) {
+
+		validateInputData(&testSize, &pAverage, &threads, &verbose, &limit, &kBest);
+		polynomialType = _polynomialType;
+		return GmdhModel::gmdhFit(x, y, criterion, kBest, testSize, pAverage, threads, verbose, limit);
 	}
 
 	VectorXd RIA::predict(const MatrixXd& x) const {

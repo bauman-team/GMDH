@@ -10,6 +10,11 @@ namespace GMDH {
 		std::string getPolynomialVariable(int levelIndex, int coeffIndex, int coeffsNumber, 
 										  const VectorU16& bestColsIndexes) const override;
 	public:
+		GmdhModel& fit(const MatrixXd& x, const VectorXd& y,
+			const Criterion& criterion = Criterion(CriterionType::regularity), int kBest = 1,
+			PolynomialType _polynomialType = PolynomialType::quadratic, double testSize = 0.5,
+			int pAverage = 1, int threads = 1, int verbose = 0, double limit = 0);
+
 		using GmdhModel::predict;
 		VectorXd predict(const MatrixXd& x) const override;
 	};

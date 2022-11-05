@@ -20,7 +20,7 @@ namespace GMDH {
     }
 
     std::string LinearModel::getPolynomialVariable(int levelIndex, int coeffIndex, int coeffsNumber, const VectorU16& bestColsIndexes) const {
-        return ((coeffIndex != coeffsNumber - 1) ? "*x" + std::to_string(bestColsIndexes[coeffIndex] + 1) : "");
+        return ((coeffIndex != coeffsNumber - 1) ? "x" + std::to_string(bestColsIndexes[coeffIndex] + 1) : "");
     }
 
     LinearModel::LinearModel() {
