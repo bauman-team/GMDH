@@ -14,10 +14,8 @@ elseif(CMAKE_HOST_UNIX)
 endif()
 
 if(WINDOWS)
-    set(BOOST_ROOT "C:/boost_1_79_0")
     set(Boost_USE_STATIC_LIBS ON) 
 else()
-    set(BOOST_ROOT "/home/mikhail-xnor/Downloads/boost_1_79_0") 
     set(Boost_USE_STATIC_LIBS OFF) 
 endif()
 

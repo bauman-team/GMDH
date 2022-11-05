@@ -57,10 +57,10 @@ jobs:
         export LD_LIBRARY_PATH=/usr/local/lib
     - name: Build targets for testing
       run: |
-        export GMDH_DIR=$(pwd)
+        GMDH_ROOT=$(pwd)
         mkdir -p build/Debug
-        export GMDH_BINARY_FILES=$(pwd)/build/Debug
         cd build/Debug
+        GMDH_BINARY_FILES=$(pwd)
         cmake -DCMAKE_BUILD_TYPE=Coverage ../..
         cmake --build . --config Debug --target gmdh_tests _gmdh_core
     - name: Run test cpp shared library
@@ -68,6 +68,8 @@ jobs:
         ./build/Debug/gmdh_tests --gtest_output=xml:cpp_code_tests_report.xml
     - name: Run pytests
       run: |
+        export GMDH_ROOT=$(pwd)
+        export GMDH_BINARY_FILES=$(pwd)/build/Debug
         pytest -v & coverage html
     - name: Archive cpp code tests results
       if: always()
