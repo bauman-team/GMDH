@@ -19,9 +19,14 @@ else()
     set(Boost_USE_STATIC_LIBS OFF) 
 endif()
 
+find_package(Boost 1.79.0 COMPONENTS system thread filesystem json chrono) 
+if(Boost_FOUND)
+else()
+    message( FATAL_ERROR "Need install boost dependencies!" )
+endif()
+
 set(Boost_USE_MULTITHREADED ON)  
 set(Boost_USE_STATIC_RUNTIME OFF) 
-find_package(Boost 1.79.0 COMPONENTS system thread filesystem json chrono) 
 
 set(LIBRARY_NAME gmdh)
 set(MODULE_NAME _gmdh_core)
@@ -40,7 +45,3 @@ set_target_properties(${LIBRARY_NAME} ${MODULE_NAME} ${TESTS_NAME} ${PROJECT_EXA
     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
 )
-
-enable_testing()
-add_test(NAME ${TESTS_NAME}
-	COMMAND ${TESTS_NAME})

@@ -27,13 +27,12 @@ set(SOURCES ../src/common.h
     gmdh.cpp) 
 
 pybind11_add_module(${MODULE_NAME}  ${SOURCES})
-target_include_directories(${MODULE_NAME} PRIVATE ../external/pybind11-2.10.0/include)
-target_include_directories(${MODULE_NAME} PRIVATE ../external/eigen-3.4)
-target_include_directories(${MODULE_NAME} PRIVATE ../external/indicators-master/include)
+
 target_compile_definitions(${MODULE_NAME} PRIVATE "GMDH_MODULE")
 
-
-if(Boost_FOUND)
-    target_include_directories(${MODULE_NAME} PRIVATE ${Boost_INCLUDE_DIR})
-    target_link_libraries(${MODULE_NAME} PRIVATE ${Boost_LIBRARIES})
-endif()
+target_include_directories(${MODULE_NAME} PRIVATE ../external/eigen-3.4
+    ../external/indicators-master/include
+    ../external/pybind11-2.10.0/include
+    ${Boost_INCLUDE_DIR})
+    
+target_link_libraries(${MODULE_NAME} PRIVATE ${Boost_LIBRARIES})
