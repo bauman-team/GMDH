@@ -1,8 +1,5 @@
 cmake_minimum_required(VERSION 3.19)
 
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
 add_executable(${TESTS_NAME} test_setup.h
 	test_setup.cpp
 	test_combi.cpp
@@ -10,8 +7,11 @@ add_executable(${TESTS_NAME} test_setup.h
 	test_ria.cpp)
 target_include_directories(${TESTS_NAME} PRIVATE ../src/ ../external/eigen-3.4 ../external/indicators-master/include)
 
-if (WIN32)
-	target_compile_definitions(${TESTS_NAME} PRIVATE "GMDH_LIB")
+if (LINUX)
+else()
+	if (WINDOWS)
+		target_compile_definitions(${TESTS_NAME} PRIVATE "GMDH_LIB")
+	endif()
 	include(FetchContent)
 	FetchContent_Declare(
 	  googletest
@@ -22,7 +22,6 @@ endif()
 
 target_link_libraries(${TESTS_NAME} PRIVATE ${LIBRARY_NAME})
 target_link_libraries(${TESTS_NAME} PRIVATE gtest gtest_main)
-#target_compile_definitions(${TESTS_NAME} PUBLIC LDFLAGS=-L/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/lib)
 
 if(Boost_FOUND)
     target_include_directories(${TESTS_NAME} PRIVATE ${Boost_INCLUDE_DIR}) # fix boost not find

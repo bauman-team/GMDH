@@ -1,11 +1,19 @@
 cmake_minimum_required(VERSION 3.19)
 
+project(GMDH VERSION 0.2)
+
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-project(GMDH VERSION 0.2)
+if (CMAKE_HOST_WIN32)
+    set(WINDOWS 1)
+elseif(CMAKE_HOST_APPLE)
+    set(MACOS 1)
+elseif(CMAKE_HOST_UNIX)
+    set(LINUX 1)
+endif()
 
-if(WIN32)
+if(WINDOWS)
     set(BOOST_ROOT "C:/boost_1_79_0")
     set(Boost_USE_STATIC_LIBS ON) 
 else()

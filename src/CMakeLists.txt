@@ -1,8 +1,5 @@
 cmake_minimum_required(VERSION 3.19)
 
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
 set(SOURCES common.h
     gmdh_objects.h
     gmdh.h
@@ -25,7 +22,7 @@ target_compile_definitions(${LIBRARY_NAME} PRIVATE "GMDH_LIB")
 target_include_directories(${LIBRARY_NAME} PRIVATE ../external/eigen-3.4)
 target_include_directories(${LIBRARY_NAME} PRIVATE ../external/indicators-master/include)
 
-if(WIN32)
+if(WINDOWS)
     target_sources(${LIBRARY_NAME} PRIVATE gmdh_lib.h dllmain.cpp)
     target_compile_definitions(${LIBRARY_NAME} PRIVATE "GMDH_EXPORTS")
 endif()
