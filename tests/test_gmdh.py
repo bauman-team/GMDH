@@ -1,12 +1,12 @@
 import pytest
+import os
 import sys
 import numpy as np
 
-sys.path.append("C:/Users/Mi/Documents/Diploma/GMDH/build/Release")
-sys.path.append("C:/Users/Mi/Documents/Diploma/GMDH")
-
-sys.path.append("/home/mikhail-xnor/Projects/GMDH/build/Release")
-sys.path.append("/home/mikhail-xnor/Projects/GMDH")
+#GMDH_ROOT = os.environ['GMDH_ROOT']
+#GMDH_BINARY_FILES = os.environ['GMDH_BINARY_FILES']
+#sys.path.append(GMDH_ROOT)
+#sys.path.append(GMDH_BINARY_FILES)
 
 import gmdh
 
@@ -68,7 +68,7 @@ class TestDataPreparations:
         assert np.array_equal(x_test, [[7, 8, 9]])
         assert np.array_equal(y_train, [10, 11])
         assert np.array_equal(y_test, [12])
-    '''
+    
     def test_split_data_with_shuffle(self):
         """
         Testing gmdh.split_data() method using simple X and y arrays with shuffling and the same random_state param 2 times.
@@ -82,7 +82,7 @@ class TestDataPreparations:
         assert x_test.shape == (2, 3) and np.array_equal(x_test, x_test2)
         assert y_train.shape == (1,) and np.array_equal(y_train, y_train2)
         assert y_test.shape == (2,) and np.array_equal(y_test, y_test2)
-    '''
+    
 
     @pytest.mark.parametrize('X, y, test_size',
                             [([], [], 0.2),  # empty arrays

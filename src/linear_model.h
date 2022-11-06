@@ -13,7 +13,7 @@ namespace GMDH {
         std::string getPolynomialVariable(int levelIndex, int coeffIndex, int coeffsNumber, 
                                           const VectorU16& bestColsIndexes) const override;
 
-        virtual VectorVu16 generateCombinations(int n_cols) const = 0;
+        virtual VectorVu16 generateCombinations(int n_cols) const override  = 0;
     public:
         LinearModel();
 
