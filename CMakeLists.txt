@@ -20,8 +20,7 @@ else()
 endif()
 
 find_package(Boost 1.79.0 COMPONENTS system thread filesystem json chrono) 
-if(Boost_FOUND)
-else()
+if(NOT Boost_FOUND)
     message( FATAL_ERROR "Need install boost dependencies!" )
 endif()
 

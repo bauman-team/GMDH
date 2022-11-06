@@ -119,6 +119,8 @@ public:
      * 
      * @warning if opening file has a large size then program falls without exceptions
      * 
+     * @throw if the opening file JSON structure is broken can throw exceptions as std::invalid_argument or std::out_of_range
+     * 
      * @return Method exit status
      */
     int load(const std::string& path);
@@ -146,6 +148,6 @@ public:
  */
 int GMDH_API validateInputData(double *testSize, int *pAverage = nullptr, 
                                int *threads = nullptr, int *kBest = nullptr);
-std::string getVariableName(std::string pyName, std::string cppName);
+std::string&& getVariableName(std::string&& pyName, std::string&& cppName);
 PairMVXd GMDH_API timeSeriesTransformation(const VectorXd& timeSeries, int lags);
 }

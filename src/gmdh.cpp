@@ -92,12 +92,12 @@ namespace GMDH {
         using T = boost::packaged_task<void>;
         std::unique_ptr<ProgressBar> progressBar;
 
-        boost::asio::thread_pool pool(threads); 
-        std::vector<boost::unique_future<T::result_type> > futures;
+        boost::asio::thread_pool pool(threads); // reserving threads
+        std::vector<boost::unique_future<T::result_type> > futures; // creating vector of futures on executable tasks
         futures.reserve(threads);
         std::atomic<int> leftTasks; // TODO: change to volatile structure
 
-        level = 1;
+        level = 1; // reset last training
         inputColsNumber = x.cols();
         lastLevelEvaluation = std::numeric_limits<double>::max();
 
@@ -108,7 +108,7 @@ namespace GMDH {
         std::cout << data.yTrain << "\n\n";
         std::cout << data.yTest << "\n\n";*/
         bool goToTheNextLevel;
-        VectorC evaluationCoeffsVec;
+        VectorC evaluationCoeffsVec; 
         do {
             futures.clear();
             evaluationCoeffsVec.clear();
@@ -120,8 +120,8 @@ namespace GMDH {
             for (auto it = std::begin(combinations); it != std::end(combinations); ++it, ++currLevelEvaluation)
                 currLevelEvaluation->setCombination(std::move(*it));
 
-            leftTasks = static_cast<int>(evaluationCoeffsVec.size());
             if (verbose) {
+                leftTasks = static_cast<int>(evaluationCoeffsVec.size()); // seting up counter for verbose
                 progressBar = std::make_unique<ProgressBar>(
                     option::BarWidth{ 25 },
                     option::Start{ "LEVEL " + std::to_string(level) + ((std::to_string(level).size() == 1) ? "  [" : " [")},
@@ -135,7 +135,7 @@ namespace GMDH {
                 progressBar->set_progress(0);
             }
             decltype(auto) model = this;
-            auto combsPortion{ static_cast<int>(std::ceil(evaluationCoeffsVec.size() / static_cast<double>(threads))) }; // TODO: maybe change
+            auto combsPortion{ static_cast<int>(std::ceil(evaluationCoeffsVec.size() / static_cast<double>(threads))) }; // spliting all combinations on portions for threads calculating
             for (auto i = 0; i * combsPortion < evaluationCoeffsVec.size(); ++i) {
                 boost::packaged_task<void> pt([model = static_cast<const GmdhModel*>(model),
                     &data = static_cast<const SplittedData&>(data), &criterion = static_cast<const Criterion&>(criterion), 
@@ -143,14 +143,14 @@ namespace GMDH {
                         model->polynomialsEvaluation(data, criterion, std::begin(evaluationCoeffsVec) + combsPortion * i,
                             std::begin(evaluationCoeffsVec) + std::min(static_cast<size_t>(combsPortion * (i + 1)), 
                             evaluationCoeffsVec.size()), &leftTasks, verbose); });
-                futures.push_back(pt.get_future());
-                post(pool, std::move(pt));
+                futures.push_back(pt.get_future()); // saving future on task
+                post(pool, std::move(pt)); // starting task executions
             } 
 
             if (verbose) {
                 while (leftTasks) {
 #ifdef GMDH_MODULE
-                    if (PyErr_CheckSignals() != 0) {
+                    if (PyErr_CheckSignals() != 0) { // handling keyboard (ctrl+c) interruption
                         pool.stop();
                         pool.join();
                         //boost::when_all(std::begin(futures), std::end(futures)).get();  
@@ -164,13 +164,13 @@ namespace GMDH {
                 }
             }
             else {
-                boost::when_all(std::begin(futures), std::end(futures)).get();   
+                boost::when_all(std::begin(futures), std::end(futures)).get(); // waiting until all tasks are completed
 #ifdef GMDH_MODULE
-                if (PyErr_CheckSignals() != 0)
+                if (PyErr_CheckSignals() != 0) // handling keyboard (ctrl+c) interruption
                     return *this;
 #endif
             } 
-            goToTheNextLevel = nextLevelCondition(kBest, pAverage, evaluationCoeffsVec, criterion, data, limit);
+            goToTheNextLevel = nextLevelCondition(kBest, pAverage, evaluationCoeffsVec, criterion, data, limit); // checking the results of the current level for improvement
 
             if (verbose)
             {
@@ -206,7 +206,7 @@ namespace GMDH {
     int GmdhModel::fromJSON(boost::json::value jsonModel) { // TODO: maybe add try/catch
         auto& o = jsonModel.as_object();
         std::string modelName = o.at("modelName").as_string().c_str();
-        if (modelName != getModelName()) 
+        if (modelName != getModelName()) // checking for compliance with the current model and the saved one
             return 3; // TODO: add defines for error numbers
         bestCombinations.clear();
         inputColsNumber = o.at("inputColsNumber").as_int64();
@@ -307,7 +307,7 @@ namespace GMDH {
     }
 
     int GmdhModel::load(const std::string& path) {        
-        if (!boost::filesystem::is_regular_file(path))
+        if (!boost::filesystem::is_regular_file(path)) // TODO: maybe remove because extra checking
 #ifdef GMDH_MODULE
             throw GmdhException(GMDHOPENFILEEXCEPTIONMSG); 
 #else
@@ -380,11 +380,11 @@ namespace GMDH {
         return polynomialStr;
     }
 
-    std::string getVariableName(std::string cppName, std::string pyName) {
+    std::string&& getVariableName(std::string&& cppName, std::string&& pyName) {
 #ifdef GMDH_MODULE
-        return pyName;
+        return std::move(pyName);
 #else
-        return cppName;
+        return std::move(cppName);
 #endif
     }
 

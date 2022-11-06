@@ -21,7 +21,7 @@ add_library(${LIBRARY_NAME} SHARED ${SOURCES})
 
 if(WINDOWS)
     target_sources(${LIBRARY_NAME} PRIVATE gmdh_lib.h dllmain.cpp)
-    target_compile_definitions(${LIBRARY_NAME} PRIVATE "GMDH_EXPORTS")
+    target_compile_definitions(${LIBRARY_NAME} PRIVATE "GMDH_EXPORTS") # for windows shaed lib __declspec(dllimport)
 endif()
 
 target_compile_definitions(${LIBRARY_NAME} PRIVATE "GMDH_LIB")

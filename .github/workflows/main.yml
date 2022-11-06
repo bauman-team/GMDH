@@ -4,7 +4,6 @@ on:
     branches:
       - master
       - develop
-      - feature/githubActions # TODO: remove
   pull_request:
     branches:
       - master
@@ -57,10 +56,10 @@ jobs:
         export LD_LIBRARY_PATH=/usr/local/lib
     - name: Build targets for testing
       run: |
-        GMDH_ROOT=$(pwd)
+        export GMDH_ROOT=$(pwd)
         mkdir -p build/Debug
         cd build/Debug
-        GMDH_BINARY_FILES=$(pwd)
+        export GMDH_BINARY_FILES=$(pwd)
         cmake -DCMAKE_BUILD_TYPE=Coverage ../..
         cmake --build . --config Debug --target gmdh_tests _gmdh_core
     - name: Run test cpp shared library
