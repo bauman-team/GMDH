@@ -8,8 +8,8 @@
 
 namespace py = pybind11;
 
-PYBIND11_MODULE(_gmdh_core, m)
-{
+PYBIND11_MODULE(_gmdh_core, m) {
+
     using namespace std;
     using namespace pybind11::literals;
 

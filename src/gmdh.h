@@ -1,5 +1,6 @@
 #pragma once
 #define BOOST_THREAD_PROVIDES_FUTURE_WHEN_ALL_WHEN_ANY
+#define EIGEN_MPL2_ONLY
 
 #include <vector>
 #include <cmath>

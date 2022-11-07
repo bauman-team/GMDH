@@ -9,7 +9,7 @@ int main() {
     using namespace Eigen;
 
     std::ifstream dataStream;
-    std::string gmdhDir = std::getenv("GMDH_DIR");
+    std::string gmdhDir = std::getenv("GMDH_ROOT");
     dataStream.open(gmdhDir + "/examples/Sber.csv");
     std::string dataLine;
     std::vector<double> dataValues;

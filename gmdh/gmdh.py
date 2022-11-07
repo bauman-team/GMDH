@@ -23,7 +23,7 @@ import enum
 import warnings
 from abc import ABCMeta, abstractmethod
 from docstring_inheritance import NumpyDocstringInheritanceMeta  # pylint: disable=import-error
-import _gmdh_core
+import _gmdh_core  # pylint: disable=import-error
 warnings.filterwarnings("always")
 
 class DocEnum(enum.Enum):
