@@ -3,6 +3,7 @@ alabaster==0.7.12
 apeye==1.2.0
 argon2-cffi==21.3.0
 argon2-cffi-bindings==21.2.0
+astroid==2.12.12
 asttokens==2.0.5
 attrs==22.1.0
 autodocsumm==0.2.9
@@ -23,6 +24,8 @@ debugpy==1.6.2
 decorator==5.1.1
 defusedxml==0.7.1
 dict2css==0.3.0
+dill==0.3.6
+docstring-inheritance==1.0.0
 docutils==0.18.1
 domdf-python-tools==3.5.0
 entrypoints==0.4
@@ -30,6 +33,7 @@ enum-tools==0.9.0.post1
 executing==0.9.1
 fastjsonschema==2.16.1
 fonttools==4.34.4
+graphviz==0.20.1
 html5lib==1.1
 idna==3.4
 imagesize==1.4.1
@@ -41,6 +45,7 @@ ipytest==0.12.0
 ipython==8.4.0
 ipython-genutils==0.2.0
 ipywidgets==7.7.1
+isort==5.10.1
 jedi==0.18.1
 Jinja2==3.1.2
 joblib==1.1.0
@@ -52,10 +57,12 @@ jupyter-core==4.11.1
 jupyterlab-pygments==0.2.2
 jupyterlab-widgets==1.1.1
 kiwisolver==1.4.4
+lazy-object-proxy==1.8.0
 lockfile==0.12.2
 MarkupSafe==2.1.1
 matplotlib==3.5.2
 matplotlib-inline==0.1.3
+mccabe==0.7.0
 mistune==0.8.4
 msgpack==1.0.4
 natsort==8.2.0
@@ -84,6 +91,7 @@ py==1.11.0
 pybind11==2.10.0
 pycparser==2.21
 Pygments==2.12.0
+pylint==2.15.5
 pyparsing==3.0.9
 pyrsistent==0.18.1
 pytest==7.1.3
@@ -124,6 +132,7 @@ terminado==0.15.0
 threadpoolctl==3.1.0
 tinycss2==1.1.1
 tomli==2.0.1
+tomlkit==0.11.6
 tornado==6.2
 traitlets==5.3.0
 typing_extensions==4.4.0
@@ -131,5 +140,6 @@ urllib3==1.26.12
 wcwidth==0.2.5
 webencodings==0.5.1
 widgetsnbextension==3.6.1
+wrapt==1.14.1
 zipp==3.8.1
 pylint==2.15.5

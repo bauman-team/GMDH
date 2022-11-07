@@ -31,3 +31,5 @@ exclude_patterns = []
 
 html_theme = 'nature'
 html_static_path = ['_static']
+
+numpydoc_show_class_members = False 
