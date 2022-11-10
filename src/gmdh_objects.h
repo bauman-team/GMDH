@@ -1,4 +1,3 @@
-
 namespace GMDH {
 
 using namespace Eigen;
@@ -68,5 +67,4 @@ public:
 using VectorC = std::vector<Combination>;
 using IterC = VectorC::iterator;
 using cIterC = VectorC::const_iterator;
-
 };

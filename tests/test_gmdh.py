@@ -3,11 +3,6 @@ import os
 import sys
 import numpy as np
 
-#GMDH_ROOT = os.environ['GMDH_ROOT']
-#GMDH_BINARY_FILES = os.environ['GMDH_BINARY_FILES']
-#sys.path.append(GMDH_ROOT)
-#sys.path.append(GMDH_BINARY_FILES)
-
 import gmdh
 
 """@pytest.fixture(scope='class')
