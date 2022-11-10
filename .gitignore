@@ -12,3 +12,5 @@ __pycache__
 /tests/tests_report.html
 *.so
 *.pyd
+/dist
+*.egg-info

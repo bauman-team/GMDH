@@ -2,6 +2,16 @@
 GMDH: Group method of data handling
 """
 
+# pylint: disable=c-extension-no-member, useless-parent-delegation, too-many-lines
+
+import enum
+import warnings
+from abc import ABCMeta, abstractmethod
+from docstring_inheritance import NumpyDocstringInheritanceMeta  # pylint: disable=import-error
+from  . import _gmdh_core  # pylint: disable=import-error
+
+warnings.filterwarnings("always")
+
 __all__ = [
     "time_series_transformation",
     "split_data",
@@ -16,15 +26,6 @@ __all__ = [
     "Mia",
     "Ria"
 ]
-
-# pylint: disable=c-extension-no-member, useless-parent-delegation, too-many-lines
-
-import enum
-import warnings
-from abc import ABCMeta, abstractmethod
-from docstring_inheritance import NumpyDocstringInheritanceMeta  # pylint: disable=import-error
-from  . import _gmdh_core  # pylint: disable=import-error
-warnings.filterwarnings("always")
 
 class DocEnum(enum.Enum):
     """
