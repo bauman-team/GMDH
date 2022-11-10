@@ -162,6 +162,7 @@ GmdhModel& GmdhModel::gmdhFit(const MatrixXd& x, const VectorXd& y, const Criter
                     progressBar->set_progress(100.0 * (evaluationCoeffsVec.size() - leftTasks) / evaluationCoeffsVec.size());
                 boost::this_thread::sleep_for(boost::chrono::milliseconds(20));
             }
+
         }
         else {
             boost::when_all(std::begin(futures), std::end(futures)).get(); // waiting until all tasks are completed

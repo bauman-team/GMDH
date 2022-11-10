@@ -130,6 +130,8 @@ public:
     VectorXd predict(const RowVectorXd& x, int lags) const;
     virtual VectorXd predict(const MatrixXd& x) const = 0;
     std::string getBestPolynomial() const;
+
+    virtual ~GmdhModel() {};
 };
 
 /**
@@ -148,8 +150,10 @@ public:
  * 
  * @return Method exit status
  */
+
 int GMDH_API validateInputData(double* testSize, int* pAverage = nullptr, int* threads = nullptr,
                                int* verbose = nullptr, double* limit = nullptr, int* kBest = nullptr);
+
 std::string&& getVariableName(std::string&& pyName, std::string&& cppName);
 PairMVXd GMDH_API timeSeriesTransformation(const VectorXd& timeSeries, int lags);
 }
