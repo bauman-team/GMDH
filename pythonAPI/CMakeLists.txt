@@ -36,3 +36,9 @@ target_include_directories(${MODULE_NAME} PRIVATE ../external/eigen-3.4
     ${Boost_INCLUDE_DIR})
     
 target_link_libraries(${MODULE_NAME} PRIVATE ${Boost_LIBRARIES})
+
+add_custom_command(TARGET ${MODULE_NAME} POST_BUILD
+COMMAND ${CMAKE_COMMAND} -E copy
+    "${CMAKE_BINARY_DIR}/${MODULE_NAME}.*"
+    "${CMAKE_SOURCE_DIR}/gmdh/"
+)

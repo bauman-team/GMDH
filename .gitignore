@@ -10,3 +10,5 @@ __pycache__
 /docs/build
 .coverage
 /tests/tests_report.html
+*.so
+*.pyd

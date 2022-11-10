@@ -128,6 +128,8 @@ public:
     VectorXd predict(const RowVectorXd& x, int lags) const;
     virtual VectorXd predict(const MatrixXd& x) const = 0;
     std::string getBestPolynomial() const;
+
+    virtual ~GmdhModel() {};
 };
 
 /**
