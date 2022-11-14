@@ -8,8 +8,8 @@
 
 import sys
 import os
-sys.path.insert(0, os.path.abspath('../../gmdh'))
-sys.path.insert(0, os.path.abspath('../../build/Release'))
+
+sys.path.insert(0, os.path.abspath('../..'))
 
 project = 'gmdh'
 copyright = '2022, Artem'

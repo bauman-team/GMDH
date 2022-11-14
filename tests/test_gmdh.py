@@ -8,6 +8,16 @@ import pytest
 import numpy as np
 import gmdh
 
+@pytest.fixture
+def criterions_classes():
+    """Returns all criterion classes of gmdh module"""
+    return [gmdh.Criterion, gmdh.ParallelCriterion, gmdh.SequentialCriterion]
+
+@pytest.fixture
+def combined_criterions_classes():
+    """Returns only combined criterion classes of gmdh module"""
+    return [gmdh.ParallelCriterion, gmdh.SequentialCriterion]
+
 class TestDataPreparations:
     """
     Class containing methods for testing gmdh module functions
@@ -104,3 +114,111 @@ class TestDataPreparations:
         """
         with pytest.raises(ValueError):
             gmdh.split_data(X, y, test_size=test_size)
+
+class TestCriterions:
+    """
+    Class containing methods for testing gmdh module criterions.
+    """
+    # pylint: disable=redefined-outer-name
+
+    @pytest.mark.parametrize(
+        'criterion_type',
+        [1, gmdh.Solver.ACCURATE])
+    def test_invalid_criterion_type(self, criterion_type, criterions_classes):
+        """
+        Testing all criterion classes using incorrect types of `criterion_type` argument.
+        Expected result is TypeError.
+        """
+        for criterion_class in criterions_classes:
+            # invalid initialization
+            with pytest.raises(TypeError):
+                criterion_class(criterion_type=criterion_type)
+
+            # invalid assignment
+            criterion = criterion_class()
+            with pytest.raises(TypeError):
+                criterion.criterion_type=criterion_type
+
+    @pytest.mark.parametrize(
+        'solver',
+        [1, gmdh.CriterionType.REGULARITY])
+    def test_invalid_solver(self, solver, criterions_classes):
+        """
+        Testing all criterion classes using incorrect types of `solver` argument.
+        Expected result is TypeError.
+        """
+        for criterion_class in criterions_classes:
+            # invalid initialization
+            with pytest.raises(TypeError):
+                criterion_class(solver=solver)
+
+            # invalid assignment
+            criterion = criterion_class()
+            with pytest.raises(TypeError):
+                criterion.solver=solver
+
+    @pytest.mark.parametrize(
+        'alpha',
+        ['a', None, [1, 2, 3], gmdh.Solver.FAST])
+    def test_alpha_type_error(self, alpha):
+        """
+        Testing `ParallelCriterion` class using incorrect types of `alpha` argument.
+        Expected result is TypeError.
+        """
+        # invalid initialization
+        with pytest.raises(TypeError):
+            gmdh.ParallelCriterion(alpha=alpha)
+
+        # invalid assignment
+        criterion = gmdh.ParallelCriterion()
+        with pytest.raises(TypeError):
+            criterion.alpha=alpha
+
+    @pytest.mark.parametrize(
+        'alpha',
+        [0, 1, 2.5, -0.5])
+    def test_alpha_value_error(self, alpha):
+        """
+        Testing `ParallelCriterion` class using incorrect values of `alpha` argument.
+        Expected result is ValueError.
+        """
+        # invalid initialization
+        with pytest.raises(ValueError):
+            gmdh.ParallelCriterion(alpha=alpha)
+
+        # invalid assignment
+        criterion = gmdh.ParallelCriterion()
+        with pytest.raises(ValueError):
+            criterion.alpha=alpha
+
+    @pytest.mark.parametrize(
+        'second_criterion_type',
+        [1, gmdh.Solver.ACCURATE])
+    def test_invalid_second_criterion_type(self, second_criterion_type, \
+        combined_criterions_classes):
+        """
+        Testing combined criterion classes using incorrect types
+        of `second_criterion_type` argument.
+        Expected result is TypeError.
+        """
+        for criterion_class in combined_criterions_classes:
+            # invalid initialization
+            with pytest.raises(TypeError):
+                criterion_class(second_criterion_type=second_criterion_type)
+
+            # invalid assignment
+            criterion = criterion_class()
+            with pytest.raises(TypeError):
+                criterion.second_criterion_type=second_criterion_type
+
+    def test_combined_criterions_in_fit(self, combined_criterions_classes):
+        """
+        Testing combined criterion classes by using them in fitting Combi model.
+        """
+        X, y = gmdh.time_series_transformation([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], lags=3)
+        x_train, x_test, y_train, y_test = gmdh.split_data(X, y)
+        model = gmdh.Combi()
+        for criterion_class in combined_criterions_classes:
+            model.fit(x_train, y_train, criterion_class())
+            y_pred = model.predict(x_test)
+            assert np.array_equal(y_test, y_pred)
