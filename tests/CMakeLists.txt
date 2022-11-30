@@ -1,7 +1,8 @@
-cmake_minimum_required(VERSION 3.19)
+cmake_minimum_required(VERSION 3.16)
 
 set(SOURCES test_setup.h
 	test_setup.cpp
+	test_gmdh.cpp
 	test_combi.cpp
 	test_multi.cpp
 	test_ria.cpp)

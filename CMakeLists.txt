@@ -1,9 +1,17 @@
-cmake_minimum_required(VERSION 3.19)
+cmake_minimum_required(VERSION 3.16)
 
-project(GMDH VERSION 0.2)
+project(GMDH)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -static-libgcc")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-libstdc++")
+
+
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
 
 if (CMAKE_HOST_WIN32)
     set(WINDOWS 1)
@@ -13,19 +21,19 @@ elseif(CMAKE_HOST_UNIX)
     set(LINUX 1)
 endif()
 
-if(WINDOWS)
-    set(Boost_USE_STATIC_LIBS ON) 
-else()
-    set(Boost_USE_STATIC_LIBS OFF) 
-endif()
-
-find_package(Boost 1.79.0 COMPONENTS system thread filesystem json chrono) 
-if(NOT Boost_FOUND)
-    message( FATAL_ERROR "Need install boost dependencies!" )
-endif()
-
+set(Boost_USE_STATIC_LIBS ON)
 set(Boost_USE_MULTITHREADED ON)  
 set(Boost_USE_STATIC_RUNTIME OFF) 
+
+find_package(Boost 1.79.0 QUIET COMPONENTS system thread filesystem json chrono)
+if(NOT Boost_FOUND)
+    set(Boost_USE_STATIC_LIBS OFF) 
+    find_package(Boost 1.79.0 COMPONENTS system thread filesystem json chrono)
+    message( WARNING "The library and module will get the required boost dependency! "
+        "Not found static boost libs, and used shared libs!" )
+endif()
+
+
 
 set(LIBRARY_NAME gmdh)
 set(MODULE_NAME _gmdh_core)
