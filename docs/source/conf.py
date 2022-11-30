@@ -10,11 +10,12 @@ import sys
 import os
 
 sys.path.insert(0, os.path.abspath('../..'))
+from gmdh.version import __version__ # pylint: disable=wrong-import-position
 
 project = 'gmdh'
-copyright = '2022, Artem'
-author = 'Artem'
-release = '0.1'
+copyright = '2022, Artem Babin, Mikhail Baryshnikov'
+author = 'Artem Babin, Mikhail Baryshnikov'
+release = __version__
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

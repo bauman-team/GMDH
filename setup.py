@@ -25,10 +25,14 @@ class CMakeBuild(build_ext):  # pylint: disable=missing-class-docstring
 with open("README.md", "r", encoding='utf8') as f:
     long_description = f.read()
 
+version = {}
+with open("gmdh/version.py", encoding='utf8') as f:
+    exec(f.read(), version)  # pylint: disable=exec-used
+
 setup(
     name='gmdh',
-    version='0.4.1',
-    author='Artem Babin, Michail Baryyshnikov',
+    version=version['__version__'],
+    author='Artem Babin',
     author_email='artem031201@gmail.com',
     packages=find_packages(),
     url='https://github.com/bauman-team/GMDH',

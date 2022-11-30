@@ -96,8 +96,9 @@ class Criterion:
     --------
     You can create `Criterion` object with parameters specifyied during initialization:
 
-    >>> criterion = gmdh.Criterion(criterion_type=gmdh.CriterionType.STABILITY, \
-        solver=gmdh.Solver.FAST)
+    >>> criterion = gmdh.Criterion(
+    criterion_type=gmdh.CriterionType.STABILITY
+    solver=gmdh.Solver.FAST)
 
     Or you can create default `Criterion` object and then specify parameters using assignments:
 
@@ -173,14 +174,16 @@ class ParallelCriterion(Criterion):
 
     Attributes
     ----------
-    second_criterion_type, alpha : see Parameters
+    criterion_type, second_criterion_type, alpha, solver : see Parameters
 
     Examples
     --------
     You can create `ParallelCriterion` object with parameters specifyied during initialization:
 
-    >>> criterion = gmdh.ParallelCriterion(criterion_type=gmdh.CriterionType.STABILITY, \
-        second_criterion_type=gmdh.CriterionType.REGULARITY, alpha=0.8, solver=gmdh.Solver.FAST)
+    >>> criterion = gmdh.ParallelCriterion(
+    criterion_type=gmdh.CriterionType.STABILITY,
+    second_criterion_type=gmdh.CriterionType.REGULARITY,
+    alpha=0.8, solver=gmdh.Solver.FAST)
 
     Or you can create default `ParallelCriterion` object
     and then specify parameters using assignments:
@@ -272,14 +275,16 @@ class SequentialCriterion(Criterion):
 
     Attributes
     ----------
-    second_criterion_type : see Parameters
+    criterion_type, second_criterion_type, solver : see Parameters
 
     Examples
     --------
     You can create `SequentialCriterion` object with parameters specifyied during initialization:
 
-    >>> criterion = gmdh.SequentialCriterion(criterion_type=gmdh.CriterionType.STABILITY, \
-        second_criterion_type=gmdh.CriterionType.REGULARITY, solver=gmdh.Solver.FAST)
+    >>> criterion = gmdh.SequentialCriterion(
+    criterion_type=gmdh.CriterionType.STABILITY,
+    second_criterion_type=gmdh.CriterionType.REGULARITY,
+    solver=gmdh.Solver.FAST)
 
     Or you can create default `SequentialCriterion` object
     and then specify parameters using assignments:
