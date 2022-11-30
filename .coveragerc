@@ -1,4 +1,6 @@
 [coverage:run]
 branch = True
 source = gmdh
-omit = gmdh/__init__.py
+omit = 
+	gmdh/__init__.py
+	gmdh/version.py

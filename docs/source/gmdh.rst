@@ -4,7 +4,7 @@ gmdh package
 Module contents
 ---------------
 
-.. automodule:: gmdh
+.. automodule:: gmdh.gmdh
    :members:
    :undoc-members:
    :show-inheritance:

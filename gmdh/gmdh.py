@@ -8,7 +8,7 @@ import enum
 import warnings
 from abc import ABCMeta, abstractmethod
 from docstring_inheritance import NumpyDocstringInheritanceMeta  # pylint: disable=import-error
-from  . import _gmdh_core  # pylint: disable=import-error
+from gmdh import _gmdh_core
 
 warnings.filterwarnings("always")
 
@@ -34,7 +34,7 @@ class DocEnum(enum.Enum):
     def __new__(cls, value, doc=None):
         self = object.__new__(cls)
         self._value_ = value
-        if doc is not None:
+        if doc is not None:  # pragma: no branch
             self.__doc__ = doc
         return self
 
@@ -91,6 +91,27 @@ class Criterion:
     Attributes
     ----------
     criterion_type, solver : see Parameters
+
+    Examples
+    --------
+    You can create `Criterion` object with parameters specifyied during initialization:
+
+    >>> criterion = gmdh.Criterion(criterion_type=gmdh.CriterionType.STABILITY, \
+solver=gmdh.Solver.FAST)
+
+    Or you can create default `Criterion` object and then specify parameters using assignments:
+
+    >>> criterion = gmdh.Criterion()
+    >>> criterion.criterion_type = gmdh.CriterionType.STABILITY
+    >>> criterion.solver = gmdh.Solver.FAST
+
+    Displaying the current values of the arguments:
+
+    >>> criterion = gmdh.Criterion()
+    >>> criterion.criterion_type
+    <CriterionType.REGULARITY: 0>
+    >>> criterion.solver
+    <Solver.BALANCED: 2>
     """
     def __init__(self, criterion_type=CriterionType.REGULARITY, solver=Solver.BALANCED):
         if not isinstance(criterion_type, CriterionType):
@@ -149,6 +170,38 @@ class ParallelCriterion(Criterion):
     solver : gmdh.Solver, default=gmdh.Solver.BALANCED
         Element from `gmdh.Solver` enumeration specifying the method of
         linear equations solving during training GMDH model.
+
+    Attributes
+    ----------
+    criterion_type, second_criterion_type, alpha, solver : see Parameters
+
+    Examples
+    --------
+    You can create `ParallelCriterion` object with parameters specifyied during initialization:
+
+    >>> criterion = gmdh.ParallelCriterion(criterion_type=gmdh.CriterionType.STABILITY, \
+second_criterion_type=gmdh.CriterionType.REGULARITY, alpha=0.8, solver=gmdh.Solver.FAST)
+
+    Or you can create default `ParallelCriterion` object
+    and then specify parameters using assignments:
+
+    >>> criterion = gmdh.ParallelCriterion()
+    >>> criterion.criterion_type = gmdh.CriterionType.STABILITY
+    >>> criterion.second_criterion_type = gmdh.CriterionType.REGULARITY
+    >>> criterion.alpha = 0.8
+    >>> criterion.solver = gmdh.Solver.FAST
+
+    Displaying the current values of the arguments:
+
+    >>> criterion = gmdh.ParallelCriterion()
+    >>> criterion.criterion_type
+    <CriterionType.REGULARITY: 0>
+    >>> criterion.second_criterion_type
+    <CriterionType.STABILITY: 2>
+    >>> criterion.alpha
+    0.5
+    >>> criterion.solver
+    <Solver.BALANCED: 2>
     """
     def __init__(self,
         criterion_type=CriterionType.REGULARITY,
@@ -158,6 +211,10 @@ class ParallelCriterion(Criterion):
         super().__init__(criterion_type, solver)
         if not isinstance(second_criterion_type, CriterionType):
             raise TypeError(f"{second_criterion_type} is not a 'CriterionType' type object")
+        if not isinstance(alpha, (int, float)):
+            raise TypeError(f"{alpha} is not a float")
+        if alpha >= 1 or alpha <= 0:
+            raise ValueError("alpha value must be in the (0, 1) range")
 
         self._second_criterion_type = second_criterion_type
         self._alpha = alpha
@@ -180,6 +237,8 @@ class ParallelCriterion(Criterion):
     def alpha(self, value):
         if not isinstance(value, (int, float)):
             raise TypeError(f"{value} is not a float")
+        if value >= 1 or value <= 0:
+            raise ValueError("alpha value must be in the (0, 1) range")
         self._alpha = value
 
     def _get_core(self):
@@ -210,6 +269,35 @@ class SequentialCriterion(Criterion):
     solver : gmdh.Solver, default=gmdh.Solver.BALANCED
         Element from `gmdh.Solver` enumeration specifying the method of
         linear equations solving during training GMDH model.
+
+    Attributes
+    ----------
+    criterion_type, second_criterion_type, solver : see Parameters
+
+    Examples
+    --------
+    You can create `SequentialCriterion` object with parameters specifyied during initialization:
+
+    >>> criterion = gmdh.SequentialCriterion(criterion_type=gmdh.CriterionType.STABILITY, \
+second_criterion_type=gmdh.CriterionType.REGULARITY, solver=gmdh.Solver.FAST)
+
+    Or you can create default `SequentialCriterion` object
+    and then specify parameters using assignments:
+
+    >>> criterion = gmdh.SequentialCriterion()
+    >>> criterion.criterion_type = gmdh.CriterionType.STABILITY
+    >>> criterion.second_criterion_type = gmdh.CriterionType.REGULARITY
+    >>> criterion.solver = gmdh.Solver.FAST
+
+    Displaying the current values of the arguments:
+
+    >>> criterion = gmdh.SequentialCriterion()
+    >>> criterion.criterion_type
+    <CriterionType.REGULARITY: 0>
+    >>> criterion.second_criterion_type
+    <CriterionType.STABILITY: 2>
+    >>> criterion.solver
+    <Solver.BALANCED: 2>
     """
     def __init__(self,
         criterion_type=CriterionType.REGULARITY,
@@ -718,15 +806,19 @@ class Mia(Model):
 
         >>> X, y = gmdh.time_series_transformation([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], lags=3)
         >>> x_train, x_test, y_train, y_test = gmdh.split_data(X, y)
+        >>> x_test
+        array([[ 7.,  8.,  9.],
+               [ 8.,  9., 10.]])
         >>> y_test
         array([10., 11.])
 
-        Fitting the model and making predictions:
+        Fitting the model and making predictions 5 steps ahead (lags=5)
+        based only on the first row of `x_test` data:
 
         >>> model = gmdh.Mia()
-        >>> y_pred = model.fit(x_train, y_train).predict(x_test)
+        >>> y_pred = model.fit(x_train, y_train).predict(x_test[0], lags=5)
         >>> y_pred
-        array([10., 11.])
+        array([10., 11., 12., 13., 14.])
         """
         return super().predict(X, lags)
 
@@ -898,15 +990,19 @@ class Ria(Model):
 
         >>> X, y = gmdh.time_series_transformation([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], lags=3)
         >>> x_train, x_test, y_train, y_test = gmdh.split_data(X, y)
+        >>> x_test
+        array([[ 7.,  8.,  9.],
+               [ 8.,  9., 10.]])
         >>> y_test
         array([10., 11.])
 
-        Fitting the model and making predictions:
+        Fitting the model and making predictions 5 steps ahead (lags=5)
+        based only on the first row of `x_test` data:
 
         >>> model = gmdh.Ria()
-        >>> y_pred = model.fit(x_train, y_train).predict(x_test)
+        >>> y_pred = model.fit(x_train, y_train).predict(x_test[0], lags=5)
         >>> y_pred
-        array([10., 11.])
+        array([10., 11., 12., 13., 14.])
         """
         return super().predict(X, lags)
 
