@@ -23,12 +23,13 @@ class CMakeBuild(build_ext):  # pylint: disable=missing-class-docstring
         if not build_temp.exists():
             build_temp.mkdir(parents=True)
 
+        build_temp_str = str(os.path.join(Path(self.build_temp), ext.name))
         cmake_args = ["-DCMAKE_BUILD_TYPE=Release", "-S", ".", "-B", "build/Release"]
         build_args = ['--config', 'Release', '--target', '_gmdh_core']
 
-        subprocess.run(["cmake", "-DCMAKE_BUILD_TYPE=Release", "-S", ".", "-B", build_temp], check=True)
-        subprocess.run(["cmake", "--build", build_temp] + build_args, check=True)
-        subprocess.run(["cp", build_temp / self.get_ext_filename(ext.name), extdir / "gmdh"], check=True)
+        subprocess.run(["cmake", "-DCMAKE_BUILD_TYPE=Release", "-S", ".", "-B", build_temp_str], check=True)
+        subprocess.run(["cmake", "--build", build_temp_str] + build_args, check=True)
+        subprocess.run(["cp", str(os.path.join(build_temp, self.get_ext_filename(ext.name))), str(os.path.join(extdir, "gmdh"))], check=True)
 
 ext_modules = [
     CMakeExtension("_gmdh_core"),

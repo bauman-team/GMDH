@@ -26,7 +26,8 @@ set(SOURCES ../src/common.h
 	../src/ria.cpp
     gmdh.cpp) 
 
-pybind11_add_module(${MODULE_NAME}  ${SOURCES})
+
+pybind11_add_module(${MODULE_NAME} ${SOURCES})
 
 target_compile_definitions(${MODULE_NAME} PRIVATE "GMDH_MODULE")
 
@@ -39,6 +40,6 @@ target_link_libraries(${MODULE_NAME} PRIVATE ${Boost_LIBRARIES})
 
 add_custom_command(TARGET ${MODULE_NAME} POST_BUILD
 COMMAND ${CMAKE_COMMAND} -E copy
-    "${CMAKE_BINARY_DIR}/${MODULE_NAME}.*"
+    "${CMAKE_BINARY_DIR}/$<TARGET_FILE_NAME:${MODULE_NAME}>"
     "${CMAKE_SOURCE_DIR}/gmdh/"
 )

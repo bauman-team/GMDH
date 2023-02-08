@@ -28,7 +28,7 @@ set(Boost_USE_STATIC_RUNTIME OFF)
 find_package(Boost 1.79.0 QUIET COMPONENTS system thread filesystem json chrono)
 if(NOT Boost_FOUND)
     set(Boost_USE_STATIC_LIBS OFF) 
-    find_package(Boost 1.79.0 COMPONENTS system thread filesystem json chrono)
+    find_package(Boost 1.79.0 REQUIRED COMPONENTS system thread filesystem json chrono)
     message( WARNING "The library and module will get the required boost dependency! "
         "Not found static boost libs, and used shared libs!" )
 endif()
@@ -48,7 +48,11 @@ add_subdirectory(tests/)
 
 set_target_properties(${LIBRARY_NAME} ${MODULE_NAME} ${TESTS_NAME} ${PROJECT_EXAMPLES}
     PROPERTIES
-    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+    #ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+    RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}"
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}"
+    LIBRARY_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}"
+    LIBRARY_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}"
 )

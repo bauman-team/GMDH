@@ -130,6 +130,17 @@ GmdhModel& MIA::fit(const MatrixXd& x, const VectorXd& y, const Criterion& crite
         std::string errorMsg = getVariableName("kBest", "k_best") + " value must be an integer >= 3";
         throw std::invalid_argument(errorMsg);
     }
+
+    /*
+    It is necessasy for x matrix to have 3 or more columns.
+    if columns < 3 then the number of combinations won't be enough
+    to move to the next levels.
+    */
+    if (x.cols() < 3) {
+        std::string errorMsg = getVariableName("x", "X") + " columns must be >= 3";
+        throw std::invalid_argument(errorMsg);
+    }
+
     validateInputData(&testSize, &pAverage, &threads, &verbose, &limit, &kBest);
     polynomialType = _polynomialType;
     return GmdhModel::gmdhFit(x, y, criterion, kBest, testSize, pAverage, threads, verbose, limit);

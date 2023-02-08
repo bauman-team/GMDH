@@ -110,7 +110,7 @@ PairDVXd Criterion::unbiasedCoeffs(const MatrixXd& xTrain, const MatrixXd& xTest
                         bufferValues.coeffsTrain);
 }
 
-PairDVXd Criterion::absoluteStability(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain,
+PairDVXd Criterion::absoluteNoiseImmunity(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain,
                                         const VectorXd& yTest, BufferValues& bufferValues) const {
     VectorXd yPredTestByAll;
     if (bufferValues.coeffsTrain.size() == 0)
@@ -133,7 +133,7 @@ PairDVXd Criterion::absoluteStability(const MatrixXd& xTrain, const MatrixXd& xT
                         (bufferValues.yPredTestByTest - yPredTestByAll)).array().sum(), bufferValues.coeffsTrain);
 }
 
-PairDVXd Criterion::symAbsoluteStability(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain,
+PairDVXd Criterion::symAbsoluteNoiseImmunity(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain,
                                             const VectorXd& yTest, BufferValues& bufferValues) const {
     VectorXd yPredAllByTrain, yPredAllByTest, yPredAllByAll;
     MatrixXd dataX(xTrain.rows() + xTest.rows(), xTrain.cols());
@@ -147,10 +147,11 @@ PairDVXd Criterion::symAbsoluteStability(const MatrixXd& xTrain, const MatrixXd&
         bufferValues.coeffsTest = findBestCoeffs(xTest, yTest);
     if (bufferValues.coeffsAll.size() == 0)
         bufferValues.coeffsAll = findBestCoeffs(dataX, dataY);
-        
+
     yPredAllByTrain = dataX * bufferValues.coeffsTrain;
     yPredAllByTest = dataX * bufferValues.coeffsTest;
     yPredAllByAll = dataX * bufferValues.coeffsAll;
+
     return PairDVXd(((yPredAllByAll - yPredAllByTrain) * (yPredAllByTest - yPredAllByAll)).array().sum(), 
                         bufferValues.coeffsTrain);
 }
@@ -172,10 +173,10 @@ PairDVXd Criterion::getResult(const MatrixXd& xTrain, const MatrixXd& xTest, con
         return symUnbiasedOutputs(xTrain, xTest, yTrain, yTest, bufferValues);
     case CriterionType::unbiasedCoeffs:
         return unbiasedCoeffs(xTrain, xTest, yTrain, yTest, bufferValues);
-    case CriterionType::absoluteStability:
-        return absoluteStability(xTrain, xTest, yTrain, yTest, bufferValues);
-    case CriterionType::symAbsoluteStability:
-        return symAbsoluteStability(xTrain, xTest, yTrain, yTest, bufferValues); 
+    case CriterionType::absoluteNoiseImmunity:
+        return absoluteNoiseImmunity(xTrain, xTest, yTrain, yTest, bufferValues);
+    case CriterionType::symAbsoluteNoiseImmunity:
+        return symAbsoluteNoiseImmunity(xTrain, xTest, yTrain, yTest, bufferValues); 
     }
 }
 

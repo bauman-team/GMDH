@@ -71,8 +71,8 @@ class CriterionType(DocEnum):
     UNBIASED_OUTPUTS = _gmdh_core.CriterionType.UNBIASED_OUTPUTS.value, ""
     SYM_UNBIASED_OUTPUTS = _gmdh_core.CriterionType.SYM_UNBIASED_OUTPUTS.value, ""
     UNBIASED_COEFFS = _gmdh_core.CriterionType.UNBIASED_COEFFS.value, ""
-    ABSOLUTE_STABILITY = _gmdh_core.CriterionType.ABSOLUTE_STABILITY.value, ""
-    SYM_ABSOLUTE_STABILITY = _gmdh_core.CriterionType.SYM_ABSOLUTE_STABILITY.value, ""
+    ABSOLUTE_NOISE_IMMUNITY = _gmdh_core.CriterionType.ABSOLUTE_NOISE_IMMUNITY.value, ""
+    SYM_ABSOLUTE_NOISE_IMMUNITY = _gmdh_core.CriterionType.SYM_ABSOLUTE_NOISE_IMMUNITY.value, ""
 
 
 class Criterion:

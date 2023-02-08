@@ -5,7 +5,7 @@ class GmdhModel;
 enum class Solver { fast, accurate, balanced };
 
 enum class CriterionType {regularity, symRegularity, stability, symStability, unbiasedOutputs, symUnbiasedOutputs,
-                          unbiasedCoeffs, absoluteStability, symAbsoluteStability}; // TODO: maybe add cross validation criterion
+                          unbiasedCoeffs, absoluteNoiseImmunity, symAbsoluteNoiseImmunity}; // TODO: maybe add cross validation criterion
 
 struct BufferValues {
     VectorXd coeffsTrain;
@@ -49,10 +49,10 @@ protected:
     PairDVXd unbiasedCoeffs(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain, const VectorXd& yTest,
                             BufferValues& bufferValues) const;
 
-    PairDVXd absoluteStability(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain, const VectorXd& yTest,
+    PairDVXd absoluteNoiseImmunity(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain, const VectorXd& yTest,
                                BufferValues& bufferValues) const;
 
-    PairDVXd symAbsoluteStability(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain, const VectorXd& yTest,
+    PairDVXd symAbsoluteNoiseImmunity(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain, const VectorXd& yTest,
                                   BufferValues& bufferValues) const;
 
     virtual VectorC getBestCombinations(VectorC& combinations, const SplittedData& data, const std::function<MatrixXd(const MatrixXd&, const VectorU16&)> func, int k) const;

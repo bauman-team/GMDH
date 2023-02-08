@@ -45,8 +45,8 @@ PYBIND11_MODULE(_gmdh_core, m) {
         .value("UNBIASED_OUTPUTS", GMDH::CriterionType::unbiasedOutputs)
         .value("SYM_UNBIASED_OUTPUTS", GMDH::CriterionType::symUnbiasedOutputs)
         .value("UNBIASED_COEFFS", GMDH::CriterionType::unbiasedCoeffs)
-        .value("ABSOLUTE_STABILITY", GMDH::CriterionType::absoluteStability)
-        .value("SYM_ABSOLUTE_STABILITY", GMDH::CriterionType::symAbsoluteStability);
+        .value("ABSOLUTE_NOISE_IMMUNITY", GMDH::CriterionType::absoluteNoiseImmunity)
+        .value("SYM_ABSOLUTE_NOISE_IMMUNITY", GMDH::CriterionType::symAbsoluteNoiseImmunity);
 
     py::enum_<GMDH::PolynomialType>(m, "PolynomialType")
         .value("LINEAR", GMDH::PolynomialType::linear)
