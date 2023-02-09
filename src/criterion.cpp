@@ -129,8 +129,9 @@ PairDVXd Criterion::absoluteNoiseImmunity(const MatrixXd& xTrain, const MatrixXd
     if (bufferValues.yPredTestByTest.size() == 0)
         bufferValues.yPredTestByTest = xTest * bufferValues.coeffsTest;
     yPredTestByAll = xTest * bufferValues.coeffsAll;
-    return PairDVXd(((yPredTestByAll - bufferValues.yPredTestByTrain) * 
-                        (bufferValues.yPredTestByTest - yPredTestByAll)).array().sum(), bufferValues.coeffsTrain);
+
+    return PairDVXd((yPredTestByAll - bufferValues.yPredTestByTrain).dot(
+        bufferValues.yPredTestByTest - yPredTestByAll), bufferValues.coeffsTrain);
 }
 
 PairDVXd Criterion::symAbsoluteNoiseImmunity(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain,
@@ -152,8 +153,8 @@ PairDVXd Criterion::symAbsoluteNoiseImmunity(const MatrixXd& xTrain, const Matri
     yPredAllByTest = dataX * bufferValues.coeffsTest;
     yPredAllByAll = dataX * bufferValues.coeffsAll;
 
-    return PairDVXd(((yPredAllByAll - yPredAllByTrain) * (yPredAllByTest - yPredAllByAll)).array().sum(), 
-                        bufferValues.coeffsTrain);
+    return PairDVXd((yPredAllByAll - yPredAllByTrain).dot(yPredAllByTest - yPredAllByAll), 
+        bufferValues.coeffsTrain);
 }
 
 PairDVXd Criterion::getResult(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain, 
