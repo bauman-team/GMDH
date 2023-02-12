@@ -5,7 +5,8 @@ set(SOURCES test_setup.h
 	test_gmdh.cpp
 	test_combi.cpp
 	test_multi.cpp
-	test_ria.cpp)
+	test_ria.cpp
+	test_mia.cpp)
 
 enable_testing()
 
@@ -30,12 +31,12 @@ endif()
 target_include_directories(${TESTS_NAME} PRIVATE ../src/ 
     ../external/eigen-3.4 
     ../external/indicators-master/include  
-    ${Boost_INCLUDE_DIR})
+    ${Boost_INCLUDE_DIR}
+	${GTEST_INCLUDE_DIR})
 
 target_link_libraries(${TESTS_NAME} PRIVATE ${LIBRARY_NAME} 
     ${Boost_LIBRARIES}
-	gtest 
-	gtest_main)
+	${GTEST_LIBRARIES})
 
 add_test(NAME ${TESTS_NAME}
 	COMMAND ${TESTS_NAME})

@@ -178,8 +178,8 @@ PairDVXd Criterion::getResult(const MatrixXd& xTrain, const MatrixXd& xTest, con
         return absoluteNoiseImmunity(xTrain, xTest, yTrain, yTest, bufferValues);
     case CriterionType::symAbsoluteNoiseImmunity:
         return symAbsoluteNoiseImmunity(xTrain, xTest, yTrain, yTest, bufferValues); 
-    }
-}
+    } // LCOV_EXCL_LINE
+} // LCOV_EXCL_LINE
 
 Criterion::Criterion(CriterionType _criterionType, Solver _solver) {
     criterionType = _criterionType;

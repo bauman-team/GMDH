@@ -68,12 +68,12 @@ bool MIA::preparations(SplittedData& data, VectorC&& _bestCombinations) {
 
 MatrixXd MIA::xDataForCombination(const MatrixXd& x, const VectorU16& comb) const {
     return getPolynomialX(x(Eigen::all, comb));
-}
+} // LCOV_EXCL_LINE
 
 std::string MIA::getPolynomialPrefix(int levelIndex, int combIndex) const {
     return ((levelIndex < bestCombinations.size() - 1) ?
         "f" + std::to_string(levelIndex + 1) + "_" + std::to_string(combIndex + 1) : "y") + " =";
-}
+} // LCOV_EXCL_LINE
 
 std::string MIA::getPolynomialVariable(int levelIndex, int coeffIndex, int coeffsNumber, 
                                         const VectorU16& bestColsIndexes) const {
@@ -106,7 +106,7 @@ boost::json::value MIA::toJSON() const {
         {"polynomialType", static_cast<int>(polynomialType)},
         {"bestCombinations", bestCombinations},
     };
-}
+} // LCOV_EXCL_LINE
 
 int MIA::fromJSON(boost::json::value jsonModel) {
     auto errorCode = GmdhModel::fromJSON(jsonModel);

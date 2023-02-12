@@ -13,7 +13,7 @@ bool LinearModel::preparations(SplittedData& data, VectorC&& _bestCombinations) 
 
 MatrixXd LinearModel::xDataForCombination(const MatrixXd& x, const VectorU16& comb) const {
     return x(Eigen::all, comb);
-}
+} // LCOV_EXCL_LINE
 
 std::string LinearModel::getPolynomialPrefix(int levelIndex, int combIndex) const {
     return "y =";
@@ -21,7 +21,7 @@ std::string LinearModel::getPolynomialPrefix(int levelIndex, int combIndex) cons
 
 std::string LinearModel::getPolynomialVariable(int levelIndex, int coeffIndex, int coeffsNumber, const VectorU16& bestColsIndexes) const {
     return ((coeffIndex != coeffsNumber - 1) ? "x" + std::to_string(bestColsIndexes[coeffIndex] + 1) : "");
-}
+} // LCOV_EXCL_LINE
 
 LinearModel::LinearModel() {
     bestCombinations.resize(1);
