@@ -49,7 +49,7 @@ void RIA::removeExtraCombinations() {
 
 std::string RIA::getPolynomialPrefix(int levelIndex, int combIndex) const {
 	return ((levelIndex < bestCombinations.size() - 1) ? "f" + std::to_string(levelIndex + 1) : "y") + " =";
-}
+} // LCOV_EXCL_LINE
 
 std::string RIA::getPolynomialVariable(int levelIndex, int coeffIndex, int coeffsNumber, 
 										const VectorU16& bestColsIndexes) const {

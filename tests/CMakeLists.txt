@@ -5,7 +5,8 @@ set(SOURCES test_setup.h
 	test_gmdh.cpp
 	test_combi.cpp
 	test_multi.cpp
-	test_ria.cpp)
+	test_ria.cpp
+	test_mia.cpp)
 
 enable_testing()
 

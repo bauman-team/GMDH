@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-if (LINUX)
+if (NOT WINDOWS) 
     if (CMAKE_BUILD_TYPE MATCHES Coverage) # testing code coverage 
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage")

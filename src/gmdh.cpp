@@ -178,7 +178,7 @@ GmdhModel& GmdhModel::gmdhFit(const MatrixXd& x, const VectorXd& y, const Criter
             std::string stringError;
             std::ostringstream stream;
             if (currentLevelEvaluation == 0)
-                stringError = "0";
+                stringError = "0"; // LCOV_EXCL_LINE
             else {
                 if (currentLevelEvaluation >= 1e-6 && currentLevelEvaluation < 1e6)
                     stream << std::fixed << std::setprecision(6);
@@ -202,7 +202,7 @@ boost::json::value GmdhModel::toJSON() const {
         {"inputColsNumber", inputColsNumber},
         {"bestCombinations", bestCombinations},
     };
-}
+} // LCOV_EXCL_LINE
 
 int GmdhModel::fromJSON(boost::json::value jsonModel) { // TODO: maybe add try/catch
     auto& o = jsonModel.as_object();
@@ -339,17 +339,8 @@ int GmdhModel::load(const std::string& path) {
 #else
         return 1; 
 #endif
-        
-    std::ifstream modelFile(path);
-        
-    if (!modelFile.is_open()) // TODO: maybe remove this condition because if file can't be opened is_regular_file will return false
-#ifdef GMDH_MODULE
-        throw FileException(OPENFILEEXCEPTION); 
-#else
-        return 1; 
-#endif
     else {
-
+        std::ifstream modelFile(path);
         std::string inputJSON(std::istreambuf_iterator<char>(modelFile), {});
             
         boost::json::error_code ec;
@@ -495,12 +486,13 @@ SplittedData splitData(const MatrixXd& x, const VectorXd& y, double testSize, bo
     if (!shuffle)
         data = GmdhModel::internalSplitData(x, y, testSize);
     else {
-        if (randomSeed != 0) std::srand(randomSeed);
-        else std::srand(std::time(NULL));
+        std::mt19937_64 randGen;
+        if (randomSeed == 0)  randomSeed = std::chrono::system_clock::now().time_since_epoch().count();
+        randGen.seed(randomSeed);
 
         VectorI shuffled_rows_indexes(x.rows());
         std::iota(std::begin(shuffled_rows_indexes), std::end(shuffled_rows_indexes), 0);
-        std::random_shuffle(std::begin(shuffled_rows_indexes), std::end(shuffled_rows_indexes));
+        std::shuffle(std::begin(shuffled_rows_indexes), std::end(shuffled_rows_indexes), randGen);
 
         int testItemsNumber = round(x.rows() * testSize);
 

@@ -1,3 +1,4 @@
+#pragma once
 #include "linear_model.h"
 
 namespace GMDH {
