@@ -16,16 +16,28 @@
     #define DISPLAYEDCOLORWARNING "\033[33m"
     #define DISPLAYEDCOLORINFO "\033[0m"
 #endif
-#define DISPLAYEDWARNINGMSG(expr, param) "\nWarning! The input " expr " is incorrect!\nThe default value is used (" param ")!\n"
 
-#define GMDHPREDICTEXCEPTIONMSG "Input data number of cols is not match number of cols of fitted data!"
-#define GMDHOPENFILEEXCEPTIONMSG "Input model file path is not exist!"
-#define GMDHLOADMODELNAMEEXCEPTIONMSG(inputModel, realModel) "Input file for model is " + inputModel + ", but used model is " + realModel + "!"
-#define GMDHLOADMODELPARAMSEXCEPTIONMSG "Input model file is corrupted!"
+// defines for converting number to string
+#define STREXPAND(x) #x
+#define STR(x) STREXPAND(x)
+
+// constants
+#define MAXVERBOSENUMBER 1
+
+// warnings messages
+#define MINTHREADSWARNING(varName) "\nWarning: The value of '" varName "' can't be equal to 0 or a negative number other than -1. The invalid value has been replaced with the default value " varName "=1\n"
+#define MAXTHREADSWARNING(varName) "\nWarning: The value of '" varName "' can't be greater than the number of supported concurrent threads. The invalid value has been replaced wtih " varName "=-1 to use the maximum possible number of threads\n"
+#define MINVERBOSEWARNING(varName) "\nWarning: The value of '" varName "' can't be negative. The invalid value has been replaced with the default value " varName "=0\n"
+#define MAXVERBOSEWARNING(varName) "\nWarning: The value of '" varName "' can't be greater than " STR(MAXVERBOSENUMBER) ". The invalid value has been replaced with " varName "=" STR(MAXVERBOSENUMBER) " to print the most detailed information\n"
+
+// exceptions messages
+#define OPENFILEEXCEPTION "The file can't be opened"
+#define WRONGMODELFILEEXCEPTION(inputModel, realModel) "The expected model is " + realModel + " but the file contains " + inputModel + " model"
+#define CORRUPTEDFILEEXCEPTION "The file is corrupted"
 
 namespace GMDH {
 
-class GmdhException : public std::exception {
+class FileException : public std::exception {
     public:
     /** Constructor (C strings).
      *  @param message C-style string error message.
@@ -33,19 +45,19 @@ class GmdhException : public std::exception {
      *                 Hence, responsibility for deleting the char* lies
      *                 with the caller. 
      */
-    explicit GmdhException(const char* message)
+    explicit FileException(const char* message)
         : msg_(message) {}
 
     /** Constructor (C++ STL strings).
      *  @param message The error message.
      */
-    explicit GmdhException(const std::string& message)
+    explicit FileException(const std::string& message)
         : msg_(message) {}
 
     /** Destructor.
      * Virtual to allow for subclassing.
      */
-    ~GmdhException() noexcept {}
+    ~FileException() noexcept {}
 
     /** Returns a pointer to the (constant) error description.
      *  @return A pointer to a const char*. The underlying memory

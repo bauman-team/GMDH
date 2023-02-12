@@ -1,0 +1,120 @@
+name: Test and lint source code
+on:
+  push:
+    branches:
+      - master
+      - develop
+  pull_request:
+    branches:
+      - master
+      - develop
+
+jobs:
+
+  # Lint python code
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.8
+    - name: Install python module requirements
+      run: |
+        pip3 install pylint
+        pip3 install -r requirements.txt
+    - name: Static analysis python binding
+      run: |
+        pylint gmdh/gmdh.py tests/test_gmdh.py > pylint_report.txt
+    - name: Archive python module linting results
+      if: always()
+      uses: actions/upload-artifact@v2
+      with:
+        name: pylint_report
+        path: pylint_report.txt
+
+  # Run all tests and get code coverage on OS Linux
+  full_test_cov:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.8
+    - name: Install python module requirements
+      run: |
+        pip3 install -r requirements.txt
+    - name: Install dependencies for compilation
+      run: |
+        sudo apt-get install -y gcc g++ build-essential cmake libgtest-dev lcov
+        wget -O boost_1_79_0.tar.gz https://boostorg.jfrog.io/artifactory/main/release/1.79.0/source/boost_1_79_0.tar.gz
+        tar xzvf boost_1_79_0.tar.gz
+        cd boost_1_79_0/
+        sudo ./bootstrap.sh --prefix=/usr/local
+        sudo ./b2 runtime-link=shared variant=release link=shared install --with-filesystem --with-system --with-thread --with-json --with-chrono
+    - name: Build targets for testing
+      run: |
+        export GMDH_ROOT=$(pwd)
+        mkdir -p build/Debug
+        cd build/Debug
+        cmake -DCMAKE_BUILD_TYPE=Coverage ../..
+        cmake --build . --config Debug --target gmdh_tests _gmdh_core
+    - name: Run test cpp shared library
+      run: |
+        export GMDH_ROOT=$(pwd)
+        ./build/Debug/gmdh_tests --gtest_output=xml:cpp_code_tests_report.xml
+    - name: Run pytests
+      run: |
+        export GMDH_ROOT=$(pwd)
+        pytest -v
+    - name: Archive cpp code tests results
+      if: always()
+      uses: actions/upload-artifact@v2
+      with:
+        name: cpp_code_tests_report
+        path: cpp_code_tests_report.xml
+    - name: Generate cpp code coverage report
+      if: always()
+      run: |
+        lcov -d build/Debug/pythonAPI -c -o python_coverage.info
+        lcov -d build/Debug/src -c -o cpp_coverage.info
+        genhtml -o cpp_code_coverage_report/ cpp_coverage.info
+        export executed=`find . -name "index.html" | grep "GMDH/src/" | xargs -I {} grep headerCovTableEntryHi {} | head -n 1 | cut -d '>' -f 2 | cut -d '.' -f 1`
+        if [ $executed -lt 95 ] ; then exit 1; fi 
+    - name: Archive cpp code coverage report
+      if: always()
+      uses: actions/upload-artifact@v2
+      with:
+        name: cpp_code_coverage_report
+        path: cpp_code_coverage_report/
+    - name: Archive python code tests results
+      if: always()
+      uses: actions/upload-artifact@v2
+      with:
+        name: python_code_tests_report
+        path: tests/tests_report.html
+    - name: Archive code coverage results
+      if: always()
+      uses: actions/upload-artifact@v2
+      with:
+        name: python_code_coverage_report
+        path: htmlcov/
+    # TODO: Test setup.py
+
+  # TODO: Compile and test Release on all supported OS      
+#  os_test:
+#    strategy:
+#      matrix:
+#        os: [ubuntu-latest, macos-latest, windows-latest]
+#    runs-on: ${{ matrix.os }}
+#    steps:
+#    - uses: actions/checkout@v2 
+
+  # TODO: Test on ARCH=e2k
+  
+  # TODO: Deploy job and test required dependencies
+
+      
+    

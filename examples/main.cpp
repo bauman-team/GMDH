@@ -9,7 +9,8 @@ int main() {
     using namespace Eigen;
 
     std::ifstream dataStream;
-    dataStream.open("../../examples/Sber.csv");
+    std::string gmdhDir = std::getenv("GMDH_ROOT");
+    dataStream.open(gmdhDir + "/examples/Sber.csv");
     std::string dataLine;
     std::vector<double> dataValues;
     VectorXd data;
@@ -26,6 +27,7 @@ int main() {
     int lags = 8;
     double validateSize = 0.2;
     double testSize = 0.33;
+    std::cout << data.size() << std::endl;
     auto timeSeries = GMDH::timeSeriesTransformation(data, lags);
     GMDH::SplittedData splittedData = GMDH::splitData(timeSeries.first, timeSeries.second, validateSize);
 
@@ -79,7 +81,8 @@ int main() {
     GMDH::RIA mia;
     mia.fit(splittedData.xTrain, splittedData.yTrain, criterion, 3,
              GMDH::PolynomialType::quadratic, testSize, 2, -1, 1, 0);
-
+    //GMDH::MULTI mia;
+    //mia.fit(splittedData.xTrain, splittedData.yTrain, criterion, 3, 0.5, 1, 1, 1);
     std::cout << "\nThe best polynomial:\n\n" << mia.getBestPolynomial() << std::endl;
 
     VectorXd res = mia.predict(splittedData.xTest(0, all), 20);

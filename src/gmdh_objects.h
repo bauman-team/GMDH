@@ -1,4 +1,3 @@
-
 namespace GMDH {
 
 using namespace Eigen;
@@ -38,12 +37,34 @@ public:
 
     bool operator<(const Combination& comb) const { return _evaluation < comb._evaluation; }
 
-    std::string getInfoForSaving() const;
+    friend GMDH_API Combination tag_invoke(boost::json::value_to_tag<Combination>, boost::json::value const& v) {
+        VectorU16 bestColsIndexes;
+        std::vector<double> coeffs;
+        auto& o = v.as_object();
+        auto& combination = o.at("combination").as_array();
+        auto& bestCoeffs = o.at("bestCoeffs").as_array();
+        
+        for (auto i : combination)
+            bestColsIndexes.push_back(i.as_int64());
+        for (auto i : bestCoeffs)
+            coeffs.push_back(i.as_double());
+        return {
+            std::move(bestColsIndexes),
+            Map<VectorXd>(coeffs.data(), coeffs.size())
+        };
+    }
+
+    friend GMDH_API void tag_invoke(boost::json::value_from_tag, boost::json::value& v, Combination const& comb)
+    {
+        v = boost::json::object{
+            {"combination", comb.combination()},
+            {"bestCoeffs", comb.bestCoeffs()},
+        };
+    }
 
 };
 
 using VectorC = std::vector<Combination>;
 using IterC = VectorC::iterator;
 using cIterC = VectorC::const_iterator;
-
 };

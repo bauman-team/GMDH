@@ -1,7 +1,11 @@
-cmake_minimum_required(VERSION 3.19)
+cmake_minimum_required(VERSION 3.16)
 
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+if (NOT WINDOWS) 
+    if (CMAKE_BUILD_TYPE MATCHES Coverage) # testing code coverage 
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage")
+    endif()
+endif()
 
 set(SOURCES common.h
     gmdh_objects.h
@@ -21,17 +25,16 @@ set(SOURCES common.h
 	ria.cpp) 
 
 add_library(${LIBRARY_NAME} SHARED ${SOURCES})
-target_compile_definitions(${LIBRARY_NAME} PRIVATE "GMDH_LIB")
-target_include_directories(${LIBRARY_NAME} PRIVATE ../external/eigen-3.4)
-target_include_directories(${LIBRARY_NAME} PRIVATE ../external/indicators-master/include)
 
-if(WIN32)
+if(WINDOWS)
     target_sources(${LIBRARY_NAME} PRIVATE gmdh_lib.h dllmain.cpp)
-    target_compile_definitions(${LIBRARY_NAME} PRIVATE "GMDH_EXPORTS")
+    target_compile_definitions(${LIBRARY_NAME} PRIVATE "GMDH_EXPORTS") # for windows shaed lib __declspec(dllimport)
 endif()
 
+target_compile_definitions(${LIBRARY_NAME} PRIVATE "GMDH_LIB")
 
-if(Boost_FOUND)
-    target_include_directories(${LIBRARY_NAME} PRIVATE ${Boost_INCLUDE_DIR})
-    target_link_libraries(${LIBRARY_NAME} PRIVATE ${Boost_LIBRARIES})
-endif()
+target_include_directories(${LIBRARY_NAME} PRIVATE ../external/eigen-3.4
+    ../external/indicators-master/include
+    ${Boost_INCLUDE_DIR})
+
+target_link_libraries(${LIBRARY_NAME} PRIVATE ${Boost_LIBRARIES})

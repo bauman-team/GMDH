@@ -1,13 +1,19 @@
-cmake_minimum_required(VERSION 3.19)
+cmake_minimum_required(VERSION 3.16)
 
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(SOURCES test_setup.h
+	test_setup.cpp
+	test_gmdh.cpp
+	test_combi.cpp
+	test_multi.cpp
+	test_ria.cpp
+	test_mia.cpp)
 
-add_executable(${TESTS_NAME} test_combi.cpp)
-target_include_directories(${TESTS_NAME} PRIVATE ../src/ ../external/eigen-3.4 ../external/indicators-master/include)
+enable_testing()
 
-if (WIN32)
-	target_compile_definitions(${TESTS_NAME} PRIVATE "GMDH_LIB")
+find_package(GTest QUIET)
+
+if (NOT GTEST_LIBRARY)
+	message("GTest dependencies not found local, and installed from reposiotry!")
 	include(FetchContent)
 	FetchContent_Declare(
 	  googletest
@@ -16,10 +22,21 @@ if (WIN32)
 	FetchContent_MakeAvailable(googletest)
 endif()
 
-target_link_libraries(${TESTS_NAME} PRIVATE ${LIBRARY_NAME})
-target_link_libraries(${TESTS_NAME} PRIVATE gtest gtest_main)
+add_executable(${TESTS_NAME} ${SOURCES})
 
-if(Boost_FOUND)
-    target_include_directories(${TESTS_NAME} PRIVATE ${Boost_INCLUDE_DIR}) # fix boost not find
-    target_link_libraries(${TESTS_NAME} PRIVATE ${Boost_LIBRARIES})
+if (WINDOWS)
+	target_compile_definitions(${TESTS_NAME} PRIVATE "GMDH_LIB")
 endif()
+
+target_include_directories(${TESTS_NAME} PRIVATE ../src/ 
+    ../external/eigen-3.4 
+    ../external/indicators-master/include  
+    ${Boost_INCLUDE_DIR}
+	${GTEST_INCLUDE_DIR})
+
+target_link_libraries(${TESTS_NAME} PRIVATE ${LIBRARY_NAME} 
+    ${Boost_LIBRARIES}
+	${GTEST_LIBRARIES})
+
+add_test(NAME ${TESTS_NAME}
+	COMMAND ${TESTS_NAME})

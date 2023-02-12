@@ -1,142 +1,127 @@
-#include <gtest/gtest.h>
+#include "test_setup.h"
 #include <combi.h>
-#include <iostream>
+#include <ria.h>
 
-using namespace GMDH;
-using namespace Eigen;
-
-
-class TestCOMBI : public ::testing::Test
-{
+class TestCOMBI : public TestGmdhModel {
 protected:
-    struct TestData {
-        SplittedData dataValues; 
-        int lags;
-        double testSize, validateSize;
-        Solver solverFunc;
-        std::vector<double> realPredValues;
-    };
-	void SetUp()
-	{
-        TestData data;
-
-        /* SET MODEL FOR PREDICT GROWING LINEAR DEPENDENCE TIME SERIES */
-        data.lags = 5; data.testSize = 0.33; data.validateSize = 0.2;
-        data.solverFunc = Solver::fast;
-        data.realPredValues = { 16, 17 };
-        std::vector<double> values = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17 };
-        testModels.push_back(getModelTS(data, values));
-
-
-        /* SET MODEL FOR PREDICT DESCENDING LINEAR DEPENDENCE TIME SERIES */
-        data.realPredValues = { 3, 2, 1 };
-        values = { 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 };
-        testModels.push_back(getModelTS(data, values));
-
-
-        /* SET MODEL FOR PREDICT GROWING LINEAR DEPENDENCE WITH NOISE TIME SERIES */
-        data.realPredValues = { 141.472, 146.277 };
-        values = { 10, 19, 31, 40, 50, 62, 71, 79, 89, 98, 106, 120, 124, 129, 140, 146 };
-        testModels.push_back(getModelTS(data, values));
-
-
-        /* SET MODEL FOR PREDICT LINEAR POLINOMIAL DEPENDENCE */
-
-
-        /* SET MODEL FOR PREDICT LINEAR POLINOMIAL DEPENDENCE WITH NOISE */
-
-
-        //data = Map<VectorXd, Unaligned>(dataValues.data(), dataValues.size());
-        
-	}
-	void TearDown()
-	{
-		// if it need clear memory
-	}
-    std::pair<COMBI, TestData> getModelTS(TestData _data, std::vector<double> values) {
-        VectorXd data = Map<VectorXd, Unaligned>(values.data(), values.size());
-        auto timeSeries = convertToTimeSeries(data, _data.lags);
-        SplittedData splittedData = splitData(timeSeries.first, timeSeries.second, _data.validateSize);
-        COMBI combi;
-        auto criterion = Criterion(CriterionType::regularity);
-        combi.fit(splittedData.xTrain, splittedData.yTrain, criterion, _data.testSize, 0, 0, 2, 1);
-        _data.dataValues = splittedData;
-        return {combi, _data};
+    void setModel() override {
+        testModel = new COMBI;
+        if (SKIP_COMBI)
+            GTEST_SKIP();
     }
-    void setModel() { // TODO: for polinomial models
-
-    }
-	std::vector<std::pair<COMBI, TestData>> testModels; // TODO: add polinomial tests
+public:
+    static bool SKIP_COMBI;
 };
 
+bool TestCOMBI::SKIP_COMBI = false;
 
-::testing::AssertionResult PredictionEvaluation(VectorXd predict, VectorXd real, int precision) // TODO: check precision ????
-{
-    auto truncLast{ 10. };
-    truncLast = std::pow(truncLast, precision);
-    for (auto itPred = predict.begin(), itReal = real.begin(); itReal != real.end(); ++itPred, ++itReal) {
-        //std::cout << *itPred << '\n' << *itReal << std::endl;
-        if (static_cast<int64_t>(round(*itPred * truncLast)) != static_cast<int64_t>(round(*itReal * truncLast)))
-		    return ::testing::AssertionFailure();
-            //std::cout << static_cast<int>(*itPred) << " != " << static_cast<int>(*itReal) << std::endl;
+
+TEST_F(TestCOMBI, testFitOnDeath) { 
+    auto testData = getTestData();
+    GTEST_EXPECT_NO_DEATH({
+        static_cast<COMBI*>(testModel)->fit(testData.dataValues.xTrain, testData.dataValues.yTrain);
+    }) << "[ TEST_MSG ]: death fit";
+    if (HasFailure())
+        TestCOMBI::SKIP_COMBI = true;
+}
+
+TEST_F(TestCOMBI, testPrediction) {
+    auto testData = getTestData();
+    static_cast<COMBI*>(testModel)->fit(testData.dataValues.xTrain, testData.dataValues.yTrain);
+    auto errorMsg = testPredict(testData.dataValues.xTest, testData.realPredValues);
+    EXPECT_TRUE(errorMsg.empty()) << errorMsg;
+}
+
+TEST_F(TestCOMBI, testLongTermPredict) {
+    auto testData = getTestData();
+    static_cast<COMBI*>(testModel)->fit(testData.dataValues.xTrain, testData.dataValues.yTrain);
+    auto errorMsg = testLongTermPredict(testData.dataValues.xTest, testData.realPredValues);
+    EXPECT_TRUE(errorMsg.empty()) << errorMsg;
+}
+
+TEST_F(TestCOMBI, testPredictionError) {
+    auto testData = getTestData();
+    MatrixXd errorX;
+    static_cast<COMBI*>(testModel)->fit(testData.dataValues.xTrain, testData.dataValues.yTrain);
+    EXPECT_THROW(testModel->predict(errorX), std::invalid_argument);
+}
+
+TEST_F(TestCOMBI, testSave) {
+    auto testData = getTestData();
+    static_cast<COMBI*>(testModel)->fit(testData.dataValues.xTrain, testData.dataValues.yTrain);
+    auto errorMsg = testSave();
+    EXPECT_TRUE(errorMsg.empty()) << errorMsg;
+}
+
+TEST_F(TestCOMBI, testLoad) {
+    auto testData = getTestData();
+    static_cast<COMBI*>(testModel)->fit(testData.dataValues.xTrain, testData.dataValues.yTrain);
+    testModel->save("gtest_model.log");
+    RIA ria;
+    ria.save("gtest_diff_model.log");
+    auto errorMsg = testLoad("gtest_model.log", "gtest_diff_model.log", "");
+    EXPECT_TRUE(errorMsg.empty()) << errorMsg;
+    std::remove("gtest_model.log");
+    std::remove("gtest_diff_model.log");
+}
+
+TEST_F(TestCOMBI, testAllCriterionTypes) {
+    
+    auto testData = getTestData();
+    for (auto i: allCriterionTypes) {
+        auto criterion = GMDH::Criterion(i);
+        GTEST_EXPECT_NO_DEATH({
+            static_cast<COMBI*>(testModel)->fit(testData.dataValues.xTrain, testData.dataValues.yTrain, criterion);
+        }) << "[ TEST_MSG ]: death fit with criterion #"+std::to_string(static_cast<int>(i));
+        static_cast<COMBI*>(testModel)->fit(testData.dataValues.xTrain, testData.dataValues.yTrain, criterion);
+        auto errorMsg = testPredict(testData.dataValues.xTest, testData.realPredValues);
+        EXPECT_TRUE(errorMsg.empty()) << errorMsg+" with criterion #"+std::to_string(static_cast<int>(i));
     }
-    return ::testing::AssertionSuccess();
+}
+
+TEST_F(TestCOMBI, testParallelCriterionAllSolvers) {
+    auto testData = getTestData();
+    ParallelCriterion criterion1(CriterionType::regularity, CriterionType::unbiasedOutputs),
+    criterion2(CriterionType::regularity, CriterionType::unbiasedOutputs, 0.5, Solver::accurate),
+    criterion3(CriterionType::regularity, CriterionType::unbiasedOutputs, 0.5, Solver::fast);
+    GTEST_EXPECT_NO_DEATH({
+        static_cast<COMBI*>(testModel)->fit(testData.dataValues.xTrain, testData.dataValues.yTrain, criterion1);
+    }) << "[ TEST_MSG ]: death fit with ParallelCriterion and Solver::balanced";
+    static_cast<COMBI*>(testModel)->fit(testData.dataValues.xTrain, testData.dataValues.yTrain, criterion1);
+    auto errorMsg = testPredict(testData.dataValues.xTest, testData.realPredValues);
+    EXPECT_TRUE(errorMsg.empty()) << errorMsg+" with ParallelCriterion and Solver::balanced";
+
+    GTEST_EXPECT_NO_DEATH({
+        static_cast<COMBI*>(testModel)->fit(testData.dataValues.xTrain, testData.dataValues.yTrain, criterion2);
+    }) << "[ TEST_MSG ]: death fit with ParallelCriterion and Solver::accurate";
+    static_cast<COMBI*>(testModel)->fit(testData.dataValues.xTrain, testData.dataValues.yTrain, criterion2);
+    errorMsg = testPredict(testData.dataValues.xTest, testData.realPredValues);
+    EXPECT_TRUE(errorMsg.empty()) << errorMsg+" with ParallelCriterion and Solver::accurate";
+
+    GTEST_EXPECT_NO_DEATH({
+        static_cast<COMBI*>(testModel)->fit(testData.dataValues.xTrain, testData.dataValues.yTrain, criterion3);
+    }) << "[ TEST_MSG ]: death fit with ParallelCriterion and Solver::fast";
+    static_cast<COMBI*>(testModel)->fit(testData.dataValues.xTrain, testData.dataValues.yTrain, criterion3);
+    errorMsg = testPredict(testData.dataValues.xTest, testData.realPredValues);
+    EXPECT_TRUE(errorMsg.empty()) << errorMsg+" with ParallelCriterion and Solver::fast";
 }
 
 
-TEST_F(TestCOMBI, testPrediction)
-{
-    //std::cout << testGrowingLinearDependenceTS.getBestPolynomial() << std::endl;
-    //std::cout << testGrowingLinearDependenceTS.predict(splittedData.xTest) << std::endl;
-    //std::cout << splittedData.yTest << std::endl;
-    VectorXd standartData = Map<VectorXd, Unaligned>(testModels[0].second.realPredValues.data(), testModels[0].second.realPredValues.size());
-    auto res = testModels[0].first.predict(testModels[0].second.dataValues.xTest);
-    EXPECT_TRUE(PredictionEvaluation(res, standartData, 3)); 
-
-
-    standartData = Map<VectorXd, Unaligned>(testModels[1].second.realPredValues.data(), testModels[1].second.realPredValues.size());
-    res = testModels[1].first.predict(testModels[1].second.dataValues.xTest);
-    EXPECT_TRUE(PredictionEvaluation(res, standartData, 3)); 
-    
-
-    standartData = Map<VectorXd, Unaligned>(testModels[2].second.realPredValues.data(), testModels[2].second.realPredValues.size());
-    res = testModels[2].first.predict(testModels[2].second.dataValues.xTest);
-    EXPECT_TRUE(PredictionEvaluation(res, standartData, 3)); 
-    
-    //std::cout << testGrowingLinearDependenceTS.getBestPolynomial() << std::endl;
-    //std::cout << testGrowingLinearDependenceTS.predict(splittedData.xTest) << std::endl;
-    //std::cout << splittedData.yTest << std::endl;
-
-
-    
+TEST_F(TestCOMBI, testSequentialCriterion) {
+    auto testData = getTestData();
+    SequentialCriterion criterion(CriterionType::regularity, CriterionType::unbiasedOutputs);
+    GTEST_EXPECT_NO_DEATH({
+        static_cast<COMBI*>(testModel)->fit(testData.dataValues.xTrain, testData.dataValues.yTrain, criterion);
+    }) << "[ TEST_MSG ]: death fit with SequentialCriterion";
+    static_cast<COMBI*>(testModel)->fit(testData.dataValues.xTrain, testData.dataValues.yTrain, criterion);
+    auto errorMsg = testPredict(testData.dataValues.xTest, testData.realPredValues);
+    EXPECT_TRUE(errorMsg.empty()) << errorMsg+" with SequentialCriterion";
 }
 
 
-int main(int argc, char *argv[])
-{
-	::testing::InitGoogleTest(&argc, argv);
-	return RUN_ALL_TESTS();
+TEST_F(TestCOMBI, testGetBestPolinomial) {
+    auto testData = getTestData();
+    static_cast<COMBI*>(testModel)->fit(testData.dataValues.xTrain, testData.dataValues.yTrain);
+    auto errorMsg = testGetBestPolinomial("");
+    EXPECT_TRUE(errorMsg.empty()) << errorMsg;
 }
-
-// TODO: test splitData
-
-// TODO: test fit
-
-// TODO: test threads
-
-
-// TODO: test save/load
-
-/*
-auto res = combi.getBestPolynomial(); 
-    combi.save("model1.txt");
-    combi.load("model1.txt");
-    auto res2 = combi.getBestPolynomial();
-
-    ASSERT_STREQ(res.c_str(), res2.c_str());
-
-*/
-
-
-
-// TODO: test getBestPolynomial()
