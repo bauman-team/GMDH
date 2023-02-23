@@ -209,23 +209,30 @@ PairDVXd ParallelCriterion::calculate(const MatrixXd& xTrain, const MatrixXd& xT
     return PairDVXd(alpha * firstResult.first + (1 - alpha) * secondResult.first, firstResult.second);
 }
 
-SequentialCriterion::SequentialCriterion(CriterionType _firstCriterionType, 
-                                            CriterionType _secondCriterionType, Solver _solver)
-    : Criterion(_firstCriterionType, _solver) {
-    secondCriterionType = _secondCriterionType;
-}
+VectorC SequentialCriterion::getBestCombinations(VectorC& combinations, const SplittedData& data, 
+    const std::function<MatrixXd(const MatrixXd&, const VectorU16&)> func, int k) const {
 
-VectorC SequentialCriterion::getBestCombinations(VectorC& combinations, const SplittedData& data, const std::function<MatrixXd(const MatrixXd&, const VectorU16&)> func, int k) const
-{
-    auto bestCombinations = Criterion::getBestCombinations(combinations, data, func, k);
+    int real_top = ((top >= k) ? top : (combinations.size() - k) * 0.5 + k);
+    auto bestCombinations = Criterion::getBestCombinations(combinations, data, func, real_top);
     for (auto& combBegin : bestCombinations) {
         auto pairCoeffsEvaluation = recalculate(func(data.xTrain, combBegin.combination()),
                                                 func(data.xTest, combBegin.combination()),
                                                 data.yTrain, data.yTest, combBegin.bestCoeffs());
         combBegin.setEvaluation(pairCoeffsEvaluation.first);
     }
-    std::sort(std::begin(bestCombinations), std::end(bestCombinations));
-    return bestCombinations;
+    //std::sort(std::begin(bestCombinations), std::end(bestCombinations));
+    return Criterion::getBestCombinations(bestCombinations, data, func, k);
+}
+
+SequentialCriterion::SequentialCriterion(CriterionType _firstCriterionType, 
+                                         CriterionType _secondCriterionType,
+                                         int _top, Solver _solver) : Criterion(_firstCriterionType, _solver) {
+    secondCriterionType = _secondCriterionType;
+    if (_top < 0) {
+        std::string errorMsg = getVariableName("top", "_top") + " value must be a non-negative integer";
+        throw std::invalid_argument(errorMsg);
+    }
+    top = _top;
 }
 
 PairDVXd SequentialCriterion::recalculate(const MatrixXd& xTrain, const MatrixXd& xTest, const VectorXd& yTrain,
@@ -235,13 +242,14 @@ PairDVXd SequentialCriterion::recalculate(const MatrixXd& xTrain, const MatrixXd
     return Criterion::getResult(xTrain, xTest, yTrain, yTest, secondCriterionType, tempValues);
 }
 
-VectorC Criterion::getBestCombinations(VectorC& combinations, const SplittedData& data, const std::function<MatrixXd(const MatrixXd&, const VectorU16&)> func, int k) const {
+VectorC Criterion::getBestCombinations(VectorC& combinations, const SplittedData& data,
+    const std::function<MatrixXd(const MatrixXd&, const VectorU16&)> func, int k) const {
     k = std::min(k, static_cast<int>(combinations.size()));
     VectorC _bestCombinations{ std::begin(combinations), std::begin(combinations) + k };
     std::sort(std::begin(_bestCombinations), std::end(_bestCombinations));
     for (auto combBegin = std::begin(combinations) + k, combEnd = std::end(combinations);
         combBegin != combEnd; ++combBegin) {
-        if (*combBegin < _bestCombinations.back()) {
+        if ((*combBegin) < _bestCombinations.back()) {
             std::swap(*combBegin, _bestCombinations.back());
             std::sort(std::begin(_bestCombinations), std::end(_bestCombinations));
         }

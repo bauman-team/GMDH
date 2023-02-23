@@ -81,12 +81,14 @@ public:
 
 class GMDH_API SequentialCriterion : public Criterion {
     CriterionType secondCriterionType;
+    int top;
 
     PairDVXd recalculate(const MatrixXd& xTrain, const MatrixXd& xTest,
         const VectorXd& yTrain, const VectorXd& yTest, const VectorXd& _coeffsTrain) const;
     
     VectorC getBestCombinations(VectorC& combinations, const SplittedData& data, const std::function<MatrixXd(const MatrixXd&, const VectorU16&)> func, int k) const override;
 public:
-    SequentialCriterion(CriterionType _firstCriterionType, CriterionType _secondCriterionType, Solver _solver = Solver::balanced);
+    SequentialCriterion(CriterionType _firstCriterionType, CriterionType _secondCriterionType, 
+                        int _top=0, Solver _solver = Solver::balanced);
 };
 }
