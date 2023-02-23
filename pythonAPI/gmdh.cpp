@@ -61,8 +61,8 @@ PYBIND11_MODULE(_gmdh_core, m) {
             "", "criterion_type"_a, "second_criterion_type"_a, "alpha"_a, "solver"_a);
 
     py::class_<GMDH::SequentialCriterion, GMDH::Criterion>(m, "SequentialCriterion")
-        .def(py::init<GMDH::CriterionType, GMDH::CriterionType, GMDH::Solver>(),
-            "", "criterion_type"_a, "second_criterion_type"_a, "solver"_a);
+        .def(py::init<GMDH::CriterionType, GMDH::CriterionType, int, GMDH::Solver>(),
+            "", "criterion_type"_a, "second_criterion_type"_a, "top"_a, "solver"_a);
 
     py::class_<GMDH::GmdhModel>(m, "GmdhModel");
     py::class_<GMDH::LinearModel, GMDH::GmdhModel>(m, "LinearModel");

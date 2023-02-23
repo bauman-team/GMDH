@@ -211,6 +211,44 @@ class TestCriterions:
             with pytest.raises(TypeError):
                 criterion.second_criterion_type=second_criterion_type
 
+    @pytest.mark.parametrize(
+        'top',
+        [-5.1, 2.5])
+    def test_top_type_error(self, top):
+        """
+        Testing SequentialCriterion class using incorrect types
+        of `top` argument.
+        Expected result is TypeError.
+        """
+
+        # invalid initialization
+        with pytest.raises(TypeError):
+            gmdh.SequentialCriterion(top=top)
+
+        # invalid assignment
+        criterion = gmdh.SequentialCriterion()
+        with pytest.raises(TypeError):
+            criterion.top = top
+
+    @pytest.mark.parametrize(
+        'top',
+        [-1, -3])
+    def test_top_value_error(self, top):
+        """
+        Testing SequentialCriterion class using incorrect values
+        of `top` argument.
+        Expected result is ValueError.
+        """
+
+        # invalid initialization
+        with pytest.raises(ValueError):
+            gmdh.SequentialCriterion(top=top)
+
+        # invalid assignment
+        criterion = gmdh.SequentialCriterion()
+        with pytest.raises(ValueError):
+            criterion.top = top
+
     def test_combined_criterions_in_fit(self, combined_criterions_classes):
         """
         Testing combined criterion classes by using them in fitting Combi model.
