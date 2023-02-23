@@ -229,7 +229,7 @@ SequentialCriterion::SequentialCriterion(CriterionType _firstCriterionType,
                                          int _top, Solver _solver) : Criterion(_firstCriterionType, _solver) {
     secondCriterionType = _secondCriterionType;
     if (_top < 0) {
-        std::string errorMsg = getVariableName("top", "_top") + " value must be a non-negative integer";
+        std::string errorMsg = getVariableName("_top", "top") + " value must be a non-negative integer";
         throw std::invalid_argument(errorMsg);
     }
     top = _top;

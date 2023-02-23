@@ -266,20 +266,24 @@ class SequentialCriterion(Criterion):
         Element from `gmdh.CriterionType` enumeration specifying the type of the second external
         criterion that will be used to recalcuate criterion values for solutions
         with the best first criterion values.
+    top : int, default=0
+        The number of the best combinations that should be evaluated by the second criterion.
+        If the parameter value equals to 0, about half of the combinations
+        will remain for the second criterion.
     solver : gmdh.Solver, default=gmdh.Solver.BALANCED
         Element from `gmdh.Solver` enumeration specifying the method of
         linear equations solving during training GMDH model.
 
     Attributes
     ----------
-    criterion_type, second_criterion_type, solver : see Parameters
+    criterion_type, second_criterion_type, top, solver : see Parameters
 
     Examples
     --------
     You can create `SequentialCriterion` object with parameters specifyied during initialization:
 
     >>> criterion = gmdh.SequentialCriterion(criterion_type=gmdh.CriterionType.STABILITY, \
-second_criterion_type=gmdh.CriterionType.REGULARITY, solver=gmdh.Solver.FAST)
+second_criterion_type=gmdh.CriterionType.REGULARITY, top=7, solver=gmdh.Solver.FAST)
 
     Or you can create default `SequentialCriterion` object
     and then specify parameters using assignments:
@@ -287,6 +291,7 @@ second_criterion_type=gmdh.CriterionType.REGULARITY, solver=gmdh.Solver.FAST)
     >>> criterion = gmdh.SequentialCriterion()
     >>> criterion.criterion_type = gmdh.CriterionType.STABILITY
     >>> criterion.second_criterion_type = gmdh.CriterionType.REGULARITY
+    >>> criterion.top = 7
     >>> criterion.solver = gmdh.Solver.FAST
 
     Displaying the current values of the arguments:
@@ -296,19 +301,27 @@ second_criterion_type=gmdh.CriterionType.REGULARITY, solver=gmdh.Solver.FAST)
     <CriterionType.REGULARITY: 0>
     >>> criterion.second_criterion_type
     <CriterionType.STABILITY: 2>
+    >>> criterion.top
+    0
     >>> criterion.solver
     <Solver.BALANCED: 2>
     """
     def __init__(self,
         criterion_type=CriterionType.REGULARITY,
         second_criterion_type=CriterionType.STABILITY,
+        top=0,
         solver=Solver.BALANCED):
 
         super().__init__(criterion_type, solver)
         if not isinstance(second_criterion_type, CriterionType):
             raise TypeError(f"{second_criterion_type} is not a 'CriterionType' type object")
+        if not isinstance(top, int):
+            raise TypeError(f"{top} is not an 'int' type object")
+        if top < 0:
+            raise ValueError("top value must be a non-negative")
 
         self._second_criterion_type = second_criterion_type
+        self._top = top
 
     @property
     def second_criterion_type(self):  # pylint: disable=missing-function-docstring
@@ -320,10 +333,23 @@ second_criterion_type=gmdh.CriterionType.REGULARITY, solver=gmdh.Solver.FAST)
             raise TypeError(f"{value} is not a 'CriterionType' type object")
         self._second_criterion_type = value
 
+    @property
+    def top(self):  #pylint: disable=missing-function-docstring
+        return self._top
+
+    @top.setter
+    def top(self, value):
+        if not isinstance(value, int):
+            raise TypeError(f"{value} is not an 'int' type object")
+        if value < 0:
+            raise ValueError("top value must be a non-negative")
+        self._top = value
+
     def _get_core(self):
         return  _gmdh_core.SequentialCriterion(
             _gmdh_core.CriterionType(self._criterion_type.value),
             _gmdh_core.CriterionType(self._second_criterion_type.value),
+            self._top,
             _gmdh_core.Solver(self._solver.value))
 
 class Meta(ABCMeta, NumpyDocstringInheritanceMeta):
