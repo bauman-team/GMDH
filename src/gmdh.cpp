@@ -88,6 +88,9 @@ bool GmdhModel::nextLevelCondition(int kBest, int pAverage, VectorC& combination
 GmdhModel& GmdhModel::gmdhFit(const MatrixXd& x, const VectorXd& y, const Criterion& criterion,
             int kBest, double testSize, int pAverage, int threads, int verbose, double limit) {
 
+    if (x.rows() != y.size())
+        throw std::invalid_argument(getVariableName("x", "X") + " rows number and y size must be equal");
+
     using namespace indicators;
     using T = boost::packaged_task<void>;
     std::unique_ptr<ProgressBar> progressBar;
