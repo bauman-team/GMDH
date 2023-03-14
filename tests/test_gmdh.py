@@ -6,7 +6,7 @@ All tests for gmdh module.
 
 import pytest
 import numpy as np
-import gmdh
+import gmdh  #pylint: disable=import-error
 
 @pytest.fixture
 def criterions_classes():
@@ -17,6 +17,11 @@ def criterions_classes():
 def combined_criterions_classes():
     """Returns only combined criterion classes of gmdh module"""
     return [gmdh.ParallelCriterion, gmdh.SequentialCriterion]
+
+@pytest.fixture
+def models():
+    """Returns all models of gmdh module"""
+    return [gmdh.Combi, gmdh.Multi, gmdh.Mia, gmdh.Ria]
 
 class TestDataPreparations:
     """
@@ -260,3 +265,27 @@ class TestCriterions:
             model.fit(x_train, y_train, criterion_class())
             y_pred = model.predict(x_test)
             assert np.array_equal(y_test, y_pred)
+
+class TestModels:
+    """
+    Class containing methods for testing gmdh models.
+    """
+    # pylint: disable=redefined-outer-name
+
+    def test_x_nan_values(self, models):
+        """
+        Testing gmdh models classes using np.nan values of `X` argument.
+        Expected result is ValueError.
+        """
+        for model in models:
+            with pytest.raises(ValueError):
+                model().fit(X=[[0, 1, 2], [3, np.nan, 4], [5, 6, 7]], y=[8, 9, 10])
+
+    def test_y_nan_values(self, models):
+        """
+        Testing gmdh models classes using np.nan values of `y` argument.
+        Expected result is ValueError.
+        """
+        for model in models:
+            with pytest.raises(ValueError):
+                model().fit(X=[[0, 1, 2], [3, 3.5, 4], [5, 6, 7]], y=[np.nan, 9, 10])
