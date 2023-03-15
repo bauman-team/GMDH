@@ -55,6 +55,10 @@ add_subdirectory(src/)
 add_subdirectory(external/pybind11-2.10.0)
 add_subdirectory(pythonAPI/)
 add_subdirectory(examples/)
+
+if (WINDOWS)
+	add_subdirectory(external/gtest)
+endif()
 add_subdirectory(tests/)
 
 set_target_properties(${LIBRARY_NAME} ${MODULE_NAME} ${TESTS_NAME} ${PROJECT_EXAMPLES}
