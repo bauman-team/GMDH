@@ -112,8 +112,6 @@ For more in-depth tutorials about gmdh you can check our online [GMDH_book](http
 
 This project is licensed under the [Apache 2.0](https://github.com/bauman-team/GMDH/blob/master/LICENSE.md) License.
 
-GMDH is under an 
-
 --- 
 ## Release notes
 
