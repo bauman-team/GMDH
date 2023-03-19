@@ -8,7 +8,7 @@ import sys
 import pytest
 
 sys.path.append(os.environ['GMDH_ROOT'])
-import gmdh  # pylint: disable=wrong-import-position
+import gmdh  # pylint: disable=wrong-import-position, disable=import-error
 
 @pytest.fixture(autouse=True)
 def add_gmdhpy(doctest_namespace):

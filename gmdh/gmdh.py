@@ -7,6 +7,7 @@ GMDH: Group method of data handling
 import enum
 import warnings
 from abc import ABCMeta, abstractmethod
+import numpy as np
 from docstring_inheritance import NumpyDocstringInheritanceMeta  # pylint: disable=import-error
 from gmdh import _gmdh_core
 
@@ -384,6 +385,11 @@ class Model(metaclass=Meta):
         predict : Using fitted model to make predictions.
         """
 
+        if np.isnan(X).sum() > 0:
+            raise ValueError('X array contains nan values')
+        if np.isnan(y).sum() > 0:
+            raise ValueError('y array contains nan values')
+
     def predict(self, X, lags=None):  # pylint: disable=invalid-name
         """
         Make predictions based on the optimal solution found during the fitting process.
@@ -510,6 +516,7 @@ class Combi(Model):
         self : Combi
             Fitted model.
         """
+        super().fit(X, y)
         self._model.fit(X, y, criterion._get_core(), test_size, p_average, n_jobs, verbose, limit)
         return self
 
@@ -660,6 +667,7 @@ class Multi(Model):
         self : Multi
             Fitted model.
         """
+        super().fit(X, y)
         self._model.fit(X, y, criterion._get_core(), k_best, test_size, p_average,
             n_jobs, verbose, limit)
         return self
@@ -818,6 +826,7 @@ class Mia(Model):
         self : Mia
             Fitted model.
         """
+        super().fit(X, y)
         self._model.fit(X, y, criterion._get_core(), k_best,
             _gmdh_core.PolynomialType(polynomial_type.value), test_size,
             p_average, n_jobs, verbose, limit)
@@ -1002,6 +1011,7 @@ class Ria(Model):
         self : Ria
             Fitted model.
         """
+        super().fit(X, y)
         self._model.fit(X, y, criterion._get_core(), k_best,
             _gmdh_core.PolynomialType(polynomial_type.value), test_size,
             p_average, n_jobs, verbose, limit)
