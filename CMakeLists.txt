@@ -36,7 +36,7 @@ set(Boost_USE_STATIC_LIBS ON)
 set(Boost_USE_MULTITHREADED ON)  
 set(Boost_USE_STATIC_RUNTIME OFF) 
 
-find_package(Boost 1.79.0 QUIET COMPONENTS system thread filesystem json chrono)
+find_package(Boost 1.79.0 QUIET COMPONENTS system thread filesystem chrono)
 if(NOT Boost_FOUND)
     set(Boost_USE_STATIC_LIBS OFF) 
     find_package(Boost 1.79.0 REQUIRED COMPONENTS system thread filesystem json chrono)
