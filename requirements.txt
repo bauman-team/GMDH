@@ -10,6 +10,7 @@ autodocsumm==0.2.10
 Babel==2.11.0
 beautifulsoup4==4.11.2
 bleach==4.1.0
+build==0.10.0
 CacheControl==0.12.11
 certifi==2022.12.7
 charset-normalizer==2.0.12
@@ -50,6 +51,7 @@ pyenchant==3.2.2
 Pygments==2.14.0
 pylint==2.15.5
 pyparsing==3.0.7
+pyproject-hooks==1.0.0
 pytest==7.0.1
 pytest-cov==4.0.0
 pytest-html==3.2.0
