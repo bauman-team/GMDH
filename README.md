@@ -4,7 +4,7 @@
 
 GMDH is a Python module that implements algorithms for the group method of data handling.
 
-Read the Python module [documentation](https://bauman-team.github.io/GMDH).
+Read the Python module [documentation](https://bauman-team.github.io/GMDH/python/html/).
 ## About GMDH
 
 GMDH is a machine learning Python module (API) based on C++ library for fast calculations. It realized the Group Method of Data Handling. It is a set of several algorithms for different machine learning tasks solution.
@@ -115,11 +115,11 @@ This project is licensed under the [Apache 2.0](https://github.com/bauman-team/G
 --- 
 ## Release notes
 
-This is a bachelor's diploma project. It was written by students of the Bauman Moscow State Technical University (BMSTU). The first version 1.0 is released in PyPI. This version is the final one for the graduation project, but the project itself and the repository can continue to grow and improve. We will be glad to new ideas and suggestions.
+This is a bachelor's diploma project. It was written by students of the Bauman Moscow State Technical University (BMSTU). The first version 1.0.1 is released in PyPI. This version is the final one for the graduation project, but the project itself and the repository can continue to grow and improve. We will be glad to new ideas and suggestions.
 
 All the release branches can be found on [GitHub](https://github.com/bauman-team/GMDH/releases).
 
-All the release binaries can be found on [PyPI](https://test.pypi.org/project/gmdh/#history).
+All the release binaries can be found on [PyPI](https://pypi.org/project/gmdh/#history).
 
 
 [python-shield]:https://img.shields.io/badge/Make%20with-Python3-informational?style=flat&logo=python&logoColor=white&color=2bbc8a

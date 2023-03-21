@@ -43,7 +43,7 @@ with open("gmdh/version.py", encoding='utf8') as f:
     exec(f.read(), version)  # pylint: disable=exec-used
 
 project_urls = {
-  'Documentation': 'https://bauman-team.github.io/GMDH',
+  'Documentation': 'https://bauman-team.github.io/GMDH/python/html/',
   'GMDH book': 'https://bauman-team.github.io/GMDH_book',
   'Source Code': 'https://github.com/bauman-team/GMDH',
 }
@@ -67,7 +67,6 @@ setup(
         "Intended Audience :: Education",
         "Intended Audience :: Information Technology",
         "Operating System :: Microsoft :: Windows",
-        "Operating System :: MacOS",
         "Operating System :: Unix",
         "License :: OSI Approved :: Apache Software License",
         "Programming Language :: C++",
