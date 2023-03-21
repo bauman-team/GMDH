@@ -1,5 +1,7 @@
 graft src
-graft external
+graft external/eigen-3.4
+graft external/indicators-master
+graft external/pybind11-2.10.0
 graft pythonAPI
 graft examples
 graft tests
