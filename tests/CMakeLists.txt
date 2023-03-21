@@ -10,18 +10,24 @@ set(SOURCES test_setup.h
 
 enable_testing()
 
-find_package(GTest QUIET)
 
-if (NOT GTEST_LIBRARY)
-	message("GTest dependencies not found local, and installed from reposiotry!")
-	include(FetchContent)
-	FetchContent_Declare(
-	  googletest
-	  URL https://github.com/google/googletest/archive/5376968f6948923e2411081fd9372e71a59d8e77.zip)
-	set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-	FetchContent_MakeAvailable(googletest)
+if (WINDOWS)
+	set(GTEST_PATH ../external/gtest)
+	set(GTEST_INCLUDE_DIR ${GTEST_PATH}/googletest/include)
+	set(GTEST_LIBRARIES gtest)
+else()
+	find_package(GTest QUIET)
+
+	if (NOT GTEST_LIBRARY)
+		message("GTest dependencies not found local, and installed from reposiotry!")
+		include(FetchContent)
+		FetchContent_Declare(
+  			googletest
+			URL https://github.com/google/googletest/archive/5376968f6948923e2411081fd9372e71a59d8e77.zip)
+		set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+		FetchContent_MakeAvailable(googletest)
+	endif()
 endif()
-
 add_executable(${TESTS_NAME} ${SOURCES})
 
 if (WINDOWS)

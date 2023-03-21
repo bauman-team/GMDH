@@ -48,14 +48,19 @@ endif()
 
 set(LIBRARY_NAME gmdh)
 set(MODULE_NAME _gmdh_core)
-set(TESTS_NAME gmdh_tests)
 set(PROJECT_EXAMPLES gmdh_example) # only for examples
 
 add_subdirectory(src/)
 add_subdirectory(external/pybind11-2.10.0)
 add_subdirectory(pythonAPI/)
 add_subdirectory(examples/)
-add_subdirectory(tests/)
+if(BUILD_TESTS MATCHES yes)
+    if (WINDOWS)
+	    add_subdirectory(external/gtest)
+    endif()
+    set(TESTS_NAME gmdh_tests)
+    add_subdirectory(tests/)
+endif()
 
 set_target_properties(${LIBRARY_NAME} ${MODULE_NAME} ${TESTS_NAME} ${PROJECT_EXAMPLES}
     PROPERTIES

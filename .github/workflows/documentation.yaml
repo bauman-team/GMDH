@@ -1,0 +1,43 @@
+name: Docs
+on: [push, pull_request, workflow_dispatch]
+permissions:
+    contents: write
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.8
+      - name: Install python module requirements
+        run: |
+          pip3 install -r requirements.txt
+      - name: Install dependencies for compilation
+        run: |
+          sudo apt-get install -y gcc g++ build-essential cmake libgtest-dev lcov
+          wget -O boost_1_79_0.tar.gz https://boostorg.jfrog.io/artifactory/main/release/1.79.0/source/boost_1_79_0.tar.gz
+          tar xzvf boost_1_79_0.tar.gz
+          cd boost_1_79_0/
+          sudo ./bootstrap.sh --prefix=/usr/local
+          sudo ./b2 runtime-link=shared variant=release link=shared install --with-filesystem --with-system --with-thread --with-json --with-chrono
+      - name: Build targets for generate Sphinix docs
+        run: |
+          export GMDH_ROOT=$(pwd)
+          mkdir -p build/Release
+          cd build/Release
+          cmake -DCMAKE_BUILD_TYPE=Release ../..
+          cmake --build . --config Release --target _gmdh_core
+      - name: Sphinx build
+        run: |
+          cd docs && make html
+          mv build python
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        with:
+          publish_branch: gh-pages
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: docs/
+          force_orphan: true
