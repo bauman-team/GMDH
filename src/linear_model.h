@@ -3,6 +3,7 @@
 
 namespace GMDH {
 
+/// @brief Class implementing the general logic of GMDH linear algorithms
 class GMDH_API LinearModel : public GmdhModel {
 protected:
     virtual void removeExtraCombinations() override;
@@ -13,8 +14,9 @@ protected:
     std::string getPolynomialVariable(int levelIndex, int coeffIndex, int coeffsNumber, 
                                         const VectorU16& bestColsIndexes) const override;
 
-    virtual VectorVu16 generateCombinations(int n_cols) const override  = 0;
+    virtual VectorVu16 generateCombinations(int n_cols) const override = 0;
 public:
+    /// @brief Construct a new LinearModel object
     LinearModel();
 
     using GmdhModel::predict;

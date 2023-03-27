@@ -1,7 +1,6 @@
 #include "multi.h"
 
-namespace GMDH
-{
+namespace GMDH {
 VectorVu16 MULTI::generateCombinations(int n_cols) const { // TODO: maybe change for bit masks 
     VectorVu16 combs;
     if (level == 1)

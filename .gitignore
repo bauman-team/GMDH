@@ -2,7 +2,6 @@
 /.vscode
 /venv
 .ipynb_checkpoints
-/gmdhpy
 /.vs
 /.cache
 __pycache__
@@ -14,3 +13,4 @@ __pycache__
 *.pyd
 /dist
 *.egg-info
+/doxygen
