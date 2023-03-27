@@ -13,6 +13,7 @@ namespace GMDH {
         return leftTasks;
     }
 */
+
 std::string GmdhModel::getModelName() const {
     auto modelName{ boost::typeindex::type_id_runtime(*this).pretty_name() };
     modelName = modelName.substr(modelName.find_last_of(':') + 1);

@@ -43,9 +43,9 @@ class Solver(DocEnum):
     """
     Enumeration for specifying the method of linear equations solving in GMDH models.
     """
-    FAST = _gmdh_core.Solver.FAST.value, "Fast solving with low accuracy."
-    ACCURATE = _gmdh_core.Solver.ACCURATE.value, 'Slow solving with high accuracy.'
-    BALANCED = _gmdh_core.Solver.BALANCED.value, 'Balanced solving with medium speed and accuracy.'
+    FAST = _gmdh_core.Solver.FAST.value, "Fast solution with perhaps not the best accuracy"
+    ACCURATE = _gmdh_core.Solver.ACCURATE.value, 'Slow solution with maximum accuracy'
+    BALANCED = _gmdh_core.Solver.BALANCED.value, 'Balanced solution with average speed and accuracy'
 
 class PolynomialType(DocEnum):
     """

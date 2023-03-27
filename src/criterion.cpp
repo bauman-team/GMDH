@@ -220,7 +220,6 @@ VectorC SequentialCriterion::getBestCombinations(VectorC& combinations, const Sp
                                                 data.yTrain, data.yTest, combBegin.bestCoeffs());
         combBegin.setEvaluation(pairCoeffsEvaluation.first);
     }
-    //std::sort(std::begin(bestCombinations), std::end(bestCombinations));
     return Criterion::getBestCombinations(bestCombinations, data, func, k);
 }
 
