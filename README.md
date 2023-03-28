@@ -1,4 +1,4 @@
-# Group Method of Data Hahdling (GMDH) - the family of deep learning algorithms.
+# Group Method of Data Handling (GMDH) - the family of deep learning algorithms.
 
 ![][c++-shield] ![][boost-shield] ![][pybind-shield] ![][python-shield] ![][eigen-shield]
 
@@ -108,6 +108,12 @@ Output:
 For more in-depth tutorials about gmdh you can check our online [GMDH_book](https://bauman-team.github.io/GMDH_book/intro.html).
 
 ---
+## Documentation
+Read the C++ library [documentation](https://bauman-team.github.io/GMDH/doxygen/html/).
+
+Read the Python module [documentation](https://bauman-team.github.io/GMDH/python/html/).
+
+---
 ## License
 
 This project is licensed under the [Apache 2.0](https://github.com/bauman-team/GMDH/blob/master/LICENSE.md) License.
@@ -120,6 +126,11 @@ This is a bachelor's diploma project. It was written by students of the Bauman M
 All the release branches can be found on [GitHub](https://github.com/bauman-team/GMDH/releases).
 
 All the release binaries can be found on [PyPI](https://pypi.org/project/gmdh/#history).
+
+---
+## Opening an issue and a PR
+
+You can also post bug reports and feature requests in [GitHub issues](https://github.com/bauman-team/GMDH/issues). We welcome contributions!
 
 
 [python-shield]:https://img.shields.io/badge/Make%20with-Python3-informational?style=flat&logo=python&logoColor=white&color=2bbc8a

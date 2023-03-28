@@ -29,10 +29,15 @@ jobs:
           cd build/Release
           cmake -DCMAKE_BUILD_TYPE=Release ../..
           cmake --build . --config Release --target _gmdh_core
-      - name: Sphinx build
+      - name: Sphinx python documentation build
         run: |
           cd docs && make html
           mv build python
+      - name: Doxygen c++ documentation build
+        run: |
+          sudo apt-get install -y doxygen
+          doxygen
+          mv doxygen docs/
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
