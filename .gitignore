@@ -1,6 +1,6 @@
 /build
 /.vscode
-/venv
+venv
 .ipynb_checkpoints
 /.vs
 /.cache
