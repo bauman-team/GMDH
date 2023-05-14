@@ -141,12 +141,16 @@ public:
      * @param v Reference to the json value variable to which the conversion result will be written
      * @param comb Combination type variable with info about the trained model
      */
-    friend GMDH_API void tag_invoke(boost::json::value_from_tag, boost::json::value& v, Combination const& comb)
-    {
-        v = boost::json::object{
-            {"combination", comb.combination()},
-            {"bestCoeffs", comb.bestCoeffs()},
-        };
+    friend GMDH_API void tag_invoke(boost::json::value_from_tag, boost::json::value& v, const Combination& comb) {
+        boost::json::array combs, bestCoeffs;
+        for (auto const &c: comb.combination())
+            combs.push_back(c);
+        for (auto const &coeff: comb.bestCoeffs())
+            bestCoeffs.push_back(coeff);
+        boost::json::object json_obj;
+        json_obj["combination"] = combs;
+        json_obj["bestCoeffs"] = bestCoeffs;
+        v = json_obj;
     }
 };
 
