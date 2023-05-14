@@ -100,12 +100,22 @@ std::string MIA::getPolynomialVariable(int levelIndex, int coeffIndex, int coeff
 }
 
 boost::json::value MIA::toJSON() const {
-    return boost::json::object{
-        {"modelName", getModelName()},
-        {"inputColsNumber", inputColsNumber},
-        {"polynomialType", static_cast<int>(polynomialType)},
-        {"bestCombinations", bestCombinations},
-    };
+    boost::json::object json_obj_model = GmdhModel::toJSON().as_object();
+    /*
+    json_obj_model["modelName"] = getModelName();
+    json_obj_model["inputColsNumber"] = inputColsNumber;
+    json_obj_model["polynomialType"] = static_cast<int>(polynomialType);
+    boost::json::array bestCombs;
+    for (auto const &vComb: bestCombinations) {
+        boost::json::array jsonVC;
+        for (auto comb: vComb)
+            jsonVC.push_back(boost::json::value_from<Combination>(std::move(comb)));
+        bestCombs.push_back(jsonVC);
+    }
+    json_obj_model["bestCombinations"] = bestCombs;
+    */
+    json_obj_model["polynomialType"] = static_cast<int>(polynomialType);
+    return json_obj_model;
 } // LCOV_EXCL_LINE
 
 int MIA::fromJSON(boost::json::value jsonModel) {
