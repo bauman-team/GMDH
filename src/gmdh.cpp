@@ -344,7 +344,7 @@ int GmdhModel::save(const std::string& path) const {
 }
 
 int GmdhModel::load(const std::string& path) {        
-    if (!boost::filesystem::is_regular_file(path)) // TODO: maybe remove because extra checking
+    if (!boost::filesystem::is_regular_file(path))
 #ifdef GMDH_MODULE
         throw FileException("Invalid argument: '" + path + "'");
 #else
