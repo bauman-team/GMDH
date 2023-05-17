@@ -25,12 +25,18 @@ __all__ = [
     "Combi",
     "Multi",
     "Mia",
-    "Ria"
+    "Ria",
+    "FileError"
 ]
+
+class FileError(Exception):
+    """
+    Exception class for file errors.
+    """
 
 class DocEnum(enum.Enum):
     """
-    Enum class for adding docstring to elements of inherited enumerations
+    Enum class for adding docstring to elements of inherited enumerations.
     """
     def __new__(cls, value, doc=None):
         self = object.__new__(cls)
@@ -444,11 +450,19 @@ class Model(metaclass=Meta):
         path : str
             Path to the file to save the model.
 
+        Raises
+        ------
+        FileError
+            If the file can't be created or opened.
+        
         See Also
         --------
         load : Loading pre-trained model.
         """
-        self._model.save(path)
+        try:
+            self._model.save(path)
+        except _gmdh_core.FileError as err:
+            raise FileError(err.args[0]) from err
         return self
 
     def load(self, path):
@@ -461,8 +475,17 @@ class Model(metaclass=Meta):
         ----------
         path : str
             Path to the file for loading the model.
+
+        Raises
+        ------
+        FileError
+            If the file can't be opened or it is corrupted. 
+            Also raises when trying to load file of another model.
         """
-        self._model.load(path)
+        try:
+            self._model.load(path)
+        except _gmdh_core.FileError as err:
+            raise FileError(err.args[0]) from err
         return self
 
 class Combi(Model):
