@@ -454,7 +454,7 @@ class Model(metaclass=Meta):
         ------
         FileError
             If the file can't be created or opened.
-        
+
         See Also
         --------
         load : Loading pre-trained model.
@@ -479,7 +479,7 @@ class Model(metaclass=Meta):
         Raises
         ------
         FileError
-            If the file can't be opened or it is corrupted. 
+            If the file can't be opened or it is corrupted.
             Also raises when trying to load file of another model.
         """
         try:
