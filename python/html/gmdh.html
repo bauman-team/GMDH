@@ -1,0 +1,1570 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>gmdh package &mdash; gmdh 1.0.3 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Contents" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            gmdh
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">gmdh package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-contents">Module contents</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#gmdh.gmdh.Combi"><code class="docutils literal notranslate"><span class="pre">Combi</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#gmdh.gmdh.Combi.fit"><code class="docutils literal notranslate"><span class="pre">Combi.fit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gmdh.gmdh.Combi.get_best_polynomial"><code class="docutils literal notranslate"><span class="pre">Combi.get_best_polynomial()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gmdh.gmdh.Combi.load"><code class="docutils literal notranslate"><span class="pre">Combi.load()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gmdh.gmdh.Combi.predict"><code class="docutils literal notranslate"><span class="pre">Combi.predict()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gmdh.gmdh.Combi.save"><code class="docutils literal notranslate"><span class="pre">Combi.save()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#gmdh.gmdh.Criterion"><code class="docutils literal notranslate"><span class="pre">Criterion</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#gmdh.gmdh.CriterionType"><code class="docutils literal notranslate"><span class="pre">CriterionType</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#gmdh.gmdh.CriterionType.REGULARITY"><code class="docutils literal notranslate"><span class="pre">CriterionType.REGULARITY</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gmdh.gmdh.CriterionType.SYM_REGULARITY"><code class="docutils literal notranslate"><span class="pre">CriterionType.SYM_REGULARITY</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gmdh.gmdh.CriterionType.STABILITY"><code class="docutils literal notranslate"><span class="pre">CriterionType.STABILITY</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gmdh.gmdh.CriterionType.SYM_STABILITY"><code class="docutils literal notranslate"><span class="pre">CriterionType.SYM_STABILITY</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gmdh.gmdh.CriterionType.UNBIASED_OUTPUTS"><code class="docutils literal notranslate"><span class="pre">CriterionType.UNBIASED_OUTPUTS</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gmdh.gmdh.CriterionType.SYM_UNBIASED_OUTPUTS"><code class="docutils literal notranslate"><span class="pre">CriterionType.SYM_UNBIASED_OUTPUTS</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gmdh.gmdh.CriterionType.UNBIASED_COEFFS"><code class="docutils literal notranslate"><span class="pre">CriterionType.UNBIASED_COEFFS</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gmdh.gmdh.CriterionType.ABSOLUTE_NOISE_IMMUNITY"><code class="docutils literal notranslate"><span class="pre">CriterionType.ABSOLUTE_NOISE_IMMUNITY</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gmdh.gmdh.CriterionType.SYM_ABSOLUTE_NOISE_IMMUNITY"><code class="docutils literal notranslate"><span class="pre">CriterionType.SYM_ABSOLUTE_NOISE_IMMUNITY</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#gmdh.gmdh.FileError"><code class="docutils literal notranslate"><span class="pre">FileError</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#gmdh.gmdh.FileError.args"><code class="docutils literal notranslate"><span class="pre">FileError.args</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gmdh.gmdh.FileError.with_traceback"><code class="docutils literal notranslate"><span class="pre">FileError.with_traceback()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#gmdh.gmdh.Mia"><code class="docutils literal notranslate"><span class="pre">Mia</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#gmdh.gmdh.Mia.fit"><code class="docutils literal notranslate"><span class="pre">Mia.fit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gmdh.gmdh.Mia.get_best_polynomial"><code class="docutils literal notranslate"><span class="pre">Mia.get_best_polynomial()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gmdh.gmdh.Mia.load"><code class="docutils literal notranslate"><span class="pre">Mia.load()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gmdh.gmdh.Mia.predict"><code class="docutils literal notranslate"><span class="pre">Mia.predict()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gmdh.gmdh.Mia.save"><code class="docutils literal notranslate"><span class="pre">Mia.save()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#gmdh.gmdh.Multi"><code class="docutils literal notranslate"><span class="pre">Multi</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#gmdh.gmdh.Multi.fit"><code class="docutils literal notranslate"><span class="pre">Multi.fit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gmdh.gmdh.Multi.get_best_polynomial"><code class="docutils literal notranslate"><span class="pre">Multi.get_best_polynomial()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gmdh.gmdh.Multi.load"><code class="docutils literal notranslate"><span class="pre">Multi.load()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gmdh.gmdh.Multi.predict"><code class="docutils literal notranslate"><span class="pre">Multi.predict()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gmdh.gmdh.Multi.save"><code class="docutils literal notranslate"><span class="pre">Multi.save()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#gmdh.gmdh.ParallelCriterion"><code class="docutils literal notranslate"><span class="pre">ParallelCriterion</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#gmdh.gmdh.PolynomialType"><code class="docutils literal notranslate"><span class="pre">PolynomialType</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#gmdh.gmdh.PolynomialType.LINEAR"><code class="docutils literal notranslate"><span class="pre">PolynomialType.LINEAR</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gmdh.gmdh.PolynomialType.LINEAR_COV"><code class="docutils literal notranslate"><span class="pre">PolynomialType.LINEAR_COV</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gmdh.gmdh.PolynomialType.QUADRATIC"><code class="docutils literal notranslate"><span class="pre">PolynomialType.QUADRATIC</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#gmdh.gmdh.Ria"><code class="docutils literal notranslate"><span class="pre">Ria</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#gmdh.gmdh.Ria.fit"><code class="docutils literal notranslate"><span class="pre">Ria.fit()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gmdh.gmdh.Ria.get_best_polynomial"><code class="docutils literal notranslate"><span class="pre">Ria.get_best_polynomial()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gmdh.gmdh.Ria.load"><code class="docutils literal notranslate"><span class="pre">Ria.load()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gmdh.gmdh.Ria.predict"><code class="docutils literal notranslate"><span class="pre">Ria.predict()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gmdh.gmdh.Ria.save"><code class="docutils literal notranslate"><span class="pre">Ria.save()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#gmdh.gmdh.SequentialCriterion"><code class="docutils literal notranslate"><span class="pre">SequentialCriterion</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#gmdh.gmdh.Solver"><code class="docutils literal notranslate"><span class="pre">Solver</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#gmdh.gmdh.Solver.FAST"><code class="docutils literal notranslate"><span class="pre">Solver.FAST</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gmdh.gmdh.Solver.ACCURATE"><code class="docutils literal notranslate"><span class="pre">Solver.ACCURATE</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gmdh.gmdh.Solver.BALANCED"><code class="docutils literal notranslate"><span class="pre">Solver.BALANCED</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#gmdh.gmdh.split_data"><code class="docutils literal notranslate"><span class="pre">split_data()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#gmdh.gmdh.time_series_transformation"><code class="docutils literal notranslate"><span class="pre">time_series_transformation()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">gmdh</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">gmdh package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/gmdh.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="gmdh-package">
+<h1>gmdh package<a class="headerlink" href="#gmdh-package" title="Permalink to this heading"></a></h1>
+<section id="module-contents">
+<h2>Module contents<a class="headerlink" href="#module-contents" title="Permalink to this heading"></a></h2>
+<span class="target" id="module-gmdh.gmdh"></span><p>GMDH: Group method of data handling</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="gmdh.gmdh.Combi">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gmdh.gmdh.</span></span><span class="sig-name descname"><span class="pre">Combi</span></span><a class="headerlink" href="#gmdh.gmdh.Combi" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code></p>
+<p>Class implementing combinatorial GMDH algorithm.</p>
+<p>It is the basic GMDH algorithm that checks all possible combinations
+from simple to complex ones. Each combination is a linear function.</p>
+<p>Combinations at the first level: y = w0 + w1*x1.</p>
+<p>Combinations at the second level: y = w0 + w1*x1 + w2*x2.</p>
+<p>Combinations at the N-th level: y = w0 + w1*x1 + w2*x2 + … + wn*xn.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="gmdh.gmdh.Combi.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">criterion=&lt;gmdh.gmdh.Criterion</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_size=0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p_average=1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_jobs=1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose=0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit=0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gmdh.gmdh.Combi.fit" title="Permalink to this definition"></a></dt>
+<dd><p>Fitting the Combi model to find the best solution.</p>
+<p>Using the input training <cite>X</cite> and <cite>y</cite> data the Combi model looks for the optimal solution
+from linear functions and stops if the errors start to grow.
+The training process can be configured for specific purposes
+using hyperparameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>X</strong><span class="classifier">array_like</span></dt><dd><p>2D array containing numeric training data.
+Rows are data samples, columns are features or lags.</p>
+</dd>
+<dt><strong>y</strong><span class="classifier">array_like</span></dt><dd><p>1D array containg target numeric values for the training data.</p>
+</dd>
+<dt><strong>criterion</strong><span class="classifier">gmdh.Criterion, default=gmdh.Criterion(gmdh.CriterionType.REGULARITY)</span></dt><dd><p>External criterion is a function or specific combination of functions
+for solutions evaluation and choosing the best one.</p>
+</dd>
+<dt><strong>test_size</strong><span class="classifier">float, default=0.5</span></dt><dd><p>Proportion of the input data to include in the internal test set
+that will be used only to calculate external criterion value.
+Value must be in the (0, 1) range.</p>
+</dd>
+<dt><strong>p_average</strong><span class="classifier">int, default=1</span></dt><dd><p>Specifying the number of the best combinations for calculation
+the mean error value at each level.</p>
+</dd>
+<dt><strong>n_jobs</strong><span class="classifier">int, default=1</span></dt><dd><p>The number of threads that will be used for calculations.
+If n_jobs=-1 the maximum possible threads will be used.</p>
+</dd>
+<dt><strong>verbose</strong><span class="classifier">{0, 1}, default=0</span></dt><dd><p>If verbose=1 then the progress bars and additional information
+will be displayed during the model fitting.
+If verbose=0 there will be no information to display.</p>
+</dd>
+<dt><strong>limit</strong><span class="classifier">float, default=0</span></dt><dd><p>If the error value at the end of the level decreases by less then limit value
+compared to the previous level the training process will stop.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>self</strong><span class="classifier">Combi</span></dt><dd><p>Fitted model.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="#gmdh.gmdh.Combi.predict" title="gmdh.gmdh.Combi.predict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">predict</span></code></a></dt><dd><p>Using fitted model to make predictions.</p>
+</dd>
+</dl>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gmdh.gmdh.Combi.get_best_polynomial">
+<span class="sig-name descname"><span class="pre">get_best_polynomial</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#gmdh.gmdh.Combi.get_best_polynomial" title="Permalink to this definition"></a></dt>
+<dd><p>Getting a string representation of the formula of the best polynomial.</p>
+<p>Using this method you can see the polynomial that was constructed
+during the fitting process and will be used for predictions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>polynomial</strong><span class="classifier">str</span></dt><dd><p>Polynomial of the fitted model.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>Fitting the Combi model using Fibonacci series:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">gmdh</span><span class="o">.</span><span class="n">time_series_transformation</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">21</span><span class="p">],</span> <span class="n">lags</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x_train</span><span class="p">,</span> <span class="n">x_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">gmdh</span><span class="o">.</span><span class="n">split_data</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.25</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">gmdh</span><span class="o">.</span><span class="n">Combi</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">x_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x_test</span><span class="p">)</span>
+<span class="go">array([13., 21.])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span><span class="o">.</span><span class="n">get_best_polynomial</span><span class="p">()</span>
+<span class="go">&#39;y = x1 + x2&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gmdh.gmdh.Combi.load">
+<span class="sig-name descname"><span class="pre">load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gmdh.gmdh.Combi.load" title="Permalink to this definition"></a></dt>
+<dd><p>Loading model from the file</p>
+<p>Using this method you can load a pre-trained model to make predictions without fitting.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>path</strong><span class="classifier">str</span></dt><dd><p>Path to the file for loading the model.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>self</strong><span class="classifier">Combi</span></dt><dd><p>Combi model loaded from the file.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>FileError</dt><dd><p>If the file can’t be opened or it is corrupted.
+Also raises when trying to load file of another model.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>Teaching the model to sum 2 numbers, then making predictions
+and saving model to the JSON file:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">model1</span> <span class="o">=</span> <span class="n">gmdh</span><span class="o">.</span><span class="n">Combi</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model1</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">7</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="p">[</span><span class="mi">9</span><span class="p">,</span> <span class="mi">12</span><span class="p">]],</span> <span class="n">y</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">21</span><span class="p">])</span>  
+<span class="go">&lt;gmdh.gmdh.Combi object at 0x...&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model1</span><span class="o">.</span><span class="n">predict</span><span class="p">([[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">11</span><span class="p">]])</span>
+<span class="go">array([ 7., 12.])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model1</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s1">&#39;model1.json&#39;</span><span class="p">)</span>  
+<span class="go">&lt;gmdh.gmdh.Combi object at 0x...&gt;</span>
+</pre></div>
+</div>
+<p>Loading pre-trained model and making predictions without fitting:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">model2</span> <span class="o">=</span> <span class="n">gmdh</span><span class="o">.</span><span class="n">Combi</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model2</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;model1.json&#39;</span><span class="p">)</span>  
+<span class="go">&lt;gmdh.gmdh.Combi object at 0x...&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model2</span><span class="o">.</span><span class="n">predict</span><span class="p">([[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">11</span><span class="p">]])</span>
+<span class="go">array([ 7., 12.])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gmdh.gmdh.Combi.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lags</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gmdh.gmdh.Combi.predict" title="Permalink to this definition"></a></dt>
+<dd><p>Make predictions based on the optimal solution found during the fitting process.</p>
+<p>This method can be used for both regular datasets with features
+and time-series datasets. For time series it is necessary to specify <cite>lags</cite> parameter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>X</strong><span class="classifier">array_like</span></dt><dd><p>1D or 2D array containing numeric test data.
+If 2D array is used then rows are data samples, columns are features.
+If 1D array is used then the array should contain time series values and
+the array size must be equal to the lags number of the used training data.</p>
+</dd>
+<dt><strong>lags</strong><span class="classifier">int, default=None</span></dt><dd><p>If <cite>X</cite> represents the time series data then lags parameter is the number
+of sequential values that will be predicted. If <cite>X</cite> isn’t the time series
+the lags parameter must be None.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>predictions</strong><span class="classifier">array_like</span></dt><dd><p>1D array containing precited values for given <cite>X</cite> data</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>Creating data for fitting the model.
+The <cite>X</cite> array contains pairs of numbers, and
+the <cite>y</cite> array contains the corresponding sums of two numbers:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">X</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">7</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">6</span><span class="p">]]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y</span> <span class="o">=</span> <span class="p">[</span><span class="nb">sum</span><span class="p">(</span><span class="n">row</span><span class="p">)</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">X</span><span class="p">]</span>  <span class="c1"># [3, 5, 7, 10, 5, 8]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x_train</span><span class="p">,</span> <span class="n">x_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">gmdh</span><span class="o">.</span><span class="n">split_data</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.33</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y_test</span>
+<span class="go">array([5., 8.])</span>
+</pre></div>
+</div>
+<p>Fitting the model and making predictions:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">gmdh</span><span class="o">.</span><span class="n">Combi</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">x_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>  
+<span class="go">&lt;gmdh.gmdh.Combi object at 0x...&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y_pred</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x_test</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y_pred</span>
+<span class="go">array([5., 8.])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gmdh.gmdh.Combi.save">
+<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gmdh.gmdh.Combi.save" title="Permalink to this definition"></a></dt>
+<dd><p>Saving fitted model to the file.</p>
+<p>Using this method tou can save all the necessary information about structure
+and parameters of the fitted model in JSON format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>path</strong><span class="classifier">str</span></dt><dd><p>Path to the file to save the model.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>self</strong><span class="classifier">Combi</span></dt><dd><p>Combi model.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>FileError</dt><dd><p>If the file can’t be created or opened.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="#gmdh.gmdh.Combi.load" title="gmdh.gmdh.Combi.load"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load</span></code></a></dt><dd><p>Loading pre-trained model.</p>
+</dd>
+</dl>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="gmdh.gmdh.Criterion">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gmdh.gmdh.</span></span><span class="sig-name descname"><span class="pre">Criterion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">criterion_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">CriterionType.REGULARITY</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Solver.BALANCED</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gmdh.gmdh.Criterion" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class implementing calculations for all possible single external criterions of GMDH models.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>criterion_type</strong><span class="classifier">gmdh.CriterionType, default=gmdh.CriterionType.REGULARITY</span></dt><dd><p>Element from <cite>gmdh.CriterionType</cite> enumeration specifying the type of external criterion
+that will be used to select the optimum solution during training GMDH model.</p>
+</dd>
+<dt><strong>solver</strong><span class="classifier">gmdh.Solver, default=gmdh.Solver.BALANCED</span></dt><dd><p>Element from <cite>gmdh.Solver</cite> enumeration specifying the method of
+linear equations solving during training GMDH model.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>You can create <cite>Criterion</cite> object with parameters specifyied during initialization:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">criterion</span> <span class="o">=</span> <span class="n">gmdh</span><span class="o">.</span><span class="n">Criterion</span><span class="p">(</span><span class="n">criterion_type</span><span class="o">=</span><span class="n">gmdh</span><span class="o">.</span><span class="n">CriterionType</span><span class="o">.</span><span class="n">STABILITY</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="n">gmdh</span><span class="o">.</span><span class="n">Solver</span><span class="o">.</span><span class="n">FAST</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Or you can create default <cite>Criterion</cite> object and then specify parameters using assignments:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">criterion</span> <span class="o">=</span> <span class="n">gmdh</span><span class="o">.</span><span class="n">Criterion</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">criterion</span><span class="o">.</span><span class="n">criterion_type</span> <span class="o">=</span> <span class="n">gmdh</span><span class="o">.</span><span class="n">CriterionType</span><span class="o">.</span><span class="n">STABILITY</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">criterion</span><span class="o">.</span><span class="n">solver</span> <span class="o">=</span> <span class="n">gmdh</span><span class="o">.</span><span class="n">Solver</span><span class="o">.</span><span class="n">FAST</span>
+</pre></div>
+</div>
+<p>Displaying the current values of the arguments:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">criterion</span> <span class="o">=</span> <span class="n">gmdh</span><span class="o">.</span><span class="n">Criterion</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">criterion</span><span class="o">.</span><span class="n">criterion_type</span>
+<span class="go">&lt;CriterionType.REGULARITY: 0&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">criterion</span><span class="o">.</span><span class="n">solver</span>
+<span class="go">&lt;Solver.BALANCED: 2&gt;</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>criterion_type, solver</strong><span class="classifier">see Parameters</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class enum">
+<dt class="sig sig-object py" id="gmdh.gmdh.CriterionType">
+<em class="property"><span class="pre">enum</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gmdh.gmdh.</span></span><span class="sig-name descname"><span class="pre">CriterionType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gmdh.gmdh.CriterionType" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">DocEnum</span></code></p>
+<p>Enumeration for specitying the criterion to select the optimum solution.</p>
+<p>Valid values are as follows:</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gmdh.gmdh.CriterionType.REGULARITY">
+<span class="sig-name descname"><span class="pre">REGULARITY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;CriterionType.REGULARITY:</span> <span class="pre">0&gt;</span></em><a class="headerlink" href="#gmdh.gmdh.CriterionType.REGULARITY" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gmdh.gmdh.CriterionType.SYM_REGULARITY">
+<span class="sig-name descname"><span class="pre">SYM_REGULARITY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;CriterionType.SYM_REGULARITY:</span> <span class="pre">1&gt;</span></em><a class="headerlink" href="#gmdh.gmdh.CriterionType.SYM_REGULARITY" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gmdh.gmdh.CriterionType.STABILITY">
+<span class="sig-name descname"><span class="pre">STABILITY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;CriterionType.STABILITY:</span> <span class="pre">2&gt;</span></em><a class="headerlink" href="#gmdh.gmdh.CriterionType.STABILITY" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gmdh.gmdh.CriterionType.SYM_STABILITY">
+<span class="sig-name descname"><span class="pre">SYM_STABILITY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;CriterionType.SYM_STABILITY:</span> <span class="pre">3&gt;</span></em><a class="headerlink" href="#gmdh.gmdh.CriterionType.SYM_STABILITY" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gmdh.gmdh.CriterionType.UNBIASED_OUTPUTS">
+<span class="sig-name descname"><span class="pre">UNBIASED_OUTPUTS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;CriterionType.UNBIASED_OUTPUTS:</span> <span class="pre">4&gt;</span></em><a class="headerlink" href="#gmdh.gmdh.CriterionType.UNBIASED_OUTPUTS" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gmdh.gmdh.CriterionType.SYM_UNBIASED_OUTPUTS">
+<span class="sig-name descname"><span class="pre">SYM_UNBIASED_OUTPUTS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;CriterionType.SYM_UNBIASED_OUTPUTS:</span> <span class="pre">5&gt;</span></em><a class="headerlink" href="#gmdh.gmdh.CriterionType.SYM_UNBIASED_OUTPUTS" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gmdh.gmdh.CriterionType.UNBIASED_COEFFS">
+<span class="sig-name descname"><span class="pre">UNBIASED_COEFFS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;CriterionType.UNBIASED_COEFFS:</span> <span class="pre">6&gt;</span></em><a class="headerlink" href="#gmdh.gmdh.CriterionType.UNBIASED_COEFFS" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gmdh.gmdh.CriterionType.ABSOLUTE_NOISE_IMMUNITY">
+<span class="sig-name descname"><span class="pre">ABSOLUTE_NOISE_IMMUNITY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;CriterionType.ABSOLUTE_NOISE_IMMUNITY:</span> <span class="pre">7&gt;</span></em><a class="headerlink" href="#gmdh.gmdh.CriterionType.ABSOLUTE_NOISE_IMMUNITY" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gmdh.gmdh.CriterionType.SYM_ABSOLUTE_NOISE_IMMUNITY">
+<span class="sig-name descname"><span class="pre">SYM_ABSOLUTE_NOISE_IMMUNITY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;CriterionType.SYM_ABSOLUTE_NOISE_IMMUNITY:</span> <span class="pre">8&gt;</span></em><a class="headerlink" href="#gmdh.gmdh.CriterionType.SYM_ABSOLUTE_NOISE_IMMUNITY" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="gmdh.gmdh.FileError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gmdh.gmdh.</span></span><span class="sig-name descname"><span class="pre">FileError</span></span><a class="headerlink" href="#gmdh.gmdh.FileError" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>Exception class for file errors.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gmdh.gmdh.FileError.args">
+<span class="sig-name descname"><span class="pre">args</span></span><a class="headerlink" href="#gmdh.gmdh.FileError.args" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gmdh.gmdh.FileError.with_traceback">
+<span class="sig-name descname"><span class="pre">with_traceback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#gmdh.gmdh.FileError.with_traceback" title="Permalink to this definition"></a></dt>
+<dd><p>Exception.with_traceback(tb) –
+set self.__traceback__ to tb and return self.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="gmdh.gmdh.Mia">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gmdh.gmdh.</span></span><span class="sig-name descname"><span class="pre">Mia</span></span><a class="headerlink" href="#gmdh.gmdh.Mia" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code></p>
+<p>Class implementing multilayered iterative Mia algorithm.</p>
+<p>In Mia algorithm combinations are polynomails f(xi, xj).
+These polynomials can be non-linear. The type of polynomials
+can be specifying using <cite>polynomial_type</cite> parameter.</p>
+<p>Several best combinations are selected at each level.
+Then еach model is considered as a new variable.
+Each pair of these new variables generates
+a new variable when moving to the next level.</p>
+<p>Let there be 4 features in total (x1, x2, x3, x4)
+and the best combinations at the first level are:</p>
+<p>y = f1(x1, x2)</p>
+<p>y = f2(x1, x3)</p>
+<p>y = f3(x2, x4)</p>
+<p>Then at the second level Mia will consider combinations:</p>
+<p>y = f4(f1, f2)</p>
+<p>y = f5(f1, f3)</p>
+<p>y = f6(f2, f3)</p>
+<p>At each level, new combinations are constructed from the best polynomials of the last level.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="gmdh.gmdh.Mia.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">criterion=&lt;gmdh.gmdh.Criterion</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k_best=3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">polynomial_type=PolynomialType.QUADRATIC</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_size=0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p_average=1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_jobs=1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose=0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit=0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gmdh.gmdh.Mia.fit" title="Permalink to this definition"></a></dt>
+<dd><p>Fitting the Mia model to find the best solution.</p>
+<p>Using the input training <cite>X</cite> and <cite>y</cite> data the Mia model looks for the optimal solution
+from polynomials constructed from <cite>polynomial_type</cite> basic polynomials
+and stops if the errors start to grow. The training process can be configured
+for specific purposes using hyperparameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>X</strong><span class="classifier">array_like</span></dt><dd><p>2D array containing numeric training data.
+Rows are data samples, columns are features or lags.</p>
+</dd>
+<dt><strong>y</strong><span class="classifier">array_like</span></dt><dd><p>1D array containg target numeric values for the training data.</p>
+</dd>
+<dt><strong>criterion</strong><span class="classifier">gmdh.Criterion, default=gmdh.Criterion(gmdh.CriterionType.REGULARITY)</span></dt><dd><p>External criterion is a function or specific combination of functions
+for solutions evaluation and choosing the best one.</p>
+</dd>
+<dt><strong>k_best</strong><span class="classifier">int, default=3</span></dt><dd><p>The number of best combinations at each level that will be combined
+with other unused features (or lags) at the next level.
+The minimum allowed value is 3.</p>
+</dd>
+<dt><strong>polynomial_type</strong><span class="classifier">gmdh.PolynomialType, default=gmdh.PolynomialType.QUADRATIC</span></dt><dd><p>Specifying the type of polynomials that will be used to construct the final polynomial.</p>
+</dd>
+<dt><strong>test_size</strong><span class="classifier">float, default=0.5</span></dt><dd><p>Proportion of the input data to include in the internal test set
+that will be used only to calculate external criterion value.
+Value must be in the (0, 1) range.</p>
+</dd>
+<dt><strong>p_average</strong><span class="classifier">int, default=1</span></dt><dd><p>Specifying the number of the best combinations for calculation
+the mean error value at each level.</p>
+</dd>
+<dt><strong>n_jobs</strong><span class="classifier">int, default=1</span></dt><dd><p>The number of threads that will be used for calculations.
+If n_jobs=-1 the maximum possible threads will be used.</p>
+</dd>
+<dt><strong>verbose</strong><span class="classifier">{0, 1}, default=0</span></dt><dd><p>If verbose=1 then the progress bars and additional information
+will be displayed during the model fitting.
+If verbose=0 there will be no information to display.</p>
+</dd>
+<dt><strong>limit</strong><span class="classifier">float, default=0</span></dt><dd><p>If the error value at the end of the level decreases by less then limit value
+compared to the previous level the training process will stop.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>self</strong><span class="classifier">Mia</span></dt><dd><p>Fitted model.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="#gmdh.gmdh.Mia.predict" title="gmdh.gmdh.Mia.predict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">predict</span></code></a></dt><dd><p>Using fitted model to make predictions.</p>
+</dd>
+</dl>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gmdh.gmdh.Mia.get_best_polynomial">
+<span class="sig-name descname"><span class="pre">get_best_polynomial</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#gmdh.gmdh.Mia.get_best_polynomial" title="Permalink to this definition"></a></dt>
+<dd><p>Getting a string representation of the formula of the best polynomial.</p>
+<p>Using this method you can see the polynomial that was constructed
+during the fitting process and will be used for predictions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>polynomial</strong><span class="classifier">str</span></dt><dd><p>Polynomial of the fitted model.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>Creating data for fitting the model.
+The <cite>X</cite> matrix contains array of 4 numbers and
+the <cite>y</cite> array contains results of the function
+f(x1, x2, x3, x4) = x1^2 + x4^2 + 2*x1*x4:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">X</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+<span class="gp">... </span>     <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
+<span class="gp">... </span>     <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+<span class="gp">... </span>     <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">],</span>
+<span class="gp">... </span>     <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span>
+<span class="gp">... </span>     <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+<span class="gp">... </span>     <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">]]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y</span> <span class="o">=</span> <span class="p">[</span><span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">row</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">+</span> <span class="n">row</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">X</span><span class="p">]</span>  <span class="c1"># [9, 25, 4, 49, 36, 9, 64]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x_train</span><span class="p">,</span> <span class="n">x_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">gmdh</span><span class="o">.</span><span class="n">split_data</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y_test</span>
+<span class="go">array([64.])</span>
+</pre></div>
+</div>
+<p>Fitting the model, making predictions and printing the best polynomial:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">gmdh</span><span class="o">.</span><span class="n">Mia</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">x_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>  
+<span class="go">&lt;gmdh.gmdh.Mia object at 0x...&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y_pred</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x_test</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y_pred</span>
+<span class="go">array([64.])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span><span class="o">.</span><span class="n">get_best_polynomial</span><span class="p">()</span>
+<span class="go">&#39;y = 2*x1*x4 + x1^2 + x4^2&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gmdh.gmdh.Mia.load">
+<span class="sig-name descname"><span class="pre">load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gmdh.gmdh.Mia.load" title="Permalink to this definition"></a></dt>
+<dd><p>Loading model from the file</p>
+<p>Using this method you can load a pre-trained model to make predictions without fitting.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>path</strong><span class="classifier">str</span></dt><dd><p>Path to the file for loading the model.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>self</strong><span class="classifier">Mia</span></dt><dd><p>Mia model loaded from the file.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>FileError</dt><dd><p>If the file can’t be opened or it is corrupted.
+Also raises when trying to load file of another model.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>Time series data preparations, fitting the Mia model,
+making predictions and saving model to the JSON file:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">gmdh</span><span class="o">.</span><span class="n">time_series_transformation</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">11</span><span class="p">],</span> <span class="n">lags</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x_train</span><span class="p">,</span> <span class="n">x_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">gmdh</span><span class="o">.</span><span class="n">split_data</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y_test</span>
+<span class="go">array([10., 11.])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model1</span> <span class="o">=</span> <span class="n">gmdh</span><span class="o">.</span><span class="n">Mia</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y_pred</span> <span class="o">=</span> <span class="n">model1</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">x_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x_test</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y_pred</span>
+<span class="go">array([10., 11.])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model1</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">&quot;model1.json&quot;</span><span class="p">)</span>  
+<span class="go">&lt;gmdh.gmdh.Mia object at 0x...&gt;</span>
+</pre></div>
+</div>
+<p>Loading pre-trained model and making predictions without fitting:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">model2</span> <span class="o">=</span> <span class="n">gmdh</span><span class="o">.</span><span class="n">Mia</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model2</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;model1.json&#39;</span><span class="p">)</span>  
+<span class="go">&lt;gmdh.gmdh.Mia object at 0x...&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model2</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x_test</span><span class="p">)</span>
+<span class="go">array([10., 11.])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gmdh.gmdh.Mia.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lags</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gmdh.gmdh.Mia.predict" title="Permalink to this definition"></a></dt>
+<dd><p>Make predictions based on the optimal solution found during the fitting process.</p>
+<p>This method can be used for both regular datasets with features
+and time-series datasets. For time series it is necessary to specify <cite>lags</cite> parameter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>X</strong><span class="classifier">array_like</span></dt><dd><p>1D or 2D array containing numeric test data.
+If 2D array is used then rows are data samples, columns are features.
+If 1D array is used then the array should contain time series values and
+the array size must be equal to the lags number of the used training data.</p>
+</dd>
+<dt><strong>lags</strong><span class="classifier">int, default=None</span></dt><dd><p>If <cite>X</cite> represents the time series data then lags parameter is the number
+of sequential values that will be predicted. If <cite>X</cite> isn’t the time series
+the lags parameter must be None.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>predictions</strong><span class="classifier">array_like</span></dt><dd><p>1D array containing precited values for given <cite>X</cite> data</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>Time series data preparations:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">gmdh</span><span class="o">.</span><span class="n">time_series_transformation</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">11</span><span class="p">],</span> <span class="n">lags</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x_train</span><span class="p">,</span> <span class="n">x_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">gmdh</span><span class="o">.</span><span class="n">split_data</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x_test</span>
+<span class="go">array([[ 7.,  8.,  9.],</span>
+<span class="go">       [ 8.,  9., 10.]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y_test</span>
+<span class="go">array([10., 11.])</span>
+</pre></div>
+</div>
+<p>Fitting the model and making predictions 5 steps ahead (lags=5)
+based only on the first row of <cite>x_test</cite> data:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">gmdh</span><span class="o">.</span><span class="n">Mia</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y_pred</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">x_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x_test</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">lags</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y_pred</span>
+<span class="go">array([10., 11., 12., 13., 14.])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gmdh.gmdh.Mia.save">
+<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gmdh.gmdh.Mia.save" title="Permalink to this definition"></a></dt>
+<dd><p>Saving fitted model to the file.</p>
+<p>Using this method tou can save all the necessary information about structure
+and parameters of the fitted model in JSON format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>path</strong><span class="classifier">str</span></dt><dd><p>Path to the file to save the model.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>self</strong><span class="classifier">Mia</span></dt><dd><p>Mia model.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>FileError</dt><dd><p>If the file can’t be created or opened.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="#gmdh.gmdh.Mia.load" title="gmdh.gmdh.Mia.load"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load</span></code></a></dt><dd><p>Loading pre-trained model.</p>
+</dd>
+</dl>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="gmdh.gmdh.Multi">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gmdh.gmdh.</span></span><span class="sig-name descname"><span class="pre">Multi</span></span><a class="headerlink" href="#gmdh.gmdh.Multi" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code></p>
+<p>Class implementing combinatorial selection Multi algorithm.</p>
+<p>This algorithm is an improvement of Combi algorithm. It works much faster
+but doesn’t check all possible combinations.
+The idea of Multi algorithm is to select several best combinations
+of the input features (or lags) at each level and then combine this combinations
+with one of the other unused features (or lags) at the next level.
+As in the Combi algorithm, each combination in Multi is a linear function.</p>
+<p>Let there be 4 features in total (x1, x2, x3, x4)
+and the best combinations at the first level are:</p>
+<p>y = f(x2) and y = f(x3), where f - linear polynomail.</p>
+<p>Then at the second level Multi will consider combinations:</p>
+<p>y = f(x2, x1)</p>
+<p>y = f(x2, x3)</p>
+<p>y = f(x2, x4)</p>
+<p>y = f(x3, x1)</p>
+<p>y = f(x3, x4)</p>
+<p>At each level, one new variable will be added to the best combinations.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="gmdh.gmdh.Multi.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">criterion=&lt;gmdh.gmdh.Criterion</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k_best=1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_size=0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p_average=1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_jobs=1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose=0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit=0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gmdh.gmdh.Multi.fit" title="Permalink to this definition"></a></dt>
+<dd><p>Fitting the Multi model to find the best solution.</p>
+<p>Using the input training <cite>X</cite> and <cite>y</cite> data the Multi model looks for the optimal solution
+from linear functions and stops if the errors start to grow.
+The training process can be configured for specific purposes
+using hyperparameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>X</strong><span class="classifier">array_like</span></dt><dd><p>2D array containing numeric training data.
+Rows are data samples, columns are features or lags.</p>
+</dd>
+<dt><strong>y</strong><span class="classifier">array_like</span></dt><dd><p>1D array containg target numeric values for the training data.</p>
+</dd>
+<dt><strong>criterion</strong><span class="classifier">gmdh.Criterion, default=gmdh.Criterion(gmdh.CriterionType.REGULARITY)</span></dt><dd><p>External criterion is a function or specific combination of functions
+for solutions evaluation and choosing the best one.</p>
+</dd>
+<dt><strong>k_best</strong><span class="classifier">int, default=1</span></dt><dd><p>The number of best combinations at each level that will be combined
+with other unused features (or lags) at the next level.</p>
+</dd>
+<dt><strong>test_size</strong><span class="classifier">float, default=0.5</span></dt><dd><p>Proportion of the input data to include in the internal test set
+that will be used only to calculate external criterion value.
+Value must be in the (0, 1) range.</p>
+</dd>
+<dt><strong>p_average</strong><span class="classifier">int, default=1</span></dt><dd><p>Specifying the number of the best combinations for calculation
+the mean error value at each level.</p>
+</dd>
+<dt><strong>n_jobs</strong><span class="classifier">int, default=1</span></dt><dd><p>The number of threads that will be used for calculations.
+If n_jobs=-1 the maximum possible threads will be used.</p>
+</dd>
+<dt><strong>verbose</strong><span class="classifier">{0, 1}, default=0</span></dt><dd><p>If verbose=1 then the progress bars and additional information
+will be displayed during the model fitting.
+If verbose=0 there will be no information to display.</p>
+</dd>
+<dt><strong>limit</strong><span class="classifier">float, default=0</span></dt><dd><p>If the error value at the end of the level decreases by less then limit value
+compared to the previous level the training process will stop.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>self</strong><span class="classifier">Multi</span></dt><dd><p>Fitted model.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="#gmdh.gmdh.Multi.predict" title="gmdh.gmdh.Multi.predict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">predict</span></code></a></dt><dd><p>Using fitted model to make predictions.</p>
+</dd>
+</dl>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gmdh.gmdh.Multi.get_best_polynomial">
+<span class="sig-name descname"><span class="pre">get_best_polynomial</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#gmdh.gmdh.Multi.get_best_polynomial" title="Permalink to this definition"></a></dt>
+<dd><p>Getting a string representation of the formula of the best polynomial.</p>
+<p>Using this method you can see the polynomial that was constructed
+during the fitting process and will be used for predictions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>polynomial</strong><span class="classifier">str</span></dt><dd><p>Polynomial of the fitted model.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>Fitting the Multi model using Fibonacci series:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">gmdh</span><span class="o">.</span><span class="n">time_series_transformation</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">21</span><span class="p">],</span> <span class="n">lags</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x_train</span><span class="p">,</span> <span class="n">x_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">gmdh</span><span class="o">.</span><span class="n">split_data</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.25</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">gmdh</span><span class="o">.</span><span class="n">Multi</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">x_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x_test</span><span class="p">)</span>
+<span class="go">array([13., 21.])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span><span class="o">.</span><span class="n">get_best_polynomial</span><span class="p">()</span>
+<span class="go">&#39;y = x1 + x2&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gmdh.gmdh.Multi.load">
+<span class="sig-name descname"><span class="pre">load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gmdh.gmdh.Multi.load" title="Permalink to this definition"></a></dt>
+<dd><p>Loading model from the file</p>
+<p>Using this method you can load a pre-trained model to make predictions without fitting.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>path</strong><span class="classifier">str</span></dt><dd><p>Path to the file for loading the model.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>self</strong><span class="classifier">Multi</span></dt><dd><p>Multi model loaded from the file.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>FileError</dt><dd><p>If the file can’t be opened or it is corrupted.
+Also raises when trying to load file of another model.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>Teaching the model to sum 2 numbers, then making predictions
+and saving model to the JSON file:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">model1</span> <span class="o">=</span> <span class="n">gmdh</span><span class="o">.</span><span class="n">Multi</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model1</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="o">=</span><span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">7</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="p">[</span><span class="mi">9</span><span class="p">,</span> <span class="mi">12</span><span class="p">]],</span> <span class="n">y</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">21</span><span class="p">])</span>  
+<span class="go">&lt;gmdh.gmdh.Multi object at 0x...&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model1</span><span class="o">.</span><span class="n">predict</span><span class="p">([[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">11</span><span class="p">]])</span>
+<span class="go">array([ 7., 12.])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model1</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s1">&#39;model1.json&#39;</span><span class="p">)</span>  
+<span class="go">&lt;gmdh.gmdh.Multi object at 0x...&gt;</span>
+</pre></div>
+</div>
+<p>Loading pre-trained model and making predictions without fitting:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">model2</span> <span class="o">=</span> <span class="n">gmdh</span><span class="o">.</span><span class="n">Multi</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model2</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;model1.json&#39;</span><span class="p">)</span>  
+<span class="go">&lt;gmdh.gmdh.Multi object at 0x...&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model2</span><span class="o">.</span><span class="n">predict</span><span class="p">([[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">11</span><span class="p">]])</span>
+<span class="go">array([ 7., 12.])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gmdh.gmdh.Multi.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lags</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gmdh.gmdh.Multi.predict" title="Permalink to this definition"></a></dt>
+<dd><p>Make predictions based on the optimal solution found during the fitting process.</p>
+<p>This method can be used for both regular datasets with features
+and time-series datasets. For time series it is necessary to specify <cite>lags</cite> parameter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>X</strong><span class="classifier">array_like</span></dt><dd><p>1D or 2D array containing numeric test data.
+If 2D array is used then rows are data samples, columns are features.
+If 1D array is used then the array should contain time series values and
+the array size must be equal to the lags number of the used training data.</p>
+</dd>
+<dt><strong>lags</strong><span class="classifier">int, default=None</span></dt><dd><p>If <cite>X</cite> represents the time series data then lags parameter is the number
+of sequential values that will be predicted. If <cite>X</cite> isn’t the time series
+the lags parameter must be None.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>predictions</strong><span class="classifier">array_like</span></dt><dd><p>1D array containing precited values for given <cite>X</cite> data</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>Creating data for fitting the model.
+The <cite>X</cite> array contains pairs of numbers, and
+the <cite>y</cite> array contains the corresponding sums of two numbers:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">X</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">7</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">6</span><span class="p">]]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y</span> <span class="o">=</span> <span class="p">[</span><span class="nb">sum</span><span class="p">(</span><span class="n">row</span><span class="p">)</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">X</span><span class="p">]</span>  <span class="c1"># [3, 5, 7, 10, 5, 8]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x_train</span><span class="p">,</span> <span class="n">x_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">gmdh</span><span class="o">.</span><span class="n">split_data</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.33</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y_test</span>
+<span class="go">array([5., 8.])</span>
+</pre></div>
+</div>
+<p>Fitting the model and making predictions:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">gmdh</span><span class="o">.</span><span class="n">Multi</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">x_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>  
+<span class="go">&lt;gmdh.gmdh.Multi object at 0x...&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y_pred</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x_test</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y_pred</span>
+<span class="go">array([5., 8.])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gmdh.gmdh.Multi.save">
+<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gmdh.gmdh.Multi.save" title="Permalink to this definition"></a></dt>
+<dd><p>Saving fitted model to the file.</p>
+<p>Using this method tou can save all the necessary information about structure
+and parameters of the fitted model in JSON format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>path</strong><span class="classifier">str</span></dt><dd><p>Path to the file to save the model.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>self</strong><span class="classifier">Multi</span></dt><dd><p>Multi model.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>FileError</dt><dd><p>If the file can’t be created or opened.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="#gmdh.gmdh.Multi.load" title="gmdh.gmdh.Multi.load"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load</span></code></a></dt><dd><p>Loading pre-trained model.</p>
+</dd>
+</dl>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="gmdh.gmdh.ParallelCriterion">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gmdh.gmdh.</span></span><span class="sig-name descname"><span class="pre">ParallelCriterion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">criterion_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">CriterionType.REGULARITY</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">second_criterion_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">CriterionType.STABILITY</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Solver.BALANCED</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gmdh.gmdh.ParallelCriterion" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#gmdh.gmdh.Criterion" title="gmdh.gmdh.Criterion"><code class="xref py py-class docutils literal notranslate"><span class="pre">Criterion</span></code></a></p>
+<p>Class implementing calculations for double parallel external criterions of GMDH models.</p>
+<p>A double parallel external criterion is a combination of two weighted single criterions.
+The resulting value is calculated by the formula:
+result = alpha * criterion1 + (1 - alpha) * criterion2.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>criterion_type</strong><span class="classifier">gmdh.CriterionType, default=gmdh.CriterionType.REGULARITY</span></dt><dd><p>Element from <cite>gmdh.CriterionType</cite> enumeration specifying the type of the first external
+criterion that will be used to select the optimum solution during training GMDH model.</p>
+</dd>
+<dt><strong>second_criterion_type</strong><span class="classifier">gmdh.CriterionType, default=gmdh.CriterionType.STABILITY</span></dt><dd><p>Element from <cite>gmdh.CriterionType</cite> enumeration specifying the type of the second external
+criterion that will be used to select the optimum solution during training GMDH model.</p>
+</dd>
+<dt><strong>alpha</strong><span class="classifier">float, default=0.5</span></dt><dd><p>Contribution of the first criterion to the combined parallel criterion.
+The Contribution of the second criterion will be equal to (1 - alpha).
+Value must be in the (0, 1) range.</p>
+</dd>
+<dt><strong>solver</strong><span class="classifier">gmdh.Solver, default=gmdh.Solver.BALANCED</span></dt><dd><p>Element from <cite>gmdh.Solver</cite> enumeration specifying the method of
+linear equations solving during training GMDH model.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>You can create <cite>ParallelCriterion</cite> object with parameters specifyied during initialization:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">criterion</span> <span class="o">=</span> <span class="n">gmdh</span><span class="o">.</span><span class="n">ParallelCriterion</span><span class="p">(</span><span class="n">criterion_type</span><span class="o">=</span><span class="n">gmdh</span><span class="o">.</span><span class="n">CriterionType</span><span class="o">.</span><span class="n">STABILITY</span><span class="p">,</span> <span class="n">second_criterion_type</span><span class="o">=</span><span class="n">gmdh</span><span class="o">.</span><span class="n">CriterionType</span><span class="o">.</span><span class="n">REGULARITY</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="n">gmdh</span><span class="o">.</span><span class="n">Solver</span><span class="o">.</span><span class="n">FAST</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Or you can create default <cite>ParallelCriterion</cite> object
+and then specify parameters using assignments:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">criterion</span> <span class="o">=</span> <span class="n">gmdh</span><span class="o">.</span><span class="n">ParallelCriterion</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">criterion</span><span class="o">.</span><span class="n">criterion_type</span> <span class="o">=</span> <span class="n">gmdh</span><span class="o">.</span><span class="n">CriterionType</span><span class="o">.</span><span class="n">STABILITY</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">criterion</span><span class="o">.</span><span class="n">second_criterion_type</span> <span class="o">=</span> <span class="n">gmdh</span><span class="o">.</span><span class="n">CriterionType</span><span class="o">.</span><span class="n">REGULARITY</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">criterion</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.8</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">criterion</span><span class="o">.</span><span class="n">solver</span> <span class="o">=</span> <span class="n">gmdh</span><span class="o">.</span><span class="n">Solver</span><span class="o">.</span><span class="n">FAST</span>
+</pre></div>
+</div>
+<p>Displaying the current values of the arguments:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">criterion</span> <span class="o">=</span> <span class="n">gmdh</span><span class="o">.</span><span class="n">ParallelCriterion</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">criterion</span><span class="o">.</span><span class="n">criterion_type</span>
+<span class="go">&lt;CriterionType.REGULARITY: 0&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">criterion</span><span class="o">.</span><span class="n">second_criterion_type</span>
+<span class="go">&lt;CriterionType.STABILITY: 2&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">criterion</span><span class="o">.</span><span class="n">alpha</span>
+<span class="go">0.5</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">criterion</span><span class="o">.</span><span class="n">solver</span>
+<span class="go">&lt;Solver.BALANCED: 2&gt;</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>criterion_type, second_criterion_type, alpha, solver</strong><span class="classifier">see Parameters</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class enum">
+<dt class="sig sig-object py" id="gmdh.gmdh.PolynomialType">
+<em class="property"><span class="pre">enum</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gmdh.gmdh.</span></span><span class="sig-name descname"><span class="pre">PolynomialType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gmdh.gmdh.PolynomialType" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">DocEnum</span></code></p>
+<p>Enumeration for specifying the class of polynomials for GMDH models.</p>
+<p>It is the type of equations from which the set of solutions will be generated.
+Used for MIA and RIA models.</p>
+<p>Valid values are as follows:</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gmdh.gmdh.PolynomialType.LINEAR">
+<span class="sig-name descname"><span class="pre">LINEAR</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;PolynomialType.LINEAR:</span> <span class="pre">0&gt;</span></em><a class="headerlink" href="#gmdh.gmdh.PolynomialType.LINEAR" title="Permalink to this definition"></a></dt>
+<dd><p>Using linear equations: w0 + w1*x1 + w2*x2.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gmdh.gmdh.PolynomialType.LINEAR_COV">
+<span class="sig-name descname"><span class="pre">LINEAR_COV</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;PolynomialType.LINEAR_COV:</span> <span class="pre">1&gt;</span></em><a class="headerlink" href="#gmdh.gmdh.PolynomialType.LINEAR_COV" title="Permalink to this definition"></a></dt>
+<dd><p>Using linear equations with covariation: w0 + w1*x1 + w2*x2 + w3*x1*x2.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gmdh.gmdh.PolynomialType.QUADRATIC">
+<span class="sig-name descname"><span class="pre">QUADRATIC</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;PolynomialType.QUADRATIC:</span> <span class="pre">2&gt;</span></em><a class="headerlink" href="#gmdh.gmdh.PolynomialType.QUADRATIC" title="Permalink to this definition"></a></dt>
+<dd><p>Using quadratic equations: w0 + w1*x1 + w2*x2 + w3*x1*x2 + w4*x1^2 + w5*x2^2.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="gmdh.gmdh.Ria">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gmdh.gmdh.</span></span><span class="sig-name descname"><span class="pre">Ria</span></span><a class="headerlink" href="#gmdh.gmdh.Ria" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Model</span></code></p>
+<p>Class implementing relaxation iterative Ria algorithm.</p>
+<p>This algorithm is an improvement of Mia algorithm.
+Fewer combinations are considered at each level.
+Algorithm combinations are polynomails f(xi, xj).
+These polynomials can be non-linear. The type of polynomials
+can be specifying using <cite>polynomial_type</cite> parameter.</p>
+<p>Several best combinations are selected at each level.
+Then еach model is considered as a new variable and
+these new variables are combined with the original variables
+to generate new variables when moving to the next level.</p>
+<p>Let there be 3 features in total (x1, x2, x3)
+and the best combinations at the first level are:</p>
+<p>y = f1(x1, x2)</p>
+<p>y = f2(x1, x3)</p>
+<p>Then at the second level Ria will consider combinations:</p>
+<p>y = f3(f1, x1)</p>
+<p>y = f4(f1, x2)</p>
+<p>y = f5(f1, x3)</p>
+<p>y = f6(f2, x1)</p>
+<p>y = f7(f2, x2)</p>
+<p>y = f8(f2, x3)</p>
+<p>At each level, new combinations are constructed from the best polynomials
+of the last level and the original variables.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="gmdh.gmdh.Ria.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">criterion=&lt;gmdh.gmdh.Criterion</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k_best=1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">polynomial_type=PolynomialType.QUADRATIC</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_size=0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p_average=1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_jobs=1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose=0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit=0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gmdh.gmdh.Ria.fit" title="Permalink to this definition"></a></dt>
+<dd><p>Fitting the Ria model to find the best solution.</p>
+<p>Using the input training <cite>X</cite> and <cite>y</cite> data the Ria model looks for the optimal solution
+from polynomials constructed from <cite>polynomial_type</cite> basic polynomials
+and stops if the errors start to grow. The training process can be configured
+for specific purposes using hyperparameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>X</strong><span class="classifier">array_like</span></dt><dd><p>2D array containing numeric training data.
+Rows are data samples, columns are features or lags.</p>
+</dd>
+<dt><strong>y</strong><span class="classifier">array_like</span></dt><dd><p>1D array containg target numeric values for the training data.</p>
+</dd>
+<dt><strong>criterion</strong><span class="classifier">gmdh.Criterion, default=gmdh.Criterion(gmdh.CriterionType.REGULARITY)</span></dt><dd><p>External criterion is a function or specific combination of functions
+for solutions evaluation and choosing the best one.</p>
+</dd>
+<dt><strong>k_best</strong><span class="classifier">int, default=1</span></dt><dd><p>The number of best combinations at each level that will be combined
+with other unused features (or lags) at the next level.</p>
+</dd>
+<dt><strong>polynomial_type</strong><span class="classifier">gmdh.PolynomialType, default=gmdh.PolynomialType.QUADRATIC</span></dt><dd><p>Specifying the type of polynomials that will be used to construct the final polynomial.</p>
+</dd>
+<dt><strong>test_size</strong><span class="classifier">float, default=0.5</span></dt><dd><p>Proportion of the input data to include in the internal test set
+that will be used only to calculate external criterion value.
+Value must be in the (0, 1) range.</p>
+</dd>
+<dt><strong>p_average</strong><span class="classifier">int, default=1</span></dt><dd><p>Specifying the number of the best combinations for calculation
+the mean error value at each level.</p>
+</dd>
+<dt><strong>n_jobs</strong><span class="classifier">int, default=1</span></dt><dd><p>The number of threads that will be used for calculations.
+If n_jobs=-1 the maximum possible threads will be used.</p>
+</dd>
+<dt><strong>verbose</strong><span class="classifier">{0, 1}, default=0</span></dt><dd><p>If verbose=1 then the progress bars and additional information
+will be displayed during the model fitting.
+If verbose=0 there will be no information to display.</p>
+</dd>
+<dt><strong>limit</strong><span class="classifier">float, default=0</span></dt><dd><p>If the error value at the end of the level decreases by less then limit value
+compared to the previous level the training process will stop.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>self</strong><span class="classifier">Ria</span></dt><dd><p>Fitted model.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="#gmdh.gmdh.Ria.predict" title="gmdh.gmdh.Ria.predict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">predict</span></code></a></dt><dd><p>Using fitted model to make predictions.</p>
+</dd>
+</dl>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gmdh.gmdh.Ria.get_best_polynomial">
+<span class="sig-name descname"><span class="pre">get_best_polynomial</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#gmdh.gmdh.Ria.get_best_polynomial" title="Permalink to this definition"></a></dt>
+<dd><p>Getting a string representation of the formula of the best polynomial.</p>
+<p>Using this method you can see the polynomial that was constructed
+during the fitting process and will be used for predictions.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>polynomial</strong><span class="classifier">str</span></dt><dd><p>Polynomial of the fitted model.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>Creating data for fitting the model.
+The <cite>X</cite> matrix contains array of 3 numbers and
+the <cite>y</cite> array contains results of the function
+f(x1, x2, x3) = x1^2 + 10*x2^2 + 80:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">X</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+<span class="gp">... </span>     <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span>
+<span class="gp">... </span>     <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>
+<span class="gp">... </span>     <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span>
+<span class="gp">... </span>     <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>
+<span class="gp">... </span>     <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+<span class="gp">... </span>     <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y</span> <span class="o">=</span> <span class="p">[</span><span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">10</span> <span class="o">*</span> <span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">80</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">X</span><span class="p">]</span>  <span class="c1"># [90, 339, 94, 91, 124, 444, 179]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x_train</span><span class="p">,</span> <span class="n">x_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">gmdh</span><span class="o">.</span><span class="n">split_data</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y_test</span>
+<span class="go">array([179.])</span>
+</pre></div>
+</div>
+<p>Fitting the model, making predictions and printing the best polynomial:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">gmdh</span><span class="o">.</span><span class="n">Ria</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">x_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>  
+<span class="go">&lt;gmdh.gmdh.Ria object at 0x...&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y_pred</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x_test</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y_pred</span>
+<span class="go">array([179.])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span><span class="o">.</span><span class="n">get_best_polynomial</span><span class="p">()</span>
+<span class="go">&#39;y = x1^2 + 10*x2^2 + 80&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gmdh.gmdh.Ria.load">
+<span class="sig-name descname"><span class="pre">load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gmdh.gmdh.Ria.load" title="Permalink to this definition"></a></dt>
+<dd><p>Loading model from the file</p>
+<p>Using this method you can load a pre-trained model to make predictions without fitting.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>path</strong><span class="classifier">str</span></dt><dd><p>Path to the file for loading the model.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>self</strong><span class="classifier">Ria</span></dt><dd><p>Ria model loaded from the file.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>FileError</dt><dd><p>If the file can’t be opened or it is corrupted.
+Also raises when trying to load file of another model.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>Time series data preparations, fitting the Ria model,
+making predictions and saving model to the JSON file:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">gmdh</span><span class="o">.</span><span class="n">time_series_transformation</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">11</span><span class="p">],</span> <span class="n">lags</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x_train</span><span class="p">,</span> <span class="n">x_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">gmdh</span><span class="o">.</span><span class="n">split_data</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y_test</span>
+<span class="go">array([10., 11.])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model1</span> <span class="o">=</span> <span class="n">gmdh</span><span class="o">.</span><span class="n">Ria</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y_pred</span> <span class="o">=</span> <span class="n">model1</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">x_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x_test</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y_pred</span>
+<span class="go">array([10., 11.])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model1</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s2">&quot;model1.json&quot;</span><span class="p">)</span>  
+<span class="go">&lt;gmdh.gmdh.Ria object at 0x...&gt;</span>
+</pre></div>
+</div>
+<p>Loading pre-trained model and making predictions without fitting:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">model2</span> <span class="o">=</span> <span class="n">gmdh</span><span class="o">.</span><span class="n">Ria</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model2</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;model1.json&#39;</span><span class="p">)</span>  
+<span class="go">&lt;gmdh.gmdh.Ria object at 0x...&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model2</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x_test</span><span class="p">)</span>
+<span class="go">array([10., 11.])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gmdh.gmdh.Ria.predict">
+<span class="sig-name descname"><span class="pre">predict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lags</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gmdh.gmdh.Ria.predict" title="Permalink to this definition"></a></dt>
+<dd><p>Make predictions based on the optimal solution found during the fitting process.</p>
+<p>This method can be used for both regular datasets with features
+and time-series datasets. For time series it is necessary to specify <cite>lags</cite> parameter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>X</strong><span class="classifier">array_like</span></dt><dd><p>1D or 2D array containing numeric test data.
+If 2D array is used then rows are data samples, columns are features.
+If 1D array is used then the array should contain time series values and
+the array size must be equal to the lags number of the used training data.</p>
+</dd>
+<dt><strong>lags</strong><span class="classifier">int, default=None</span></dt><dd><p>If <cite>X</cite> represents the time series data then lags parameter is the number
+of sequential values that will be predicted. If <cite>X</cite> isn’t the time series
+the lags parameter must be None.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>predictions</strong><span class="classifier">array_like</span></dt><dd><p>1D array containing precited values for given <cite>X</cite> data</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>Time series data preparations:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">gmdh</span><span class="o">.</span><span class="n">time_series_transformation</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">11</span><span class="p">],</span> <span class="n">lags</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x_train</span><span class="p">,</span> <span class="n">x_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">gmdh</span><span class="o">.</span><span class="n">split_data</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x_test</span>
+<span class="go">array([[ 7.,  8.,  9.],</span>
+<span class="go">       [ 8.,  9., 10.]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y_test</span>
+<span class="go">array([10., 11.])</span>
+</pre></div>
+</div>
+<p>Fitting the model and making predictions 5 steps ahead (lags=5)
+based only on the first row of <cite>x_test</cite> data:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">gmdh</span><span class="o">.</span><span class="n">Ria</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y_pred</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">x_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x_test</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">lags</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y_pred</span>
+<span class="go">array([10., 11., 12., 13., 14.])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gmdh.gmdh.Ria.save">
+<span class="sig-name descname"><span class="pre">save</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gmdh.gmdh.Ria.save" title="Permalink to this definition"></a></dt>
+<dd><p>Saving fitted model to the file.</p>
+<p>Using this method tou can save all the necessary information about structure
+and parameters of the fitted model in JSON format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>path</strong><span class="classifier">str</span></dt><dd><p>Path to the file to save the model.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>self</strong><span class="classifier">Ria</span></dt><dd><p>Ria model.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt>FileError</dt><dd><p>If the file can’t be created or opened.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><a class="reference internal" href="#gmdh.gmdh.Ria.load" title="gmdh.gmdh.Ria.load"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load</span></code></a></dt><dd><p>Loading pre-trained model.</p>
+</dd>
+</dl>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="gmdh.gmdh.SequentialCriterion">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gmdh.gmdh.</span></span><span class="sig-name descname"><span class="pre">SequentialCriterion</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">criterion_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">CriterionType.REGULARITY</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">second_criterion_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">CriterionType.STABILITY</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">top</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">Solver.BALANCED</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gmdh.gmdh.SequentialCriterion" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#gmdh.gmdh.Criterion" title="gmdh.gmdh.Criterion"><code class="xref py py-class docutils literal notranslate"><span class="pre">Criterion</span></code></a></p>
+<p>Class implementing calculations for double sequential external criterions of GMDH models.</p>
+<p>A double sequential external criterion is a combination of two single criterion
+that are applied one after the other. The first one is used to calculate criterion values
+for all solutions. The second one is used to recalculate criterion values for
+several solutions with the best values of the first criterion.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>criterion_type</strong><span class="classifier">gmdh.CriterionType, default=gmdh.CriterionType.REGULARITY</span></dt><dd><p>Element from <cite>gmdh.CriterionType</cite> enumeration specifying the type of the first external
+criterion that will be used to select the optimum solution during training GMDH model.</p>
+</dd>
+<dt><strong>second_criterion_type</strong><span class="classifier">gmdh.CriterionType, default=gmdh.CriterionType.STABILITY</span></dt><dd><p>Element from <cite>gmdh.CriterionType</cite> enumeration specifying the type of the second external
+criterion that will be used to recalcuate criterion values for solutions
+with the best first criterion values.</p>
+</dd>
+<dt><strong>top</strong><span class="classifier">int, default=0</span></dt><dd><p>The number of the best combinations that should be evaluated by the second criterion.
+If the parameter value equals to 0, about half of the combinations
+will remain for the second criterion.</p>
+</dd>
+<dt><strong>solver</strong><span class="classifier">gmdh.Solver, default=gmdh.Solver.BALANCED</span></dt><dd><p>Element from <cite>gmdh.Solver</cite> enumeration specifying the method of
+linear equations solving during training GMDH model.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>You can create <cite>SequentialCriterion</cite> object with parameters specifyied during initialization:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">criterion</span> <span class="o">=</span> <span class="n">gmdh</span><span class="o">.</span><span class="n">SequentialCriterion</span><span class="p">(</span><span class="n">criterion_type</span><span class="o">=</span><span class="n">gmdh</span><span class="o">.</span><span class="n">CriterionType</span><span class="o">.</span><span class="n">STABILITY</span><span class="p">,</span> <span class="n">second_criterion_type</span><span class="o">=</span><span class="n">gmdh</span><span class="o">.</span><span class="n">CriterionType</span><span class="o">.</span><span class="n">REGULARITY</span><span class="p">,</span> <span class="n">top</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="n">gmdh</span><span class="o">.</span><span class="n">Solver</span><span class="o">.</span><span class="n">FAST</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Or you can create default <cite>SequentialCriterion</cite> object
+and then specify parameters using assignments:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">criterion</span> <span class="o">=</span> <span class="n">gmdh</span><span class="o">.</span><span class="n">SequentialCriterion</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">criterion</span><span class="o">.</span><span class="n">criterion_type</span> <span class="o">=</span> <span class="n">gmdh</span><span class="o">.</span><span class="n">CriterionType</span><span class="o">.</span><span class="n">STABILITY</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">criterion</span><span class="o">.</span><span class="n">second_criterion_type</span> <span class="o">=</span> <span class="n">gmdh</span><span class="o">.</span><span class="n">CriterionType</span><span class="o">.</span><span class="n">REGULARITY</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">criterion</span><span class="o">.</span><span class="n">top</span> <span class="o">=</span> <span class="mi">7</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">criterion</span><span class="o">.</span><span class="n">solver</span> <span class="o">=</span> <span class="n">gmdh</span><span class="o">.</span><span class="n">Solver</span><span class="o">.</span><span class="n">FAST</span>
+</pre></div>
+</div>
+<p>Displaying the current values of the arguments:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">criterion</span> <span class="o">=</span> <span class="n">gmdh</span><span class="o">.</span><span class="n">SequentialCriterion</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">criterion</span><span class="o">.</span><span class="n">criterion_type</span>
+<span class="go">&lt;CriterionType.REGULARITY: 0&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">criterion</span><span class="o">.</span><span class="n">second_criterion_type</span>
+<span class="go">&lt;CriterionType.STABILITY: 2&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">criterion</span><span class="o">.</span><span class="n">top</span>
+<span class="go">0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">criterion</span><span class="o">.</span><span class="n">solver</span>
+<span class="go">&lt;Solver.BALANCED: 2&gt;</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>criterion_type, second_criterion_type, top, solver</strong><span class="classifier">see Parameters</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class enum">
+<dt class="sig sig-object py" id="gmdh.gmdh.Solver">
+<em class="property"><span class="pre">enum</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gmdh.gmdh.</span></span><span class="sig-name descname"><span class="pre">Solver</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gmdh.gmdh.Solver" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">DocEnum</span></code></p>
+<p>Enumeration for specifying the method of linear equations solving in GMDH models.</p>
+<p>Valid values are as follows:</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gmdh.gmdh.Solver.FAST">
+<span class="sig-name descname"><span class="pre">FAST</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;Solver.FAST:</span> <span class="pre">0&gt;</span></em><a class="headerlink" href="#gmdh.gmdh.Solver.FAST" title="Permalink to this definition"></a></dt>
+<dd><p>Fast solution with perhaps not the best accuracy</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gmdh.gmdh.Solver.ACCURATE">
+<span class="sig-name descname"><span class="pre">ACCURATE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;Solver.ACCURATE:</span> <span class="pre">1&gt;</span></em><a class="headerlink" href="#gmdh.gmdh.Solver.ACCURATE" title="Permalink to this definition"></a></dt>
+<dd><p>Slow solution with maximum accuracy</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gmdh.gmdh.Solver.BALANCED">
+<span class="sig-name descname"><span class="pre">BALANCED</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;Solver.BALANCED:</span> <span class="pre">2&gt;</span></em><a class="headerlink" href="#gmdh.gmdh.Solver.BALANCED" title="Permalink to this definition"></a></dt>
+<dd><p>Balanced solution with average speed and accuracy</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gmdh.gmdh.split_data">
+<span class="sig-prename descclassname"><span class="pre">gmdh.gmdh.</span></span><span class="sig-name descname"><span class="pre">split_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">X</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shuffle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">random_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gmdh.gmdh.split_data" title="Permalink to this definition"></a></dt>
+<dd><p>Splitting data into train and test subsets.</p>
+<p>Using this method, you can prepare your data for further work
+with machine learning models by dividing it into training and test sets.
+The proportions of the subsets and the data shuffling
+can be customized according to your choice.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>X</strong><span class="classifier">array_like</span></dt><dd><p>2D array containing numeric values.
+Rows are data samples, columns are features or lags.</p>
+</dd>
+<dt><strong>y</strong><span class="classifier">array_lile</span></dt><dd><p>1D array containg target numeric values.</p>
+</dd>
+<dt><strong>test_size</strong><span class="classifier">float, default=0.2</span></dt><dd><p>Proportion of the data to include in the test set.
+Value must be in the (0, 1) range.</p>
+</dd>
+<dt><strong>shuffle</strong><span class="classifier">bool, default=False</span></dt><dd><p>If shuffle=True, the data samples will be shuffled before splitting.</p>
+</dd>
+<dt><strong>random_state</strong><span class="classifier">int, default=0</span></dt><dd><p>Specifying a nonzero integer to get the same split every time.
+If random_state=0, each time the data will be split randomly
+and the results may be different.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>splitting</strong><span class="classifier">list</span></dt><dd><p>List containing four elements: <cite>x_train</cite>, <cite>x_test</cite>, <cite>y_train</cite> and <cite>y_test</cite> arrays.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">X</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">],</span> <span class="p">[</span><span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">],</span> <span class="p">[</span><span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">]]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y</span> <span class="o">=</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">11</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x_train</span><span class="p">,</span> <span class="n">x_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">gmdh</span><span class="o">.</span><span class="n">split_data</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x_train</span><span class="p">,</span> <span class="n">y_train</span>
+<span class="go">(array([[1., 2.],</span>
+<span class="go">       [3., 4.],</span>
+<span class="go">       [5., 6.],</span>
+<span class="go">       [7., 8.]]), array([3., 5., 7., 9.]))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x_test</span><span class="p">,</span> <span class="n">y_test</span>
+<span class="go">(array([[ 9., 10.]]), array([11.]))</span>
+</pre></div>
+</div>
+<p>Specifying the <cite>test_size</cite>:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x_train</span><span class="p">,</span> <span class="n">x_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">gmdh</span><span class="o">.</span><span class="n">split_data</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.6</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x_train</span><span class="p">,</span> <span class="n">y_train</span>
+<span class="go">(array([[1., 2.],</span>
+<span class="go">       [3., 4.]]), array([3., 5.]))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x_test</span><span class="p">,</span> <span class="n">y_test</span>
+<span class="go">(array([[ 5.,  6.],</span>
+<span class="go">       [ 7.,  8.],</span>
+<span class="go">       [ 9., 10.]]), array([ 7.,  9., 11.]))</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gmdh.gmdh.time_series_transformation">
+<span class="sig-prename descclassname"><span class="pre">gmdh.gmdh.</span></span><span class="sig-name descname"><span class="pre">time_series_transformation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_series</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lags</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gmdh.gmdh.time_series_transformation" title="Permalink to this definition"></a></dt>
+<dd><p>Converting a time series into <cite>X</cite> and <cite>y</cite> data.</p>
+<p>Using this method, you can transform one-dimensional array
+with time series data into two arrays (<cite>X</cite> and <cite>y</cite> data) according
+to the required number of lags.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>time_series</strong><span class="classifier">array_like</span></dt><dd><p>1D array containing original time series.</p>
+</dd>
+<dt><strong>lags</strong><span class="classifier">int</span></dt><dd><p>The number of lags. Acceptable values are from 1 to <cite>time_series.size()</cite> - 1.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>data</strong><span class="classifier">tuple</span></dt><dd><p>A tuple whose items are arrays of <cite>X</cite> and <cite>y</cite> data
+constructed from a time series.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">gmdh</span><span class="o">.</span><span class="n">time_series_transformation</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">],</span> <span class="n">lags</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span>
+<span class="go">array([[1., 2., 3.],</span>
+<span class="go">       [2., 3., 4.],</span>
+<span class="go">       [3., 4., 5.]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y</span>
+<span class="go">array([4., 5., 6.])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Contents" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, bauman-team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
