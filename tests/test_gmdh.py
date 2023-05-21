@@ -4,7 +4,7 @@ All tests for gmdh module.
 
 #pylint: disable=invalid-name
 
-import pytest
+import pytest # pylint: disable=import-error
 import numpy as np
 import gmdh  #pylint: disable=import-error
 
